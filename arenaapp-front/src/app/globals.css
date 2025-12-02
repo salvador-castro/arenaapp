@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark light;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100;
+}
