@@ -1,3 +1,4 @@
+//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-admin\src\app\api\admin\galerias\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -173,10 +174,11 @@ export async function POST (req: NextRequest) {
       estado
     } = body
 
-    // Obligatorios: nombre+, direccion+, descripcion_corta+, imagen+
+    // Obligatorios: nombre, dirección, reseña, imagen
     if (
       !nombre ||
       !direccion ||
+      !resena ||
       !imagen_principal
     ) {
       return new NextResponse('Faltan campos obligatorios', {
@@ -189,71 +191,99 @@ export async function POST (req: NextRequest) {
     const slug = slugify(nombre)
 
     const insertResult = await db.query(
-  `
-  INSERT INTO galerias (
-    nombre,
-    slug,
-    descripcion_corta,
-    resena,
-    direccion,
-    zona,
-    ciudad,
-    provincia,
-    pais,
-    lat,
-    lng,
-    telefono,
-    email_contacto,
-    sitio_web,
-    instagram,
-    facebook,
-    anio_fundacion,
-    tiene_entrada_gratuita,
-    requiere_reserva,
-    horario_desde,
-    horario_hasta,
-    imagen_principal,
-    meta_title,
-    meta_description,
-    estado
-  )
-  VALUES (
-    $1, $2, $3, $4, $5,
-    $6, $7, $8, $9, $10,
-    $11, $12, $13, $14, $15,
-    $16, $17, $18, $19, $20,
-    $21, $22, $23, $24, $25
-  )
-  ...
-  `,
-  [
-    nombre,                             // $1
-    slug,                               // $2
-    resena ? resena.slice(0, 200) : null, // $3 -> descripcion_corta (auto)
-    resena || null,                     // $4 -> resena
-    direccion,                          // $5
-    zona || null,                       // $6
-    ciudad || null,                     // $7
-    provincia || null,                  // $8
-    pais || 'Uruguay',                  // $9
-    lat === undefined || lat === null ? null : lat, // $10
-    lng === undefined || lng === null ? null : lng, // $11
-    telefono || null,                   // $12
-    email_contacto || null,             // $13
-    sitio_web || null,                  // $14
-    instagram || null,                  // $15
-    facebook || null,                   // $16
-    anio_fundacion ?? null,             // $17
-    !!tiene_entrada_gratuita,           // $18
-    !!requiere_reserva,                 // $19
-    horario_desde || null,              // $20
-    horario_hasta || null,              // $21
-    imagen_principal,                   // $22
-    meta_title || null,                 // $23
-    meta_description || null,           // $24
-    estado || 'PUBLICADO'               // $25
-  ]
-)
+      `
+      INSERT INTO galerias (
+        nombre,
+        slug,
+        descripcion_corta,
+        resena,
+        direccion,
+        zona,
+        ciudad,
+        provincia,
+        pais,
+        lat,
+        lng,
+        telefono,
+        email_contacto,
+        sitio_web,
+        instagram,
+        facebook,
+        anio_fundacion,
+        tiene_entrada_gratuita,
+        requiere_reserva,
+        horario_desde,
+        horario_hasta,
+        imagen_principal,
+        meta_title,
+        meta_description,
+        estado
+      )
+      VALUES (
+        $1, $2, $3, $4, $5,
+        $6, $7, $8, $9, $10,
+        $11, $12, $13, $14, $15,
+        $16, $17, $18, $19, $20,
+        $21, $22, $23, $24, $25
+      )
+      RETURNING
+        id,
+        nombre,
+        slug,
+        descripcion_corta,
+        resena,
+        direccion,
+        zona,
+        ciudad,
+        provincia,
+        pais,
+        lat,
+        lng,
+        telefono,
+        email_contacto,
+        sitio_web,
+        instagram,
+        facebook,
+        anio_fundacion,
+        tiene_entrada_gratuita,
+        requiere_reserva,
+        horario_desde,
+        horario_hasta,
+        imagen_principal,
+        meta_title,
+        meta_description,
+        estado,
+        created_at,
+        updated_at
+      `,
+      [
+        nombre,                              // $1
+        slug,                                // $2
+        resena ? String(resena).slice(0, 200) : null, // $3 -> descripcion_corta auto
+        resena || null,                      // $4
+        direccion,                           // $5
+        zona || null,                        // $6
+        ciudad || null,                      // $7
+        provincia || null,                   // $8
+        pais || 'Uruguay',                   // $9
+        lat === undefined || lat === null ? null : lat, // $10
+        lng === undefined || lng === null ? null : lng, // $11
+        telefono || null,                    // $12
+        email_contacto || null,              // $13
+        sitio_web || null,                   // $14
+        instagram || null,                   // $15
+        facebook || null,                    // $16
+        anio_fundacion ?? null,              // $17
+        !!tiene_entrada_gratuita,            // $18
+        !!requiere_reserva,                  // $19
+        horario_desde || null,               // $20
+        horario_hasta || null,               // $21
+        imagen_principal,                    // $22
+        meta_title || null,                  // $23
+        meta_description || null,            // $24
+        estado || 'PUBLICADO'                // $25
+      ]
+    )
 
     const galeria = insertResult.rows[0]
 
@@ -267,7 +297,10 @@ export async function POST (req: NextRequest) {
   } catch (err: any) {
     console.error('Error POST /api/admin/galerias:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
         headers: corsBaseHeaders()

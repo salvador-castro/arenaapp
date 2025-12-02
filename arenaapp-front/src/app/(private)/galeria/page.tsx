@@ -1,3 +1,4 @@
+//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\app\(private)\galeria\page.tsx
 'use client'
 
 import React, { useEffect, useState, FormEvent, ChangeEvent } from 'react'
