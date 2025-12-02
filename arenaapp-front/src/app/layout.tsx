@@ -2,13 +2,14 @@
 import type { ReactNode } from 'react'
 import './globals.css'
 import Providers from './Providers'
-import type { Metadata } from 'next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export default function RootLayout ({ children }: { children: ReactNode }) {
   return (
     <html lang='es'>
       <body>
         <Providers>{children}</Providers>
+        <SpeedInsights />
       </body>
     </html>
   )
