@@ -7,6 +7,7 @@ import PromoBanner from 'src/components/PromoBanner'
 import RecommendedSection from 'src/components/RecommendedSection'
 import NearbySection from 'src/components/NearbySection'
 import WeekendEventsSection from 'src/components/WeekendEventsSection'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export default function HomePage () {
   // Más adelante esto va a salir de un contexto / cookie de auth

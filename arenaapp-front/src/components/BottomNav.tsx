@@ -83,7 +83,7 @@ export default function BottomNav () {
     { href: '/bares', label: 'Bares', icon: <Wine size={16} /> },
     { href: '/hoteles', label: 'Hoteles', icon: <Hotel size={16} /> },
     { href: '/galeria', label: 'Galería', icon: <Image size={16} /> },
-    { href: '/salidas', label: 'Salidas', icon: <PartyPopper size={16} /> },
+    /* { href: '/salidas', label: 'Salidas', icon: <PartyPopper size={16} /> }, */
     { href: '/shopping', label: 'Shopping', icon: <ShoppingBag size={16} /> }
   ]
 

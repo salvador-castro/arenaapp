@@ -40,7 +40,7 @@ interface AdminGallery {
   facebook?: string | null
   horario_desde?: string | null
   horario_hasta?: string | null
-  imagen_principal?: string | null
+  url_principal?: string | null
   meta_title?: string | null
   meta_description?: string | null
 
@@ -58,7 +58,7 @@ interface FormValues {
   horario_hasta: string
   tiene_entrada_gratuita: boolean
   resena: string
-  imagen_principal: string
+  url_principal: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
 }
 
@@ -88,7 +88,7 @@ export default function GaleriasPage () {
     horario_hasta: '',
     tiene_entrada_gratuita: false,
     resena: '',
-    imagen_principal: '',
+    url_principal: '',
     estado: 'PUBLICADO'
   })
 
@@ -171,7 +171,7 @@ export default function GaleriasPage () {
       horario_hasta: '',
       tiene_entrada_gratuita: false,
       resena: '',
-      imagen_principal: '',
+      url_principal: '',
       estado: 'PUBLICADO'
     })
     setIsFormOpen(true)
@@ -214,7 +214,7 @@ export default function GaleriasPage () {
       horario_hasta: g.horario_hasta ? g.horario_hasta.slice(0, 5) : '',
       tiene_entrada_gratuita: !!g.tiene_entrada_gratuita,
       resena: g.resena ?? '',
-      imagen_principal: g.imagen_principal ?? '',
+      url_principal: g.url_principal ?? '',
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO'
     })
 
@@ -251,7 +251,7 @@ export default function GaleriasPage () {
     setIsSubmitting(true)
     setError(null)
 
-    if (!formValues.imagen_principal.trim()) {
+    if (!formValues.url_principal.trim()) {
       setIsSubmitting(false)
       setError('Subí una imagen antes de guardar.')
       return
@@ -666,13 +666,13 @@ export default function GaleriasPage () {
                     onUploaded={path =>
                       setFormValues(prev => ({
                         ...prev,
-                        imagen_principal: path
+                        url_principal: path
                       }))
                     }
                   />
-                  {formValues.imagen_principal && (
+                  {formValues.url_principal && (
                     <p className='mt-1 text-[11px] text-emerald-400'>
-                      Imagen subida: {formValues.imagen_principal}
+                      Imagen subida: {formValues.url_principal}
                     </p>
                   )}
                   <p className='mt-1 text-[10px] text-slate-500'>

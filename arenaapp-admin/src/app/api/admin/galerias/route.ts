@@ -168,7 +168,7 @@ export async function POST (req: NextRequest) {
       requiere_reserva,
       horario_desde,
       horario_hasta,
-      imagen_principal,
+      url_principal,
       meta_title,
       meta_description,
       estado
@@ -179,7 +179,7 @@ export async function POST (req: NextRequest) {
       !nombre ||
       !direccion ||
       !resena ||
-      !imagen_principal
+      !url_principal
     ) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
@@ -214,7 +214,7 @@ export async function POST (req: NextRequest) {
         requiere_reserva,
         horario_desde,
         horario_hasta,
-        imagen_principal,
+        url_principal,
         meta_title,
         meta_description,
         estado
@@ -249,7 +249,7 @@ export async function POST (req: NextRequest) {
         requiere_reserva,
         horario_desde,
         horario_hasta,
-        imagen_principal,
+        url_principal,
         meta_title,
         meta_description,
         estado,
@@ -278,7 +278,7 @@ export async function POST (req: NextRequest) {
         !!requiere_reserva,                  // $19
         horario_desde || null,               // $20
         horario_hasta || null,               // $21
-        imagen_principal,                    // $22
+        url_principal,                    // $22
         meta_title || null,                  // $23
         meta_description || null,            // $24
         estado || 'PUBLICADO'                // $25
