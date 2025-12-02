@@ -45,7 +45,7 @@ export async function GET (
         nombre,
         slug,
         descripcion_corta,
-        descripcion_larga,
+        resena,
         direccion,
         ciudad,
         provincia,
@@ -128,7 +128,7 @@ export async function PUT (
     const {
       nombre,
       descripcion_corta,
-      descripcion_larga,
+      resena,
       direccion,
       ciudad,
       provincia,
@@ -151,12 +151,11 @@ export async function PUT (
       estado
     } = body
 
-    // Campos mínimos requeridos
+    // Campos mínimos requeridos (los que marcaste con +)
     if (
       !nombre ||
       !direccion ||
-      !ciudad ||
-      !instagram ||
+      !descripcion_corta ||
       !imagen_principal
     ) {
       return new NextResponse('Faltan campos obligatorios', {
@@ -173,7 +172,7 @@ export async function PUT (
       SET
         nombre = $1,
         descripcion_corta = $2,
-        descripcion_larga = $3,
+        resena = $3,
         direccion = $4,
         ciudad = $5,
         provincia = $6,
@@ -200,17 +199,17 @@ export async function PUT (
       [
         nombre,
         descripcion_corta || null,
-        descripcion_larga || null,
+        resena || null,
         direccion,
-        ciudad,
+        ciudad || null,
         provincia || null,
         pais || 'Uruguay',
-        lat ?? null,
-        lng ?? null,
+        lat === undefined || lat === null ? null : lat,
+        lng === undefined || lng === null ? null : lng,
         telefono || null,
         email_contacto || null,
         sitio_web || null,
-        instagram,
+        instagram || null,
         facebook || null,
         anio_fundacion ?? null,
         !!tiene_entrada_gratuita,
@@ -232,7 +231,7 @@ export async function PUT (
         nombre,
         slug,
         descripcion_corta,
-        descripcion_larga,
+        resena,
         direccion,
         ciudad,
         provincia,

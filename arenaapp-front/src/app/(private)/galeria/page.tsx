@@ -30,9 +30,8 @@ interface AdminGallery {
   created_at?: string | null
   updated_at?: string | null
 
-  // campos extra cuando traés detalle
   descripcion_corta?: string | null
-  descripcion_larga?: string | null
+  resena?: string | null
   telefono?: string | null
   email_contacto?: string | null
   facebook?: string | null
@@ -42,34 +41,21 @@ interface AdminGallery {
   meta_title?: string | null
   meta_description?: string | null
 
-  // 🔹 AGREGAR ESTOS:
   lat?: number | null
   lng?: number | null
 }
 
 interface FormValues {
   nombre: string
-  descripcion_corta: string
-  descripcion_larga: string
   direccion: string
-  ciudad: string
-  provincia: string
-  pais: string
-  lat: string
-  lng: string
-  telefono: string
-  email_contacto: string
-  sitio_web: string
   instagram: string
-  facebook: string
-  anio_fundacion: number | ''
-  tiene_entrada_gratuita: boolean
-  requiere_reserva: boolean
+  sitio_web: string
   horario_desde: string
   horario_hasta: string
+  tiene_entrada_gratuita: boolean
+  descripcion_corta: string
+  resena: string
   imagen_principal: string
-  meta_title: string
-  meta_description: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
 }
 
@@ -91,27 +77,15 @@ export default function GaleriasPage () {
 
   const [formValues, setFormValues] = useState<FormValues>({
     nombre: '',
-    descripcion_corta: '',
-    descripcion_larga: '',
     direccion: '',
-    ciudad: '',
-    provincia: '',
-    pais: '',
-    lat: '',
-    lng: '',
-    telefono: '',
-    email_contacto: '',
-    sitio_web: '',
     instagram: '',
-    facebook: '',
-    anio_fundacion: '',
-    tiene_entrada_gratuita: false,
-    requiere_reserva: false,
+    sitio_web: '',
     horario_desde: '',
     horario_hasta: '',
+    tiene_entrada_gratuita: false,
+    descripcion_corta: '',
+    resena: '',
     imagen_principal: '',
-    meta_title: '',
-    meta_description: '',
     estado: 'PUBLICADO'
   })
 
@@ -182,32 +156,19 @@ export default function GaleriasPage () {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, search])
 
-  // Helpers form
   function openCreateForm () {
     setEditing(null)
     setFormValues({
       nombre: '',
-      descripcion_corta: '',
-      descripcion_larga: '',
       direccion: '',
-      ciudad: '',
-      provincia: '',
-      pais: '',
-      lat: '',
-      lng: '',
-      telefono: '',
-      email_contacto: '',
-      sitio_web: '',
       instagram: '',
-      facebook: '',
-      anio_fundacion: '',
-      tiene_entrada_gratuita: false,
-      requiere_reserva: false,
+      sitio_web: '',
       horario_desde: '',
       horario_hasta: '',
+      tiene_entrada_gratuita: false,
+      descripcion_corta: '',
+      resena: '',
       imagen_principal: '',
-      meta_title: '',
-      meta_description: '',
       estado: 'PUBLICADO'
     })
     setIsFormOpen(true)
@@ -237,28 +198,15 @@ export default function GaleriasPage () {
     setEditing(g)
     setFormValues({
       nombre: g.nombre ?? '',
-      descripcion_corta: g.descripcion_corta ?? '',
-      descripcion_larga: g.descripcion_larga ?? '',
       direccion: g.direccion ?? '',
-      ciudad: g.ciudad ?? '',
-      provincia: g.provincia ?? '',
-      pais: g.pais ?? '',
-      lat: g.lat ? String(g.lat) : '',
-      lng: g.lng ? String(g.lng) : '',
-      telefono: g.telefono ?? '',
-      email_contacto: g.email_contacto ?? '',
-      sitio_web: g.sitio_web ?? '',
       instagram: g.instagram ?? '',
-      facebook: g.facebook ?? '',
-      anio_fundacion:
-        typeof g.anio_fundacion === 'number' ? g.anio_fundacion : '',
-      tiene_entrada_gratuita: !!g.tiene_entrada_gratuita,
-      requiere_reserva: !!g.requiere_reserva,
+      sitio_web: g.sitio_web ?? '',
       horario_desde: g.horario_desde ? g.horario_desde.slice(0, 5) : '',
       horario_hasta: g.horario_hasta ? g.horario_hasta.slice(0, 5) : '',
+      tiene_entrada_gratuita: !!g.tiene_entrada_gratuita,
+      descripcion_corta: g.descripcion_corta ?? '',
+      resena: g.resena ?? '',
       imagen_principal: g.imagen_principal ?? '',
-      meta_title: g.meta_title ?? '',
-      meta_description: g.meta_description ?? '',
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO'
     })
     setIsFormOpen(true)
@@ -283,22 +231,6 @@ export default function GaleriasPage () {
       return
     }
 
-    if (name === 'anio_fundacion') {
-      setFormValues(prev => ({
-        ...prev,
-        [name]: value === '' ? '' : Number(value)
-      }))
-      return
-    }
-
-    if (name === 'lat' || name === 'lng') {
-      setFormValues(prev => ({
-        ...prev,
-        [name]: value
-      }))
-      return
-    }
-
     setFormValues(prev => ({
       ...prev,
       [name]: value
@@ -316,19 +248,15 @@ export default function GaleriasPage () {
       return
     }
 
-    if (!formValues.instagram.trim()) {
+    if (!formValues.descripcion_corta.trim()) {
       setIsSubmitting(false)
-      setError('Colocá la URL de Instagram de la galería.')
+      setError('Completá la descripción corta.')
       return
     }
 
     try {
       const payload: any = {
-        ...formValues,
-        anio_fundacion:
-          formValues.anio_fundacion === '' ? null : formValues.anio_fundacion,
-        lat: formValues.lat === '' ? null : Number(formValues.lat),
-        lng: formValues.lng === '' ? null : Number(formValues.lng)
+        ...formValues
       }
 
       const isEdit = !!editing && editing.id != null
@@ -351,7 +279,7 @@ export default function GaleriasPage () {
         throw new Error(msg || `Error al guardar galería (${res.status})`)
       }
 
-      await res.json() // solo para asegurar que responde OK
+      await res.json()
 
       await fetchGalerias(currentPage, search)
       closeForm()
@@ -473,9 +401,6 @@ export default function GaleriasPage () {
                     Entrada gratis
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Reserva
-                  </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     Estado
                   </th>
                   <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
@@ -487,7 +412,7 @@ export default function GaleriasPage () {
                 {galerias.length === 0 && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={7}
                       className='px-3 py-4 text-center text-xs text-slate-500'
                     >
                       No hay galerías que coincidan con la búsqueda.
@@ -519,9 +444,6 @@ export default function GaleriasPage () {
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {g.tiene_entrada_gratuita ? 'Sí' : 'No'}
-                    </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
-                      {g.requiere_reserva ? 'Sí' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {g.estado || '-'}
@@ -599,6 +521,7 @@ export default function GaleriasPage () {
                 </button>
               </div>
               <form onSubmit={handleSubmit} className='space-y-3'>
+                {/* Nombre + Dirección */}
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
@@ -616,12 +539,12 @@ export default function GaleriasPage () {
                   </div>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      Ciudad *
+                      Dirección *
                     </label>
                     <input
                       type='text'
-                      name='ciudad'
-                      value={formValues.ciudad}
+                      name='direccion'
+                      value={formValues.direccion}
                       onChange={handleChange}
                       required
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
@@ -629,128 +552,17 @@ export default function GaleriasPage () {
                   </div>
                 </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Provincia
-                    </label>
-                    <input
-                      type='text'
-                      name='provincia'
-                      value={formValues.provincia}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      País
-                    </label>
-                    <input
-                      type='text'
-                      name='pais'
-                      value={formValues.pais}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Año fundación
-                    </label>
-                    <input
-                      type='number'
-                      name='anio_fundacion'
-                      value={formValues.anio_fundacion}
-                      onChange={handleChange}
-                      min={1000}
-                      max={9999}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
-                    Dirección *
-                  </label>
-                  <input
-                    type='text'
-                    name='direccion'
-                    value={formValues.direccion}
-                    onChange={handleChange}
-                    required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                  />
-                </div>
-
+                {/* Instagram + Web */}
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      Latitud
-                    </label>
-                    <input
-                      type='text'
-                      name='lat'
-                      value={formValues.lat}
-                      onChange={handleChange}
-                      placeholder='Ej: -34.1234567'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Longitud
-                    </label>
-                    <input
-                      type='text'
-                      name='lng'
-                      value={formValues.lng}
-                      onChange={handleChange}
-                      placeholder='Ej: -56.1234567'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Teléfono
-                    </label>
-                    <input
-                      type='text'
-                      name='telefono'
-                      value={formValues.telefono}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Email contacto
-                    </label>
-                    <input
-                      type='email'
-                      name='email_contacto'
-                      value={formValues.email_contacto}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Instagram *
+                      Instagram
                     </label>
                     <input
                       type='url'
                       name='instagram'
                       value={formValues.instagram}
                       onChange={handleChange}
-                      required
                       placeholder='https://instagram.com/...'
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     />
@@ -770,24 +582,11 @@ export default function GaleriasPage () {
                   </div>
                 </div>
 
-                <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
-                    Facebook
-                  </label>
-                  <input
-                    type='url'
-                    name='facebook'
-                    value={formValues.facebook}
-                    onChange={handleChange}
-                    placeholder='https://facebook.com/...'
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                  />
-                </div>
-
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                {/* Horarios + entrada gratuita */}
+                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      Horario desde
+                      Hora desde
                     </label>
                     <input
                       type='time'
@@ -799,7 +598,7 @@ export default function GaleriasPage () {
                   </div>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      Horario hasta
+                      Hora hasta
                     </label>
                     <input
                       type='time'
@@ -809,9 +608,6 @@ export default function GaleriasPage () {
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     />
                   </div>
-                </div>
-
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                   <div className='flex items-end'>
                     <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
                       <input
@@ -824,48 +620,39 @@ export default function GaleriasPage () {
                       Entrada gratuita
                     </label>
                   </div>
-                  <div className='flex items-end'>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
-                      <input
-                        type='checkbox'
-                        name='requiere_reserva'
-                        checked={formValues.requiere_reserva}
-                        onChange={handleChange}
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
-                      />
-                      Requiere reserva
-                    </label>
-                  </div>
                 </div>
 
+                {/* Descripción corta + */}
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
-                    Descripción corta
+                    Descripción corta *
                   </label>
                   <input
                     type='text'
                     name='descripcion_corta'
                     value={formValues.descripcion_corta}
                     onChange={handleChange}
+                    required
                     className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                   />
                 </div>
 
+                {/* Reseña (antes descripcion_larga) */}
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
-                    Descripción larga
+                    Reseña
                   </label>
                   <textarea
-                    name='descripcion_larga'
-                    value={formValues.descripcion_larga}
+                    name='resena'
+                    value={formValues.resena}
                     onChange={handleChange}
                     rows={4}
                     className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500'
-                    placeholder='Historia, detalles de la galería, colecciones, etc.'
+                    placeholder='Texto más largo sobre la galería, historia, colecciones, etc.'
                   />
                 </div>
 
-                {/* Imagen con UploadImage */}
+                {/* Imagen + */}
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
                     Imagen *
@@ -890,33 +677,7 @@ export default function GaleriasPage () {
                   </p>
                 </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Meta title
-                    </label>
-                    <input
-                      type='text'
-                      name='meta_title'
-                      value={formValues.meta_title}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Meta description
-                    </label>
-                    <input
-                      type='text'
-                      name='meta_description'
-                      value={formValues.meta_description}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                </div>
-
+                {/* Estado */}
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
                     Estado

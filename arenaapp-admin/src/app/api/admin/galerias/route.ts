@@ -26,7 +26,7 @@ export function OPTIONS () {
 function slugify (str: string): string {
   return str
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // quita tildes
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '')
@@ -153,7 +153,7 @@ export async function POST (req: NextRequest) {
     const {
       nombre,
       descripcion_corta,
-      descripcion_larga,
+      resena,
       direccion,
       ciudad,
       provincia,
@@ -176,11 +176,11 @@ export async function POST (req: NextRequest) {
       estado
     } = body
 
+    // Obligatorios: nombre+, direccion+, descripcion_corta+, imagen+
     if (
       !nombre ||
       !direccion ||
-      !ciudad ||
-      !instagram ||
+      !descripcion_corta ||
       !imagen_principal
     ) {
       return new NextResponse('Faltan campos obligatorios', {
@@ -199,7 +199,7 @@ export async function POST (req: NextRequest) {
         nombre,
         slug,
         descripcion_corta,
-        descripcion_larga,
+        resena,
         direccion,
         ciudad,
         provincia,
@@ -233,7 +233,7 @@ export async function POST (req: NextRequest) {
         nombre,
         slug,
         descripcion_corta,
-        descripcion_larga,
+        resena,
         direccion,
         ciudad,
         provincia,
@@ -261,9 +261,9 @@ export async function POST (req: NextRequest) {
         nombre,
         slug,
         descripcion_corta || null,
-        descripcion_larga || null,
+        resena || null,
         direccion,
-        ciudad,
+        ciudad || null,
         provincia || null,
         pais || 'Uruguay',
         lat === undefined || lat === null ? null : lat,
@@ -271,7 +271,7 @@ export async function POST (req: NextRequest) {
         telefono || null,
         email_contacto || null,
         sitio_web || null,
-        instagram,
+        instagram || null,
         facebook || null,
         anio_fundacion ?? null,
         !!tiene_entrada_gratuita,
