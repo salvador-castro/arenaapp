@@ -38,6 +38,7 @@ export default function HomePage () {
       </div>
 
       <BottomNav />
+      <SpeedInsights />
     </main>
   )
 }
