@@ -444,13 +444,8 @@ export default function GaleriasPage () {
                     <td className='px-3 py-2 text-xs text-slate-400'>
                       {String(g.id)}
                     </td>
-                    <td className='px-3 py-2'>
-                      <div className='flex flex-col'>
-                        <span className='text-sm'>{g.nombre}</span>
-                        <span className='text-[11px] text-slate-400'>
-                          {g.direccion}
-                        </span>
-                      </div>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {g.nombre}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {g.zona || '-'}
