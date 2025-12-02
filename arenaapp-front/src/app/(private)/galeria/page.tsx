@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import UserDropdown from '@/components/UserDropdown'
 import BottomNav from '@/components/BottomNav'
 import UploadImage from '@/components/UploadImage'
+import ZonasLugares from '@/components/Zonas'
 
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
@@ -21,6 +22,7 @@ interface AdminGallery {
   ciudad?: string | null
   provincia?: string | null
   pais?: string | null
+  zona?: string | null
   instagram?: string | null
   sitio_web?: string | null
   anio_fundacion?: number | null
@@ -48,6 +50,7 @@ interface AdminGallery {
 interface FormValues {
   nombre: string
   direccion: string
+  zona: string[]
   instagram: string
   sitio_web: string
   horario_desde: string
@@ -78,6 +81,7 @@ export default function GaleriasPage () {
   const [formValues, setFormValues] = useState<FormValues>({
     nombre: '',
     direccion: '',
+    zona: [],
     instagram: '',
     sitio_web: '',
     horario_desde: '',
@@ -161,6 +165,7 @@ export default function GaleriasPage () {
     setFormValues({
       nombre: '',
       direccion: '',
+      zona: [],
       instagram: '',
       sitio_web: '',
       horario_desde: '',
@@ -199,6 +204,12 @@ export default function GaleriasPage () {
     setFormValues({
       nombre: g.nombre ?? '',
       direccion: g.direccion ?? '',
+      zona: g.zona
+        ? g.zona
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+        : [],
       instagram: g.instagram ?? '',
       sitio_web: g.sitio_web ?? '',
       horario_desde: g.horario_desde ? g.horario_desde.slice(0, 5) : '',
@@ -254,9 +265,16 @@ export default function GaleriasPage () {
       return
     }
 
+    if (!formValues.nombre.trim() || !formValues.direccion.trim()) {
+      setIsSubmitting(false)
+      setError('Nombre y dirección son obligatorios.')
+      return
+    }
+
     try {
       const payload: any = {
-        ...formValues
+        ...formValues,
+        zona: formValues.zona.length > 0 ? formValues.zona.join(', ') : null
       }
 
       const isEdit = !!editing && editing.id != null
@@ -351,7 +369,7 @@ export default function GaleriasPage () {
           <div className='flex-1'>
             <input
               type='text'
-              placeholder='Buscar por nombre, ciudad, provincia...'
+              placeholder='Buscar por nombre, ciudad, provincia o zona...'
               value={search}
               onChange={e => {
                 setSearch(e.target.value)
@@ -392,7 +410,7 @@ export default function GaleriasPage () {
                     Nombre
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Ciudad
+                    Zona
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     Fundación
@@ -437,7 +455,7 @@ export default function GaleriasPage () {
                       </div>
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {g.ciudad || '-'}
+                      {g.zona || g.ciudad || '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {g.anio_fundacion ?? '-'}
@@ -552,6 +570,14 @@ export default function GaleriasPage () {
                   </div>
                 </div>
 
+                {/* Zonas */}
+                <ZonasLugares
+                  selected={formValues.zona}
+                  onChange={values =>
+                    setFormValues(prev => ({ ...prev, zona: values }))
+                  }
+                />
+
                 {/* Instagram + Web */}
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                   <div>
@@ -637,7 +663,7 @@ export default function GaleriasPage () {
                   />
                 </div>
 
-                {/* Reseña (antes descripcion_larga) */}
+                {/* Reseña */}
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
                     Reseña

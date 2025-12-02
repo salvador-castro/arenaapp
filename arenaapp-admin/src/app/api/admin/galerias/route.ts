@@ -32,47 +32,44 @@ function slugify (str: string): string {
     .replace(/(^-|-$)+/g, '')
 }
 
-// GET /api/admin/galerias?page=1&pageSize=10&search=...
+// GET /api/admin/galerias
 export async function GET (req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
 
     const db = getDb()
-    const { searchParams } = req.nextUrl
+    const { searchParams } = new URL(req.url)
 
-    const page = parseInt(searchParams.get('page') ?? '1', 10) || 1
-    const pageSize = parseInt(searchParams.get('pageSize') ?? '10', 10) || 10
+    const page = Number(searchParams.get('page') ?? '1')
+    const pageSize = Number(searchParams.get('pageSize') ?? '10')
     const search = (searchParams.get('search') ?? '').trim()
 
     const offset = (page - 1) * pageSize
 
+    const where: string[] = []
     const values: any[] = []
-    let whereClause = ''
+
     if (search) {
+      where.push(
+        `(nombre ILIKE $${values.length + 1} OR ciudad ILIKE $${values.length + 1} OR provincia ILIKE $${values.length + 1} OR zona ILIKE $${values.length + 1})`
+      )
       values.push(`%${search}%`)
-      whereClause = `
-        WHERE
-          nombre ILIKE $${values.length}
-          OR ciudad ILIKE $${values.length}
-          OR provincia ILIKE $${values.length}
-      `
     }
 
-    // total
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
+
     const countResult = await db.query(
       `
       SELECT COUNT(*) AS total
       FROM galerias
-      ${whereClause}
+      ${whereSql}
       `,
       values
     )
 
     const total = Number(countResult.rows[0]?.total ?? 0)
 
-    // datos
-    values.push(pageSize, offset)
     const dataResult = await db.query(
       `
       SELECT
@@ -82,6 +79,7 @@ export async function GET (req: NextRequest) {
         ciudad,
         provincia,
         pais,
+        zona,
         instagram,
         sitio_web,
         anio_fundacion,
@@ -91,22 +89,21 @@ export async function GET (req: NextRequest) {
         created_at,
         updated_at
       FROM galerias
-      ${whereClause}
+      ${whereSql}
       ORDER BY created_at DESC
-      LIMIT $${values.length - 1} OFFSET $${values.length}
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
       `,
-      values
+      [...values, pageSize, offset]
     )
-
-    const data = dataResult.rows
-    const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
     return new NextResponse(
       JSON.stringify({
-        data,
+        data: dataResult.rows,
         page,
-        totalPages,
-        total
+        pageSize,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / pageSize))
       }),
       {
         status: 200,
@@ -155,6 +152,7 @@ export async function POST (req: NextRequest) {
       descripcion_corta,
       resena,
       direccion,
+      zona,
       ciudad,
       provincia,
       pais,
@@ -190,7 +188,6 @@ export async function POST (req: NextRequest) {
     }
 
     const db = getDb()
-
     const slug = slugify(nombre)
 
     const insertResult = await db.query(
@@ -201,6 +198,7 @@ export async function POST (req: NextRequest) {
         descripcion_corta,
         resena,
         direccion,
+        zona,
         ciudad,
         provincia,
         pais,
@@ -235,6 +233,7 @@ export async function POST (req: NextRequest) {
         descripcion_corta,
         resena,
         direccion,
+        zona,
         ciudad,
         provincia,
         pais,
@@ -263,6 +262,7 @@ export async function POST (req: NextRequest) {
         descripcion_corta || null,
         resena || null,
         direccion,
+        zona || null,
         ciudad || null,
         provincia || null,
         pais || 'Uruguay',

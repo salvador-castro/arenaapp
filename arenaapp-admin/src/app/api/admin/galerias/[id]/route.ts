@@ -47,6 +47,7 @@ export async function GET (
         descripcion_corta,
         resena,
         direccion,
+        zona,
         ciudad,
         provincia,
         pais,
@@ -130,6 +131,7 @@ export async function PUT (
       descripcion_corta,
       resena,
       direccion,
+      zona,
       ciudad,
       provincia,
       pais,
@@ -151,7 +153,7 @@ export async function PUT (
       estado
     } = body
 
-    // Campos mínimos requeridos (los que marcaste con +)
+    // Obligatorios
     if (
       !nombre ||
       !direccion ||
@@ -174,33 +176,35 @@ export async function PUT (
         descripcion_corta = $2,
         resena = $3,
         direccion = $4,
-        ciudad = $5,
-        provincia = $6,
-        pais = $7,
-        lat = $8,
-        lng = $9,
-        telefono = $10,
-        email_contacto = $11,
-        sitio_web = $12,
-        instagram = $13,
-        facebook = $14,
-        anio_fundacion = $15,
-        tiene_entrada_gratuita = $16,
-        requiere_reserva = $17,
-        horario_desde = $18,
-        horario_hasta = $19,
-        imagen_principal = $20,
-        meta_title = $21,
-        meta_description = $22,
-        estado = $23,
+        zona = $5,
+        ciudad = $6,
+        provincia = $7,
+        pais = $8,
+        lat = $9,
+        lng = $10,
+        telefono = $11,
+        email_contacto = $12,
+        sitio_web = $13,
+        instagram = $14,
+        facebook = $15,
+        anio_fundacion = $16,
+        tiene_entrada_gratuita = $17,
+        requiere_reserva = $18,
+        horario_desde = $19,
+        horario_hasta = $20,
+        imagen_principal = $21,
+        meta_title = $22,
+        meta_description = $23,
+        estado = $24,
         updated_at = now()
-      WHERE id = $24
+      WHERE id = $25
       `,
       [
         nombre,
         descripcion_corta || null,
         resena || null,
         direccion,
+        zona || null,
         ciudad || null,
         provincia || null,
         pais || 'Uruguay',
@@ -233,6 +237,7 @@ export async function PUT (
         descripcion_corta,
         resena,
         direccion,
+        zona,
         ciudad,
         provincia,
         pais,
