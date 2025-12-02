@@ -127,37 +127,36 @@ export async function PUT (
     const body = await req.json()
 
     const {
-      nombre,
-      descripcion_corta,
-      resena,
-      direccion,
-      zona,
-      ciudad,
-      provincia,
-      pais,
-      lat,
-      lng,
-      telefono,
-      email_contacto,
-      sitio_web,
-      instagram,
-      facebook,
-      anio_fundacion,
-      tiene_entrada_gratuita,
-      requiere_reserva,
-      horario_desde,
-      horario_hasta,
-      imagen_principal,
-      meta_title,
-      meta_description,
-      estado
-    } = body
+  nombre,
+  resena,
+  direccion,
+  zona,
+  ciudad,
+  provincia,
+  pais,
+  lat,
+  lng,
+  telefono,
+  email_contacto,
+  sitio_web,
+  instagram,
+  facebook,
+  anio_fundacion,
+  tiene_entrada_gratuita,
+  requiere_reserva,
+  horario_desde,
+  horario_hasta,
+  imagen_principal,
+  meta_title,
+  meta_description,
+  estado
+} = body
+
 
     // Obligatorios
     if (
       !nombre ||
       !direccion ||
-      !descripcion_corta ||
       !imagen_principal
     ) {
       return new NextResponse('Faltan campos obligatorios', {
@@ -171,62 +170,62 @@ export async function PUT (
     await db.query(
       `
       UPDATE galerias
-      SET
-        nombre = $1,
-        descripcion_corta = $2,
-        resena = $3,
-        direccion = $4,
-        zona = $5,
-        ciudad = $6,
-        provincia = $7,
-        pais = $8,
-        lat = $9,
-        lng = $10,
-        telefono = $11,
-        email_contacto = $12,
-        sitio_web = $13,
-        instagram = $14,
-        facebook = $15,
-        anio_fundacion = $16,
-        tiene_entrada_gratuita = $17,
-        requiere_reserva = $18,
-        horario_desde = $19,
-        horario_hasta = $20,
-        imagen_principal = $21,
-        meta_title = $22,
-        meta_description = $23,
-        estado = $24,
-        updated_at = now()
-      WHERE id = $25
-      `,
-      [
-        nombre,
-        descripcion_corta || null,
-        resena || null,
-        direccion,
-        zona || null,
-        ciudad || null,
-        provincia || null,
-        pais || 'Uruguay',
-        lat === undefined || lat === null ? null : lat,
-        lng === undefined || lng === null ? null : lng,
-        telefono || null,
-        email_contacto || null,
-        sitio_web || null,
-        instagram || null,
-        facebook || null,
-        anio_fundacion ?? null,
-        !!tiene_entrada_gratuita,
-        !!requiere_reserva,
-        horario_desde || null,
-        horario_hasta || null,
-        imagen_principal,
-        meta_title || null,
-        meta_description || null,
-        estado || 'PUBLICADO',
-        id
-      ]
-    )
+  SET
+    nombre = $1,
+    descripcion_corta = $2,
+    resena = $3,
+    direccion = $4,
+    zona = $5,
+    ciudad = $6,
+    provincia = $7,
+    pais = $8,
+    lat = $9,
+    lng = $10,
+    telefono = $11,
+    email_contacto = $12,
+    sitio_web = $13,
+    instagram = $14,
+    facebook = $15,
+    anio_fundacion = $16,
+    tiene_entrada_gratuita = $17,
+    requiere_reserva = $18,
+    horario_desde = $19,
+    horario_hasta = $20,
+    imagen_principal = $21,
+    meta_title = $22,
+    meta_description = $23,
+    estado = $24,
+    updated_at = now()
+  WHERE id = $25
+  `,
+  [
+    nombre,                                 // $1
+    resena ? resena.slice(0, 200) : null,   // $2 -> descripcion_corta
+    resena || null,                         // $3 -> resena
+    direccion,                              // $4
+    zona || null,                           // $5
+    ciudad || null,                         // $6
+    provincia || null,                      // $7
+    pais || 'Uruguay',                      // $8
+    lat === undefined || lat === null ? null : lat, // $9
+    lng === undefined || lng === null ? null : lng, // $10
+    telefono || null,                       // $11
+    email_contacto || null,                 // $12
+    sitio_web || null,                      // $13
+    instagram || null,                      // $14
+    facebook || null,                       // $15
+    anio_fundacion ?? null,                 // $16
+    !!tiene_entrada_gratuita,               // $17
+    !!requiere_reserva,                     // $18
+    horario_desde || null,                  // $19
+    horario_hasta || null,                  // $20
+    imagen_principal,                       // $21
+    meta_title || null,                     // $22
+    meta_description || null,               // $23
+    estado || 'PUBLICADO',                  // $24
+    id                                      // $25
+  ]
+)
 
     const result = await db.query(
       `
@@ -234,7 +233,6 @@ export async function PUT (
         id,
         nombre,
         slug,
-        descripcion_corta,
         resena,
         direccion,
         zona,

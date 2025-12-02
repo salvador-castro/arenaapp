@@ -56,7 +56,6 @@ interface FormValues {
   horario_desde: string
   horario_hasta: string
   tiene_entrada_gratuita: boolean
-  descripcion_corta: string
   resena: string
   imagen_principal: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
@@ -87,7 +86,6 @@ export default function GaleriasPage () {
     horario_desde: '',
     horario_hasta: '',
     tiene_entrada_gratuita: false,
-    descripcion_corta: '',
     resena: '',
     imagen_principal: '',
     estado: 'PUBLICADO'
@@ -171,7 +169,6 @@ export default function GaleriasPage () {
       horario_desde: '',
       horario_hasta: '',
       tiene_entrada_gratuita: false,
-      descripcion_corta: '',
       resena: '',
       imagen_principal: '',
       estado: 'PUBLICADO'
@@ -215,11 +212,11 @@ export default function GaleriasPage () {
       horario_desde: g.horario_desde ? g.horario_desde.slice(0, 5) : '',
       horario_hasta: g.horario_hasta ? g.horario_hasta.slice(0, 5) : '',
       tiene_entrada_gratuita: !!g.tiene_entrada_gratuita,
-      descripcion_corta: g.descripcion_corta ?? '',
       resena: g.resena ?? '',
       imagen_principal: g.imagen_principal ?? '',
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO'
     })
+
     setIsFormOpen(true)
   }
 
@@ -259,9 +256,9 @@ export default function GaleriasPage () {
       return
     }
 
-    if (!formValues.descripcion_corta.trim()) {
+    if (!formValues.resena.trim()) {
       setIsSubmitting(false)
-      setError('Completá la descripción corta.')
+      setError('La reseña es obligatoria.')
       return
     }
 
@@ -648,31 +645,17 @@ export default function GaleriasPage () {
                   </div>
                 </div>
 
-                {/* Descripción corta + */}
-                <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
-                    Descripción corta *
-                  </label>
-                  <input
-                    type='text'
-                    name='descripcion_corta'
-                    value={formValues.descripcion_corta}
-                    onChange={handleChange}
-                    required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                  />
-                </div>
-
                 {/* Reseña */}
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
-                    Reseña
+                    Reseña *
                   </label>
                   <textarea
                     name='resena'
                     value={formValues.resena}
                     onChange={handleChange}
                     rows={4}
+                    required
                     className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500'
                     placeholder='Texto más largo sobre la galería, historia, colecciones, etc.'
                   />
