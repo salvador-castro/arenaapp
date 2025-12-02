@@ -411,7 +411,7 @@ export default function GaleriasPage () {
                     Zona
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Fundación
+                    Dirección
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     Entrada gratis
@@ -453,10 +453,10 @@ export default function GaleriasPage () {
                       </div>
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {g.zona || g.ciudad || '-'}
+                      {g.zona || '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {g.anio_fundacion ?? '-'}
+                      {g.direccion ?? '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {g.tiene_entrada_gratuita ? 'Sí' : 'No'}
