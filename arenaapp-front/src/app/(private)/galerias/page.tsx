@@ -29,6 +29,7 @@ interface AdminGallery {
   estado?: string | null
   created_at?: string | null
   updated_at?: string | null
+
   // campos extra cuando traés detalle
   descripcion_corta?: string | null
   descripcion_larga?: string | null
@@ -40,6 +41,10 @@ interface AdminGallery {
   imagen_principal?: string | null
   meta_title?: string | null
   meta_description?: string | null
+
+  // 🔹 AGREGAR ESTOS:
+  lat?: number | null
+  lng?: number | null
 }
 
 interface FormValues {
