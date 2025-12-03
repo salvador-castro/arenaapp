@@ -429,9 +429,6 @@ export default function RestaurantesPage () {
                     Nombre
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Tipo de comida
-                  </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     Zona
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
@@ -439,6 +436,9 @@ export default function RestaurantesPage () {
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     ⭐
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Es destacado
                   </th>
                   <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
                     Acciones
@@ -474,16 +474,16 @@ export default function RestaurantesPage () {
                       </div>
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {r.tipo_comida}
-                    </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
                       {r.zona || r.ciudad || '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {priceTierToSymbols(r.rango_precios ?? null)}
                     </td>
-                    <td className='px-3 py-2 text-xs text-yellow-300'>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
                       {r.estrellas ? '★'.repeat(Math.min(r.estrellas, 5)) : '-'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-yellow-300'>
+                      {r.es_destacado ? 'Si' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
                       <div className='inline-flex items-center gap-2'>
