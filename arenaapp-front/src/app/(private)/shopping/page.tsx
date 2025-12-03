@@ -25,7 +25,7 @@ const PAGE_SIZE = 10
 interface AdminShopping {
   id: number | string
   nombre: string
-  rango_precios?: number | string | null
+  rango_precios?: number | null
   estrellas?: number | null
   zona?: string | null
   direccion: string
@@ -588,11 +588,7 @@ export default function ShoppingPage () {
                       {s.zona || s.ciudad || '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {priceTierToSymbols(
-                        typeof s.rango_precios === 'number'
-                          ? s.rango_precios
-                          : null
-                      )}
+                      {priceTierToSymbols(s.rango_precios ?? null)}
                     </td>
                     <td className='px-3 py-2 text-xs text-yellow-300'>
                       {s.estrellas ? '★'.repeat(Math.min(s.estrellas, 5)) : '-'}
