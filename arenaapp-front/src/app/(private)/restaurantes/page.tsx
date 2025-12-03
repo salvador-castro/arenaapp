@@ -479,10 +479,10 @@ export default function RestaurantesPage () {
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {priceTierToSymbols(r.rango_precios ?? null)}
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className='px-3 py-2 text-xs text-yellow-3000'>
                       {r.estrellas ? '★'.repeat(Math.min(r.estrellas, 5)) : '-'}
                     </td>
-                    <td className='px-3 py-2 text-xs text-yellow-300'>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
                       {r.es_destacado ? 'Si' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
