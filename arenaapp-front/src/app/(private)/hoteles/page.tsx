@@ -33,7 +33,7 @@ interface FormValues {
   url_reservas: string
   url_instagram: string
   sitio_web: string
-  imagen_url: string
+  url_imagen: string
   precio_noche_desde: number | ''
   checkin_desde: string
   checkout_hasta: string
@@ -77,7 +77,7 @@ export default function HotelesPage () {
     url_reservas: '',
     url_instagram: '',
     sitio_web: '',
-    imagen_url: '',
+    url_imagen: '',
     precio_noche_desde: '',
     checkin_desde: '',
     checkout_hasta: '',
@@ -175,7 +175,7 @@ export default function HotelesPage () {
       url_reservas: '',
       url_instagram: '',
       sitio_web: '',
-      imagen_url: '',
+      url_imagen: '',
       precio_noche_desde: '',
       checkin_desde: '',
       checkout_hasta: '',
@@ -214,7 +214,7 @@ export default function HotelesPage () {
       url_reservas: (h as any).url_reservas ?? '',
       url_instagram: h.instagram ?? '',
       sitio_web: h.sitio_web ?? '',
-      imagen_url: (h as any).imagen_url ?? '',
+      url_imagen: (h as any).url_imagen ?? '',
       precio_noche_desde:
         typeof h.precio_noche_desde === 'number' ? h.precio_noche_desde : '',
       checkin_desde: h.checkin_desde ?? '',
@@ -270,7 +270,7 @@ export default function HotelesPage () {
     setIsSubmitting(true)
     setError(null)
 
-    if (!formValues.imagen_url.trim()) {
+    if (!formValues.url_imagen.trim()) {
       setIsSubmitting(false)
       setError('Subí una imagen antes de guardar.')
       return
@@ -299,7 +299,7 @@ export default function HotelesPage () {
           sitio_web: formValues.sitio_web || null,
           instagram: formValues.url_instagram || null,
           imagen_principal: null,
-          imagen_url: formValues.imagen_url || null,
+          url_imagen: formValues.url_imagen || null,
           url_maps: formValues.url_maps || null,
           url_reservas: formValues.url_reservas || null,
           horario_text: formValues.horario_text || null,
@@ -848,13 +848,13 @@ export default function HotelesPage () {
                     onUploaded={path =>
                       setFormValues(prev => ({
                         ...prev,
-                        imagen_url: path
+                        url_imagen: path
                       }))
                     }
                   />
-                  {formValues.imagen_url && (
+                  {formValues.url_imagen && (
                     <p className='mt-1 text-[11px] text-emerald-400'>
-                      Imagen subida: {formValues.imagen_url}
+                      Imagen subida: {formValues.url_imagen}
                     </p>
                   )}
                   <p className='mt-1 text-[10px] text-slate-500'>

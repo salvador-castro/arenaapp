@@ -92,7 +92,7 @@ export async function GET (req: NextRequest) {
           url_reserva,
           url_instagram,
           sitio_web,
-          imagen_url,
+          url_imagen,
           es_destacado,
           estado,
           resena,
@@ -138,7 +138,7 @@ export async function GET (req: NextRequest) {
           url_reserva,
           url_instagram,
           sitio_web,
-          imagen_url,
+          url_imagen,
           es_destacado,
           estado,
           resena,
@@ -221,7 +221,7 @@ export async function POST (req: NextRequest) {
       url_reserva,
       url_instagram,
       sitio_web,
-      imagen_url,
+      url_imagen,
       es_destacado,
       estado,
       resena
@@ -238,7 +238,7 @@ export async function POST (req: NextRequest) {
       !horario_text ||
       !url_instagram ||
       !resena ||
-      !imagen_url
+      !url_imagen
     ) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
@@ -269,7 +269,7 @@ export async function POST (req: NextRequest) {
         url_reserva,
         url_instagram,
         sitio_web,
-        imagen_url,
+        url_imagen,
         es_destacado,
         estado,
         resena
@@ -296,7 +296,7 @@ export async function POST (req: NextRequest) {
         url_reserva,
         url_instagram,
         sitio_web,
-        imagen_url,
+        url_imagen,
         es_destacado,
         estado,
         resena,
@@ -319,7 +319,7 @@ export async function POST (req: NextRequest) {
         url_reserva || null,       // 13
         url_instagram,             // 14
         sitio_web || null,         // 15
-        imagen_url,                // 16
+        url_imagen,                // 16
         !!es_destacado,            // 17
         estado || 'PUBLICADO',     // 18
         resena                     // 19

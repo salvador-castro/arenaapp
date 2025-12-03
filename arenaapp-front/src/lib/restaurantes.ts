@@ -9,7 +9,7 @@ export type Restaurante = {
   precio_promedio: string | number | null
   moneda: string | null
   es_destacado: 0 | 1
-  imagen_url: string | null
+  url_imagen: string | null
   estado: string
 }
 

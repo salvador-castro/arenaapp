@@ -140,7 +140,7 @@ export async function PUT (
       moneda: hotel.moneda ?? 'ARS',
       es_destacado: hotel.es_destacado ?? false,
       imagen_principal: hotel.imagen_principal ?? null,
-      imagen_url: (hotel as any).imagen_url ?? null,
+      url_imagen: (hotel as any).url_imagen ?? null,
       url_maps: (hotel as any).url_maps ?? null,
       url_reservas: (hotel as any).url_reservas ?? null,
       horario_text: (hotel as any).horario_text ?? null,

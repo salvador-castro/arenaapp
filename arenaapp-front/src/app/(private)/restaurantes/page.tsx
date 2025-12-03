@@ -33,7 +33,7 @@ interface AdminRestaurant {
   url_reserva?: string | null
   url_instagram?: string | null
   sitio_web?: string | null
-  imagen_url?: string | null
+  url_imagen?: string | null
   es_destacado?: 0 | 1
   resena?: string | null
   estado?: string | null
@@ -56,7 +56,7 @@ interface FormValues {
   url_reserva: string
   url_instagram: string
   sitio_web: string
-  imagen_url: string
+  url_imagen: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
   es_destacado: boolean
   resena: string
@@ -98,7 +98,7 @@ export default function RestaurantesPage () {
     url_reserva: '',
     url_instagram: '',
     sitio_web: '',
-    imagen_url: '',
+    url_imagen: '',
     es_destacado: false,
     resena: '',
     estado: 'PUBLICADO'
@@ -189,7 +189,7 @@ export default function RestaurantesPage () {
       url_reserva: '',
       url_instagram: '',
       sitio_web: '',
-      imagen_url: '',
+      url_imagen: '',
       es_destacado: false,
       resena: '',
       estado: 'PUBLICADO'
@@ -224,7 +224,7 @@ export default function RestaurantesPage () {
       url_reserva: r.url_reserva ?? '',
       url_instagram: r.url_instagram ?? '',
       sitio_web: r.sitio_web ?? '',
-      imagen_url: r.imagen_url ?? '',
+      url_imagen: r.url_imagen ?? '',
       es_destacado: (r.es_destacado ?? 0) === 1,
       resena: r.resena ?? '',
       estado: (r.estado as FormValues['estado']) ?? 'PUBLICADO'
@@ -270,7 +270,7 @@ export default function RestaurantesPage () {
     setIsSubmitting(true)
     setError(null)
 
-    if (!formValues.imagen_url.trim()) {
+    if (!formValues.url_imagen.trim()) {
       setIsSubmitting(false)
       setError('Subí una imagen antes de guardar.')
       return
@@ -830,13 +830,13 @@ export default function RestaurantesPage () {
                   </label>{' '}
                   <UploadImage
                     onUploaded={path =>
-                      setFormValues(prev => ({ ...prev, imagen_url: path }))
+                      setFormValues(prev => ({ ...prev, url_imagen: path }))
                     }
                   />{' '}
-                  {formValues.imagen_url && (
+                  {formValues.url_imagen && (
                     <p className='mt-1 text-[11px] text-emerald-400'>
                       {' '}
-                      Imagen subida: {formValues.imagen_url}{' '}
+                      Imagen subida: {formValues.url_imagen}{' '}
                     </p>
                   )}{' '}
                   <p className='mt-1 text-[10px] text-slate-500'>

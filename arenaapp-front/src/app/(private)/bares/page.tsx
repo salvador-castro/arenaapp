@@ -32,7 +32,7 @@ interface AdminBar {
   url_reserva?: string | null
   instagram?: string | null
   sitio_web?: string | null
-  imagen_url?: string | null
+  url_imagen?: string | null
   es_destacado?: boolean | null
   resena?: string | null
   estado?: string | null
@@ -55,7 +55,7 @@ interface FormValues {
   url_reserva: string
   instagram: string
   sitio_web: string
-  imagen_url: string
+  url_imagen: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
   es_destacado: boolean
   resena: string
@@ -97,7 +97,7 @@ export default function BaresPage () {
     url_reserva: '',
     instagram: '',
     sitio_web: '',
-    imagen_url: '',
+    url_imagen: '',
     es_destacado: false,
     resena: '',
     estado: 'PUBLICADO'
@@ -188,7 +188,7 @@ export default function BaresPage () {
       url_reserva: '',
       instagram: '',
       sitio_web: '',
-      imagen_url: '',
+      url_imagen: '',
       es_destacado: false,
       resena: '',
       estado: 'PUBLICADO'
@@ -223,7 +223,7 @@ export default function BaresPage () {
       url_reserva: b.url_reserva ?? '',
       instagram: b.instagram ?? '',
       sitio_web: b.sitio_web ?? '',
-      imagen_url: b.imagen_url ?? '',
+      url_imagen: b.url_imagen ?? '',
       es_destacado: !!b.es_destacado,
       resena: b.resena ?? '',
       estado: (b.estado as FormValues['estado']) ?? 'PUBLICADO'
@@ -269,7 +269,7 @@ export default function BaresPage () {
     setIsSubmitting(true)
     setError(null)
 
-    if (!formValues.imagen_url.trim()) {
+    if (!formValues.url_imagen.trim()) {
       setIsSubmitting(false)
       setError('Subí una imagen antes de guardar.')
       return
@@ -792,12 +792,12 @@ export default function BaresPage () {
                   </label>
                   <UploadImage
                     onUploaded={path =>
-                      setFormValues(prev => ({ ...prev, imagen_url: path }))
+                      setFormValues(prev => ({ ...prev, url_imagen: path }))
                     }
                   />
-                  {formValues.imagen_url && (
+                  {formValues.url_imagen && (
                     <p className='mt-1 text-[11px] text-emerald-400'>
-                      Imagen subida: {formValues.imagen_url}
+                      Imagen subida: {formValues.url_imagen}
                     </p>
                   )}
                   <p className='mt-1 text-[10px] text-slate-500'>

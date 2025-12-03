@@ -1,4 +1,3 @@
-//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-admin\src\app\api\admin\restaurantes\[id]\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -27,7 +26,7 @@ export function OPTIONS () {
   })
 }
 
-// GET /api/admin/restaurantes/:id
+// GET /api/admin/shopping/:id
 export async function GET (
   req: NextRequest,
   context: ContextWithId
@@ -44,7 +43,6 @@ export async function GET (
       SELECT
         id,
         nombre,
-        tipo_comida,
         rango_precios,
         estrellas,
         zona,
@@ -52,33 +50,37 @@ export async function GET (
         ciudad,
         provincia,
         pais,
-        url_maps,
         horario_text,
-        url_reserva,
-        url_instagram,
         sitio_web,
         url_imagen,
-        es_destacado,
+        cantidad_locales,
+        tiene_estacionamiento,
+        tiene_patio_comidas,
+        tiene_cine,
+        es_outlet,
+        telefono,
+        instagram,
+        facebook,
         estado,
         resena,
         created_at,
         updated_at
-      FROM restaurantes
+      FROM shopping
       WHERE id = $1
       `,
       [id]
     )
 
-    const restaurant = result.rows[0]
+    const shopping = result.rows[0]
 
-    if (!restaurant) {
-      return new NextResponse('Restaurante no encontrado', {
+    if (!shopping) {
+      return new NextResponse('Shopping no encontrado', {
         status: 404,
         headers: corsBaseHeaders()
       })
     }
 
-    return new NextResponse(JSON.stringify(restaurant), {
+    return new NextResponse(JSON.stringify(shopping), {
       status: 200,
       headers: {
         ...corsBaseHeaders(),
@@ -86,7 +88,7 @@ export async function GET (
       }
     })
   } catch (err: any) {
-    console.error('Error GET /api/admin/restaurantes/[id]:', err)
+    console.error('Error GET /api/admin/shopping/[id]:', err)
 
     if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
       return new NextResponse('No autorizado', {
@@ -101,14 +103,14 @@ export async function GET (
       })
     }
 
-    return new NextResponse(err?.message || 'Error al obtener restaurante', {
+    return new NextResponse(err?.message || 'Error al obtener shopping', {
       status: 500,
       headers: corsBaseHeaders()
     })
   }
 }
 
-// PUT /api/admin/restaurantes/:id
+// PUT /api/admin/shopping/:id
 export async function PUT (
   req: NextRequest,
   context: ContextWithId
@@ -122,7 +124,6 @@ export async function PUT (
 
     const {
       nombre,
-      tipo_comida,
       rango_precios,
       estrellas,
       zona,
@@ -130,27 +131,28 @@ export async function PUT (
       ciudad,
       provincia,
       pais,
-      url_maps,
       horario_text,
-      url_reserva,
-      url_instagram,
       sitio_web,
       url_imagen,
-      es_destacado,
+      cantidad_locales,
+      tiene_estacionamiento,
+      tiene_patio_comidas,
+      tiene_cine,
+      es_outlet,
+      telefono,
+      instagram,
+      facebook,
       estado,
       resena
     } = body
 
     if (
       !nombre ||
-      !tipo_comida ||
       rango_precios == null ||
       estrellas == null ||
       !zona ||
       !direccion ||
-      !url_maps ||
       !horario_text ||
-      !url_instagram ||
       !resena ||
       !url_imagen
     ) {
@@ -164,48 +166,54 @@ export async function PUT (
 
     await db.query(
       `
-      UPDATE restaurantes
+      UPDATE shopping
       SET
         nombre = $1,
-        tipo_comida = $2,
-        rango_precios = $3,
-        estrellas = $4,
-        zona = $5,
-        direccion = $6,
-        ciudad = $7,
-        provincia = $8,
-        pais = $9,
-        url_maps = $10,
-        horario_text = $11,
-        url_reserva = $12,
-        url_instagram = $13,
-        sitio_web = $14,
-        url_imagen = $15,
-        es_destacado = $16,
-        estado = $17,
-        resena = $18
-      WHERE id = $19
+        rango_precios = $2,
+        estrellas = $3,
+        zona = $4,
+        direccion = $5,
+        ciudad = $6,
+        provincia = $7,
+        pais = $8,
+        horario_text = $9,
+        sitio_web = $10,
+        url_imagen = $11,
+        cantidad_locales = $12,
+        tiene_estacionamiento = $13,
+        tiene_patio_comidas = $14,
+        tiene_cine = $15,
+        es_outlet = $16,
+        telefono = $17,
+        instagram = $18,
+        facebook = $19,
+        estado = $20,
+        resena = $21
+      WHERE id = $22
       `,
       [
-        nombre,
-        tipo_comida,
-        rango_precios,
-        estrellas,
-        zona,
-        direccion,
-        ciudad || null,
-        provincia || null,
-        pais || 'Uruguay',
-        url_maps,
-        horario_text,
-        url_reserva || null,
-        url_instagram,
-        sitio_web || null,
-        url_imagen,
-        !!es_destacado,
-        estado || 'PUBLICADO',
-        resena,
-        id
+        nombre,                   // 1
+        rango_precios,            // 2
+        estrellas,                // 3
+        zona,                     // 4
+        direccion,                // 5
+        ciudad || null,           // 6
+        provincia || null,        // 7
+        pais || 'Argentina',      // 8
+        horario_text,             // 9
+        sitio_web || null,        // 10
+        url_imagen,               // 11
+        cantidad_locales ?? null, // 12
+        !!tiene_estacionamiento,  // 13
+        !!tiene_patio_comidas,    // 14
+        !!tiene_cine,             // 15
+        !!es_outlet,              // 16
+        telefono || null,         // 17
+        instagram || null,        // 18
+        facebook || null,         // 19
+        estado || 'PUBLICADO',    // 20
+        resena,                   // 21
+        id                        // 22
       ]
     )
 
@@ -214,7 +222,6 @@ export async function PUT (
       SELECT
         id,
         nombre,
-        tipo_comida,
         rango_precios,
         estrellas,
         zona,
@@ -222,26 +229,30 @@ export async function PUT (
         ciudad,
         provincia,
         pais,
-        url_maps,
         horario_text,
-        url_reserva,
-        url_instagram,
         sitio_web,
         url_imagen,
-        es_destacado,
+        cantidad_locales,
+        tiene_estacionamiento,
+        tiene_patio_comidas,
+        tiene_cine,
+        es_outlet,
+        telefono,
+        instagram,
+        facebook,
         estado,
         resena,
         created_at,
         updated_at
-      FROM restaurantes
+      FROM shopping
       WHERE id = $1
       `,
       [id]
     )
 
-    const restaurant = result.rows[0]
+    const shopping = result.rows[0]
 
-    return new NextResponse(JSON.stringify(restaurant), {
+    return new NextResponse(JSON.stringify(shopping), {
       status: 200,
       headers: {
         ...corsBaseHeaders(),
@@ -249,7 +260,7 @@ export async function PUT (
       }
     })
   } catch (err: any) {
-    console.error('Error PUT /api/admin/restaurantes/[id]:', err)
+    console.error('Error PUT /api/admin/shopping/[id]:', err)
 
     if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
       return new NextResponse('No autorizado', {
@@ -265,7 +276,7 @@ export async function PUT (
     }
 
     return new NextResponse(
-      err?.message || 'Error al actualizar restaurante',
+      err?.message || 'Error al actualizar shopping',
       {
         status: 500,
         headers: corsBaseHeaders()
@@ -274,7 +285,7 @@ export async function PUT (
   }
 }
 
-// DELETE /api/admin/restaurantes/:id
+// DELETE /api/admin/shopping/:id
 export async function DELETE (
   req: NextRequest,
   context: ContextWithId
@@ -286,14 +297,14 @@ export async function DELETE (
     const { id } = await context.params
     const db = getDb()
 
-    await db.query('DELETE FROM restaurantes WHERE id = $1', [id])
+    await db.query('DELETE FROM shopping WHERE id = $1', [id])
 
     return new NextResponse(null, {
       status: 204,
       headers: corsBaseHeaders()
     })
   } catch (err: any) {
-    console.error('Error DELETE /api/admin/restaurantes/[id]:', err)
+    console.error('Error DELETE /api/admin/shopping/[id]:', err)
 
     if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
       return new NextResponse('No autorizado', {
@@ -309,7 +320,7 @@ export async function DELETE (
     }
 
     return new NextResponse(
-      err?.message || 'Error al eliminar restaurante',
+      err?.message || 'Error al eliminar shopping',
       {
         status: 500,
         headers: corsBaseHeaders()

@@ -28,7 +28,7 @@ export interface Hotel {
   moneda: string | null
   es_destacado: boolean
   imagen_principal: string | null
-  imagen_url: string | null
+  url_imagen: string | null
   url_maps: string | null
   url_reservas: string | null
   horario_text: string | null

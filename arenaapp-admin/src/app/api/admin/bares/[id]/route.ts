@@ -54,7 +54,7 @@ export async function GET (req: NextRequest, context: ContextWithId) {
         url_reserva,
         instagram,
         sitio_web,
-        imagen_url,
+        url_imagen,
         es_destacado,
         estado,
         resena,
@@ -132,7 +132,7 @@ export async function PUT (req: NextRequest, context: ContextWithId) {
       url_reserva,
       instagram,
       sitio_web,
-      imagen_url,
+      url_imagen,
       es_destacado,
       estado,
       resena
@@ -149,7 +149,7 @@ export async function PUT (req: NextRequest, context: ContextWithId) {
       !horario_text ||
       !instagram ||
       !resena ||
-      !imagen_url
+      !url_imagen
     ) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
@@ -177,7 +177,7 @@ export async function PUT (req: NextRequest, context: ContextWithId) {
         url_reserva = $12,
         instagram = $13,
         sitio_web = $14,
-        imagen_url = $15,
+        url_imagen = $15,
         es_destacado = $16,
         estado = $17,
         resena = $18,
@@ -199,7 +199,7 @@ export async function PUT (req: NextRequest, context: ContextWithId) {
         url_reserva || null,
         instagram,
         sitio_web || null,
-        imagen_url,
+        url_imagen,
         !!es_destacado,
         estado || 'PUBLICADO',
         resena,
@@ -226,7 +226,7 @@ export async function PUT (req: NextRequest, context: ContextWithId) {
         url_reserva,
         instagram,
         sitio_web,
-        imagen_url,
+        url_imagen,
         es_destacado,
         estado,
         resena,

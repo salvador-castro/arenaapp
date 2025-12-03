@@ -1,4 +1,3 @@
-// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\app\(private)\restaurantes\page.tsx
 'use client'
 
 import React, { useEffect, useState, FormEvent, ChangeEvent } from 'react'
@@ -7,7 +6,6 @@ import { useAuth } from '@/context/AuthContext'
 import UserDropdown from '@/components/UserDropdown'
 import BottomNav from '@/components/BottomNav'
 import UploadImage from '@/components/UploadImage'
-import TipoComidaRestaurantes from '@/components/TipoComidaRestaurantes'
 import ZonasLugares from '@/components/Zonas'
 
 const API_BASE = (
@@ -17,10 +15,9 @@ const API_BASE = (
 const PAGE_SIZE = 10
 
 // lo que devuelve la API admin
-interface AdminRestaurant {
+interface AdminShopping {
   id: number | string
   nombre: string
-  tipo_comida?: string | null
   rango_precios?: number | null
   estrellas?: number | null
   zona?: string | null
@@ -28,13 +25,17 @@ interface AdminRestaurant {
   ciudad?: string | null
   provincia?: string | null
   pais?: string | null
-  url_maps?: string | null
   horario_text?: string | null
-  url_reserva?: string | null
-  url_instagram?: string | null
   sitio_web?: string | null
-  imagen_url?: string | null
-  es_destacado?: 0 | 1
+  url_imagen?: string | null
+  cantidad_locales?: number | null
+  tiene_estacionamiento?: boolean | null
+  tiene_patio_comidas?: boolean | null
+  tiene_cine?: boolean | null
+  es_outlet?: boolean | null
+  telefono?: string | null
+  instagram?: string | null
+  facebook?: string | null
   resena?: string | null
   estado?: string | null
   created_at?: string | null
@@ -43,7 +44,6 @@ interface AdminRestaurant {
 
 interface FormValues {
   nombre: string
-  tipo_comida: string[]
   rango_precios: number | ''
   estrellas: number | ''
   zona: string[]
@@ -51,14 +51,18 @@ interface FormValues {
   ciudad: string
   provincia: string
   pais: string
-  url_maps: string
   horario_text: string
-  url_reserva: string
-  url_instagram: string
   sitio_web: string
-  imagen_url: string
+  url_imagen: string
+  cantidad_locales: number | ''
+  telefono: string
+  instagram: string
+  facebook: string
+  tiene_estacionamiento: boolean
+  tiene_patio_comidas: boolean
+  tiene_cine: boolean
+  es_outlet: boolean
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
-  es_destacado: boolean
   resena: string
 }
 
@@ -67,11 +71,11 @@ function priceTierToSymbols (tier?: number | null) {
   return '$'.repeat(Math.min(tier, 5))
 }
 
-export default function RestaurantesPage () {
+export default function ShoppingPage () {
   const router = useRouter()
   const { user, isLoading } = useAuth()
 
-  const [restaurants, setRestaurants] = useState<AdminRestaurant[]>([])
+  const [items, setItems] = useState<AdminShopping[]>([])
   const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -81,11 +85,10 @@ export default function RestaurantesPage () {
   const [totalItems, setTotalItems] = useState(0)
 
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editing, setEditing] = useState<AdminRestaurant | null>(null)
+  const [editing, setEditing] = useState<AdminShopping | null>(null)
 
   const [formValues, setFormValues] = useState<FormValues>({
     nombre: '',
-    tipo_comida: [],
     rango_precios: '',
     estrellas: '',
     zona: [],
@@ -93,26 +96,30 @@ export default function RestaurantesPage () {
     ciudad: '',
     provincia: '',
     pais: '',
-    url_maps: '',
     horario_text: '',
-    url_reserva: '',
-    url_instagram: '',
     sitio_web: '',
-    imagen_url: '',
-    es_destacado: false,
+    url_imagen: '',
+    cantidad_locales: '',
+    telefono: '',
+    instagram: '',
+    facebook: '',
+    tiene_estacionamiento: false,
+    tiene_patio_comidas: false,
+    tiene_cine: false,
+    es_outlet: false,
     resena: '',
     estado: 'PUBLICADO'
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<AdminRestaurant | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminShopping | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   // 🔐 Solo ADMIN
   useEffect(() => {
     if (isLoading) return
     if (!user) {
-      router.push('/login?redirect=/restaurantes')
+      router.push('/login?redirect=/shopping')
       return
     }
     if (user.rol !== 'ADMIN') {
@@ -122,7 +129,7 @@ export default function RestaurantesPage () {
   }, [user, isLoading, router])
 
   // Fetch a la API con paginación + búsqueda
-  async function fetchRestaurants (pageToLoad: number, searchTerm: string) {
+  async function fetchShopping (pageToLoad: number, searchTerm: string) {
     try {
       if (!user || user.rol !== 'ADMIN') return
 
@@ -139,7 +146,7 @@ export default function RestaurantesPage () {
       }
 
       const res = await fetch(
-        `${API_BASE}/api/admin/restaurantes?${params.toString()}`,
+        `${API_BASE}/api/admin/shopping?${params.toString()}`,
         {
           method: 'GET',
           credentials: 'include'
@@ -147,18 +154,18 @@ export default function RestaurantesPage () {
       )
 
       if (!res.ok) {
-        throw new Error(`Error al cargar restaurantes (${res.status})`)
+        throw new Error(`Error al cargar shoppings (${res.status})`)
       }
 
       const json = await res.json()
 
-      setRestaurants(json.data as AdminRestaurant[])
+      setItems(json.data as AdminShopping[])
       setCurrentPage(json.page ?? pageToLoad)
       setTotalPages(json.totalPages ?? 1)
       setTotalItems(json.total ?? 0)
     } catch (err: any) {
       console.error(err)
-      setError(err.message ?? 'Error al cargar restaurantes')
+      setError(err.message ?? 'Error al cargar shoppings')
     } finally {
       setIsFetching(false)
     }
@@ -167,7 +174,7 @@ export default function RestaurantesPage () {
   // Cargar cada vez que cambie page / search / user
   useEffect(() => {
     if (!user || user.rol !== 'ADMIN') return
-    fetchRestaurants(currentPage, search)
+    fetchShopping(currentPage, search)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, search])
 
@@ -176,7 +183,6 @@ export default function RestaurantesPage () {
     setEditing(null)
     setFormValues({
       nombre: '',
-      tipo_comida: [],
       rango_precios: '',
       estrellas: '',
       zona: [],
@@ -184,50 +190,53 @@ export default function RestaurantesPage () {
       ciudad: '',
       provincia: '',
       pais: '',
-      url_maps: '',
       horario_text: '',
-      url_reserva: '',
-      url_instagram: '',
       sitio_web: '',
-      imagen_url: '',
-      es_destacado: false,
+      url_imagen: '',
+      cantidad_locales: '',
+      telefono: '',
+      instagram: '',
+      facebook: '',
+      tiene_estacionamiento: false,
+      tiene_patio_comidas: false,
+      tiene_cine: false,
+      es_outlet: false,
       resena: '',
       estado: 'PUBLICADO'
     })
     setIsFormOpen(true)
   }
 
-  function openEditForm (r: AdminRestaurant) {
-    setEditing(r)
+  function openEditForm (s: AdminShopping) {
+    setEditing(s)
     setFormValues({
-      nombre: r.nombre ?? '',
-      tipo_comida: r.tipo_comida
-        ? r.tipo_comida
+      nombre: s.nombre ?? '',
+      rango_precios: typeof s.rango_precios === 'number' ? s.rango_precios : '',
+      estrellas: typeof s.estrellas === 'number' ? s.estrellas : '',
+      zona: s.zona
+        ? s.zona
             .split(',')
-            .map(s => s.trim())
+            .map(str => str.trim())
             .filter(Boolean)
         : [],
-      rango_precios: typeof r.rango_precios === 'number' ? r.rango_precios : '',
-      estrellas: typeof r.estrellas === 'number' ? r.estrellas : '',
-      zona: r.zona
-        ? r.zona
-            .split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
-        : [],
-      direccion: r.direccion ?? '',
-      ciudad: r.ciudad ?? '',
-      provincia: r.provincia ?? '',
-      pais: r.pais ?? '',
-      url_maps: r.url_maps ?? '',
-      horario_text: r.horario_text ?? '',
-      url_reserva: r.url_reserva ?? '',
-      url_instagram: r.url_instagram ?? '',
-      sitio_web: r.sitio_web ?? '',
-      imagen_url: r.imagen_url ?? '',
-      es_destacado: (r.es_destacado ?? 0) === 1,
-      resena: r.resena ?? '',
-      estado: (r.estado as FormValues['estado']) ?? 'PUBLICADO'
+      direccion: s.direccion ?? '',
+      ciudad: s.ciudad ?? '',
+      provincia: s.provincia ?? '',
+      pais: s.pais ?? '',
+      horario_text: s.horario_text ?? '',
+      sitio_web: s.sitio_web ?? '',
+      url_imagen: s.url_imagen ?? '',
+      cantidad_locales:
+        typeof s.cantidad_locales === 'number' ? s.cantidad_locales : '',
+      telefono: s.telefono ?? '',
+      instagram: s.instagram ?? '',
+      facebook: s.facebook ?? '',
+      tiene_estacionamiento: !!s.tiene_estacionamiento,
+      tiene_patio_comidas: !!s.tiene_patio_comidas,
+      tiene_cine: !!s.tiene_cine,
+      es_outlet: !!s.es_outlet,
+      resena: s.resena ?? '',
+      estado: (s.estado as FormValues['estado']) ?? 'PUBLICADO'
     })
     setIsFormOpen(true)
   }
@@ -251,7 +260,11 @@ export default function RestaurantesPage () {
       return
     }
 
-    if (name === 'rango_precios' || name === 'estrellas') {
+    if (
+      name === 'rango_precios' ||
+      name === 'estrellas' ||
+      name === 'cantidad_locales'
+    ) {
       setFormValues(prev => ({
         ...prev,
         [name]: value === '' ? '' : Number(value)
@@ -270,7 +283,7 @@ export default function RestaurantesPage () {
     setIsSubmitting(true)
     setError(null)
 
-    if (!formValues.imagen_url.trim()) {
+    if (!formValues.url_imagen.trim()) {
       setIsSubmitting(false)
       setError('Subí una imagen antes de guardar.')
       return
@@ -279,23 +292,22 @@ export default function RestaurantesPage () {
     try {
       const payload: any = {
         ...formValues,
-        tipo_comida:
-          formValues.tipo_comida.length > 0
-            ? formValues.tipo_comida.join(', ')
-            : null,
         zona: formValues.zona.length > 0 ? formValues.zona.join(', ') : null,
         rango_precios:
           formValues.rango_precios === '' ? null : formValues.rango_precios,
         estrellas: formValues.estrellas === '' ? null : formValues.estrellas,
-        es_destacado: formValues.es_destacado ? 1 : 0
+        cantidad_locales:
+          formValues.cantidad_locales === ''
+            ? null
+            : formValues.cantidad_locales
       }
 
       const isEdit = !!editing && editing.id != null
       const idForUrl = editing?.id != null ? String(editing.id) : undefined
 
       const url = isEdit
-        ? `${API_BASE}/api/admin/restaurantes/${idForUrl}`
-        : `${API_BASE}/api/admin/restaurantes`
+        ? `${API_BASE}/api/admin/shopping/${idForUrl}`
+        : `${API_BASE}/api/admin/shopping`
       const method = isEdit ? 'PUT' : 'POST'
 
       const res = await fetch(url, {
@@ -307,17 +319,17 @@ export default function RestaurantesPage () {
 
       if (!res.ok) {
         const msg = await res.text()
-        throw new Error(msg || `Error al guardar restaurante (${res.status})`)
+        throw new Error(msg || `Error al guardar shopping (${res.status})`)
       }
 
       await res.json() // no lo usamos, solo aseguramos parseo OK
 
       // recargo la página actual desde la API
-      await fetchRestaurants(currentPage, search)
+      await fetchShopping(currentPage, search)
       closeForm()
     } catch (err: any) {
       console.error(err)
-      setError(err.message ?? 'Error al guardar restaurante')
+      setError(err.message ?? 'Error al guardar shopping')
     } finally {
       setIsSubmitting(false)
     }
@@ -329,9 +341,7 @@ export default function RestaurantesPage () {
     setError(null)
 
     try {
-      const url = `${API_BASE}/api/admin/restaurantes/${String(
-        deleteTarget.id
-      )}`
+      const url = `${API_BASE}/api/admin/shopping/${String(deleteTarget.id)}`
 
       const res = await fetch(url, {
         method: 'DELETE',
@@ -340,17 +350,15 @@ export default function RestaurantesPage () {
 
       if (!res.ok) {
         const msg = await res.text()
-        throw new Error(msg || `Error al eliminar restaurante (${res.status})`)
+        throw new Error(msg || `Error al eliminar shopping (${res.status})`)
       }
 
       setDeleteTarget(null)
 
-      // recargo la página actual (si borraste el último de la última página,
-      // la API igual te va a devolver la página válida adecuada)
-      await fetchRestaurants(currentPage, search)
+      await fetchShopping(currentPage, search)
     } catch (err: any) {
       console.error(err)
-      setError(err.message ?? 'Error al eliminar restaurante')
+      setError(err.message ?? 'Error al eliminar shopping')
     } finally {
       setIsDeleting(false)
     }
@@ -374,9 +382,9 @@ export default function RestaurantesPage () {
       <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
         <div className='max-w-4xl mx-auto flex items-center justify-between px-4 py-3'>
           <div>
-            <h1 className='text-lg font-semibold'>Gestión de restaurantes</h1>
+            <h1 className='text-lg font-semibold'>Gestión de shoppings</h1>
             <p className='text-xs text-slate-400'>
-              Crear, editar y eliminar restaurantes de ArenaApp.
+              Crear, editar y eliminar shoppings de ArenaApp.
             </p>
           </div>
           <UserDropdown />
@@ -388,7 +396,7 @@ export default function RestaurantesPage () {
           <div className='flex-1'>
             <input
               type='text'
-              placeholder='Buscar por nombre, tipo de comida, zona...'
+              placeholder='Buscar por nombre, zona, ciudad...'
               value={search}
               onChange={e => {
                 setSearch(e.target.value)
@@ -402,7 +410,7 @@ export default function RestaurantesPage () {
             onClick={openCreateForm}
             className='inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition'
           >
-            + Nuevo restaurante
+            + Nuevo shopping
           </button>
         </div>
         {/* Mensajes */}
@@ -413,7 +421,7 @@ export default function RestaurantesPage () {
         )}
         {isFetching && (
           <div className='mb-3 text-xs text-slate-400'>
-            Cargando restaurantes...
+            Cargando shoppings...
           </div>
         )}
         {/* Tabla */}
@@ -429,10 +437,7 @@ export default function RestaurantesPage () {
                     Nombre
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Tipo de comida
-                  </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Zona
+                    Zona / Ciudad
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     $
@@ -440,63 +445,66 @@ export default function RestaurantesPage () {
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     ⭐
                   </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Outlet
+                  </th>
                   <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
                     Acciones
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {restaurants.length === 0 && (
+                {items.length === 0 && (
                   <tr>
                     <td
                       colSpan={7}
                       className='px-3 py-4 text-center text-xs text-slate-500'
                     >
-                      No hay restaurantes que coincidan con la búsqueda.
+                      No hay shoppings que coincidan con la búsqueda.
                     </td>
                   </tr>
                 )}
 
-                {restaurants.map(r => (
+                {items.map(s => (
                   <tr
-                    key={String(r.id)}
+                    key={String(s.id)}
                     className='border-t border-slate-800/80 hover:bg-slate-900/80'
                   >
                     <td className='px-3 py-2 text-xs text-slate-400'>
-                      {String(r.id)}
+                      {String(s.id)}
                     </td>
                     <td className='px-3 py-2'>
                       <div className='flex flex-col'>
-                        <span className='text-sm'>{r.nombre}</span>
+                        <span className='text-sm'>{s.nombre}</span>
                         <span className='text-[11px] text-slate-400'>
-                          {r.direccion}
+                          {s.direccion}
                         </span>
                       </div>
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {r.tipo_comida}
+                      {s.zona || s.ciudad || '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {r.zona || r.ciudad || '-'}
-                    </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
-                      {priceTierToSymbols(r.rango_precios ?? null)}
+                      {priceTierToSymbols(s.rango_precios ?? null)}
                     </td>
                     <td className='px-3 py-2 text-xs text-yellow-300'>
-                      {r.estrellas ? '★'.repeat(Math.min(r.estrellas, 5)) : '-'}
+                      {s.estrellas ? '★'.repeat(Math.min(s.estrellas, 5)) : '-'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {s.es_outlet ? 'Sí' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
                       <div className='inline-flex items-center gap-2'>
                         <button
                           type='button'
-                          onClick={() => openEditForm(r)}
+                          onClick={() => openEditForm(s)}
                           className='rounded-lg border border-slate-600 px-2 py-1 hover:bg-slate-800'
                         >
                           Editar
                         </button>
                         <button
                           type='button'
-                          onClick={() => setDeleteTarget(r)}
+                          onClick={() => setDeleteTarget(s)}
                           className='rounded-lg border border-red-700 px-2 py-1 text-red-300 hover:bg-red-950/40'
                         >
                           Eliminar
@@ -541,71 +549,52 @@ export default function RestaurantesPage () {
           </div>
         </div>
         {/* Modal formulario */}
-        {/* Modal formulario */}{' '}
         {isFormOpen && (
           <div className='fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4'>
-            {' '}
             <div className='w-full max-w-2xl mx-auto my-8 rounded-3xl bg-slate-950 border border-slate-700 p-6 md:p-8 shadow-2xl max-h-[88vh] overflow-y-auto'>
-              {' '}
               <div className='flex items-center justify-between mb-3'>
-                {' '}
                 <h2 className='text-sm font-semibold'>
-                  {' '}
-                  {editing ? 'Editar restaurante' : 'Nuevo restaurante'}{' '}
-                </h2>{' '}
+                  {editing ? 'Editar shopping' : 'Nuevo shopping'}
+                </h2>
                 <button
                   type='button'
                   onClick={closeForm}
                   className='text-slate-400 hover:text-slate-200 text-sm'
                 >
-                  {' '}
-                  ✕{' '}
-                </button>{' '}
-              </div>{' '}
+                  ✕
+                </button>
+              </div>
               <form onSubmit={handleSubmit} className='space-y-3'>
-                {' '}
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                  {' '}
                   <div>
-                    {' '}
                     <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      Nombre *{' '}
-                    </label>{' '}
+                      Nombre *
+                    </label>
                     <input
                       type='text'
-                      placeholder='Nombre del lugar'
+                      placeholder='Nombre del shopping'
                       name='nombre'
                       value={formValues.nombre}
                       onChange={handleChange}
                       required
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500'
-                    />{' '}
-                  </div>{' '}
+                    />
+                  </div>
                   <div>
-                    {' '}
                     <ZonasLugares
                       selected={formValues.zona}
                       onChange={values =>
                         setFormValues(prev => ({ ...prev, zona: values }))
                       }
-                    />{' '}
-                  </div>{' '}
-                </div>{' '}
-                <TipoComidaRestaurantes
-                  selected={formValues.tipo_comida}
-                  onChange={values =>
-                    setFormValues(prev => ({ ...prev, tipo_comida: values }))
-                  }
-                />{' '}
+                    />
+                  </div>
+                </div>
+
                 <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                  {' '}
                   <div>
-                    {' '}
                     <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      Rango de precios *{' '}
-                    </label>{' '}
+                      Rango de precios *
+                    </label>
                     <select
                       name='rango_precios'
                       value={formValues.rango_precios}
@@ -613,20 +602,18 @@ export default function RestaurantesPage () {
                       required
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     >
-                      {' '}
-                      <option value=''>Sin definir</option>{' '}
-                      <option value={1}>$</option> <option value={2}>$$</option>{' '}
-                      <option value={3}>$$$</option>{' '}
-                      <option value={4}>$$$$</option>{' '}
-                      <option value={5}>$$$$$</option>{' '}
-                    </select>{' '}
-                  </div>{' '}
+                      <option value=''>Sin definir</option>
+                      <option value={1}>$</option>
+                      <option value={2}>$$</option>
+                      <option value={3}>$$$</option>
+                      <option value={4}>$$$$</option>
+                      <option value={5}>$$$$$</option>
+                    </select>
+                  </div>
                   <div>
-                    {' '}
                     <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      Estrellas *{' '}
-                    </label>{' '}
+                      Estrellas *
+                    </label>
                     <select
                       name='estrellas'
                       value={formValues.estrellas}
@@ -634,49 +621,94 @@ export default function RestaurantesPage () {
                       required
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     >
-                      {' '}
-                      <option value=''>Sin definir</option>{' '}
-                      <option value={1}>1</option> <option value={2}>2</option>{' '}
-                      <option value={3}>3</option> <option value={4}>4</option>{' '}
-                      <option value={5}>5</option>{' '}
-                    </select>{' '}
-                  </div>{' '}
-                  <div className='flex items-end'>
-                    {' '}
+                      <option value=''>Sin definir</option>
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                      <option value={3}>3</option>
+                      <option value={4}>4</option>
+                      <option value={5}>5</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Cantidad de locales
+                    </label>
+                    <input
+                      type='number'
+                      name='cantidad_locales'
+                      value={formValues.cantidad_locales}
+                      onChange={handleChange}
+                      min={0}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                </div>
+
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                  <div className='flex flex-col gap-2'>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Características
+                    </label>
                     <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
-                      {' '}
                       <input
                         type='checkbox'
-                        name='es_destacado'
-                        checked={formValues.es_destacado}
+                        name='tiene_estacionamiento'
+                        checked={formValues.tiene_estacionamiento}
                         onChange={handleChange}
                         className='h-4 w-4 rounded border-slate-600 bg-slate-900'
-                      />{' '}
-                      Destacado{' '}
-                    </label>{' '}
-                  </div>{' '}
-                </div>{' '}
+                      />
+                      Estacionamiento
+                    </label>
+                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                      <input
+                        type='checkbox'
+                        name='tiene_patio_comidas'
+                        checked={formValues.tiene_patio_comidas}
+                        onChange={handleChange}
+                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                      />
+                      Patio de comidas
+                    </label>
+                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                      <input
+                        type='checkbox'
+                        name='tiene_cine'
+                        checked={formValues.tiene_cine}
+                        onChange={handleChange}
+                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                      />
+                      Cines
+                    </label>
+                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                      <input
+                        type='checkbox'
+                        name='es_outlet'
+                        checked={formValues.es_outlet}
+                        onChange={handleChange}
+                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                      />
+                      Outlet
+                    </label>
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Dirección *
+                    </label>
+                    <input
+                      type='text'
+                      name='direccion'
+                      value={formValues.direccion}
+                      onChange={handleChange}
+                      required
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  {' '}
                   <label className='block text-xs mb-1 text-slate-300'>
-                    {' '}
-                    Dirección *{' '}
-                  </label>{' '}
-                  <input
-                    type='text'
-                    name='direccion'
-                    value={formValues.direccion}
-                    onChange={handleChange}
-                    required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                  />{' '}
-                </div>{' '}
-                <div>
-                  {' '}
-                  <label className='block text-xs mb-1 text-slate-300'>
-                    {' '}
-                    Reseña (texto largo) *{' '}
-                  </label>{' '}
+                    Reseña (texto largo) *
+                  </label>
                   <textarea
                     name='resena'
                     value={formValues.resena}
@@ -684,133 +716,73 @@ export default function RestaurantesPage () {
                     rows={5}
                     required
                     className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500'
-                    placeholder='Escribí una reseña descriptiva del restaurante...'
-                  />{' '}
+                    placeholder='Escribí una reseña descriptiva del shopping...'
+                  />
                   <p className='mt-1 text-[11px] text-slate-500'>
-                    {' '}
                     Podés escribir un texto largo: historia del lugar, ambiente,
-                    recomendaciones, etc.{' '}
-                  </p>{' '}
-                </div>{' '}
+                    tipos de locales, servicios, etc.
+                  </p>
+                </div>
+
                 <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                  {' '}
                   <div>
-                    {' '}
                     <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      Ciudad{' '}
-                    </label>{' '}
+                      Ciudad
+                    </label>
                     <input
                       type='text'
                       name='ciudad'
                       value={formValues.ciudad}
                       onChange={handleChange}
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />{' '}
-                  </div>{' '}
+                    />
+                  </div>
                   <div>
-                    {' '}
                     <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      Provincia{' '}
-                    </label>{' '}
+                      Provincia
+                    </label>
                     <input
                       type='text'
                       name='provincia'
                       value={formValues.provincia}
                       onChange={handleChange}
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />{' '}
-                  </div>{' '}
+                    />
+                  </div>
                   <div>
-                    {' '}
                     <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      País{' '}
-                    </label>{' '}
+                      País
+                    </label>
                     <input
                       type='text'
                       name='pais'
                       value={formValues.pais}
                       onChange={handleChange}
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />{' '}
-                  </div>{' '}
-                </div>{' '}
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  {' '}
                   <label className='block text-xs mb-1 text-slate-300'>
-                    {' '}
-                    Horarios (texto) *{' '}
-                  </label>{' '}
+                    Horarios (texto) *
+                  </label>
                   <input
                     type='text'
                     name='horario_text'
-                    placeholder='Lun a vie de 10 a 18'
+                    placeholder='Lun a dom de 10 a 22'
                     value={formValues.horario_text}
                     onChange={handleChange}
                     required
                     className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                  />{' '}
-                </div>{' '}
+                  />
+                </div>
+
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                  {' '}
                   <div>
-                    {' '}
                     <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      Link Google Maps *{' '}
-                    </label>{' '}
-                    <input
-                      type='url'
-                      name='url_maps'
-                      value={formValues.url_maps}
-                      onChange={handleChange}
-                      required
-                      placeholder='https://maps.google.com/...'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />{' '}
-                  </div>{' '}
-                  <div>
-                    {' '}
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      URL reservas{' '}
-                    </label>{' '}
-                    <input
-                      type='url'
-                      name='url_reserva'
-                      value={formValues.url_reserva}
-                      onChange={handleChange}
-                      placeholder='https://...'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />{' '}
-                  </div>{' '}
-                </div>{' '}
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                  {' '}
-                  <div>
-                    {' '}
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      Instagram *{' '}
-                    </label>{' '}
-                    <input
-                      type='url'
-                      name='url_instagram'
-                      value={formValues.url_instagram}
-                      onChange={handleChange}
-                      required
-                      placeholder='https://instagram.com/...'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />{' '}
-                  </div>{' '}
-                  <div>
-                    {' '}
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      {' '}
-                      Web{' '}
-                    </label>{' '}
+                      Web
+                    </label>
                     <input
                       type='url'
                       name='sitio_web'
@@ -818,120 +790,146 @@ export default function RestaurantesPage () {
                       onChange={handleChange}
                       placeholder='https://...'
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />{' '}
-                  </div>{' '}
-                </div>{' '}
-                {/* Imagen con UploadImage */}{' '}
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Teléfono
+                    </label>
+                    <input
+                      type='text'
+                      name='telefono'
+                      value={formValues.telefono}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                </div>
+
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Instagram
+                    </label>
+                    <input
+                      type='url'
+                      name='instagram'
+                      value={formValues.instagram}
+                      onChange={handleChange}
+                      placeholder='https://instagram.com/...'
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Facebook
+                    </label>
+                    <input
+                      type='url'
+                      name='facebook'
+                      value={formValues.facebook}
+                      onChange={handleChange}
+                      placeholder='https://facebook.com/...'
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                </div>
+
+                {/* Imagen con UploadImage */}
                 <div>
-                  {' '}
                   <label className='block text-xs mb-1 text-slate-300'>
-                    {' '}
-                    Imagen *{' '}
-                  </label>{' '}
+                    Imagen *
+                  </label>
                   <UploadImage
                     onUploaded={path =>
-                      setFormValues(prev => ({ ...prev, imagen_url: path }))
+                      setFormValues(prev => ({ ...prev, url_imagen: path }))
                     }
-                  />{' '}
-                  {formValues.imagen_url && (
+                  />
+                  {formValues.url_imagen && (
                     <p className='mt-1 text-[11px] text-emerald-400'>
-                      {' '}
-                      Imagen subida: {formValues.imagen_url}{' '}
+                      Imagen subida: {formValues.url_imagen}
                     </p>
-                  )}{' '}
+                  )}
                   <p className='mt-1 text-[10px] text-slate-500'>
-                    {' '}
                     Se guarda en <code>public/uploads/[sección]</code> y en la
                     base se almacena la ruta relativa (por ejemplo:{' '}
-                    <code>uploads/restaurantes/archivo.jpg</code>).{' '}
-                  </p>{' '}
-                </div>{' '}
+                    <code>uploads/shopping/archivo.jpg</code>).
+                  </p>
+                </div>
+
                 <div>
-                  {' '}
                   <label className='block text-xs mb-1 text-slate-300'>
-                    {' '}
-                    Estado{' '}
-                  </label>{' '}
+                    Estado
+                  </label>
                   <select
                     name='estado'
                     value={formValues.estado}
                     onChange={handleChange}
                     className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                   >
-                    {' '}
-                    <option value='PUBLICADO'>PUBLICADO</option>{' '}
-                    <option value='BORRADOR'>BORRADOR</option>{' '}
-                    <option value='ARCHIVADO'>ARCHIVADO</option>{' '}
-                  </select>{' '}
-                </div>{' '}
+                    <option value='PUBLICADO'>PUBLICADO</option>
+                    <option value='BORRADOR'>BORRADOR</option>
+                    <option value='ARCHIVADO'>ARCHIVADO</option>
+                  </select>
+                </div>
+
                 <div className='flex justify-end gap-2 pt-2'>
-                  {' '}
                   <button
                     type='button'
                     onClick={closeForm}
                     className='rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800'
                   >
-                    {' '}
-                    Cancelar{' '}
-                  </button>{' '}
+                    Cancelar
+                  </button>
                   <button
                     type='submit'
                     disabled={isSubmitting}
                     className='rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60'
                   >
-                    {' '}
                     {isSubmitting
                       ? 'Guardando...'
                       : editing
                       ? 'Guardar cambios'
-                      : 'Crear restaurante'}{' '}
-                  </button>{' '}
-                </div>{' '}
-              </form>{' '}
-            </div>{' '}
+                      : 'Crear shopping'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        )}{' '}
-        {/* Confirm delete */}{' '}
+        )}
+
+        {/* Confirm delete */}
         {deleteTarget && (
           <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60'>
-            {' '}
             <div className='w-full max-w-sm rounded-2xl bg-slate-950 border border-slate-700 p-4 shadow-2xl'>
-              {' '}
-              <h2 className='text-sm font-semibold mb-2'>
-                {' '}
-                Eliminar restaurante{' '}
-              </h2>{' '}
+              <h2 className='text-sm font-semibold mb-2'>Eliminar shopping</h2>
               <p className='text-xs text-slate-300 mb-3'>
-                {' '}
                 Estás por eliminar{' '}
                 <span className='font-semibold'>{deleteTarget.nombre}</span>.
-                Esta acción no se puede deshacer.{' '}
-              </p>{' '}
+                Esta acción no se puede deshacer.
+              </p>
               <div className='flex justify-end gap-2'>
-                {' '}
                 <button
                   type='button'
                   onClick={() => setDeleteTarget(null)}
                   className='rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800'
                 >
-                  {' '}
-                  Cancelar{' '}
-                </button>{' '}
+                  Cancelar
+                </button>
                 <button
                   type='button'
                   onClick={confirmDelete}
                   disabled={isDeleting}
                   className='rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-60'
                 >
-                  {' '}
-                  {isDeleting ? 'Eliminando...' : 'Eliminar'}{' '}
-                </button>{' '}
-              </div>{' '}
-            </div>{' '}
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                </button>
+              </div>
+            </div>
           </div>
-        )}{' '}
-      </main>{' '}
-      <BottomNav />{' '}
+        )}
+      </main>
+      <BottomNav />
     </div>
   )
 }
