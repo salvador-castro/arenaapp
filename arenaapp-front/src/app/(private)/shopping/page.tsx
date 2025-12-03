@@ -58,10 +58,7 @@ interface FormValues {
   telefono: string
   instagram: string
   facebook: string
-  tiene_estacionamiento: boolean
-  tiene_patio_comidas: boolean
-  tiene_cine: boolean
-  es_outlet: boolean
+  caracteristicas: string[]
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
   resena: string
 }
@@ -69,6 +66,72 @@ interface FormValues {
 function priceTierToSymbols (tier?: number | null) {
   if (!tier || tier < 1) return '-'
   return '$'.repeat(Math.min(tier, 5))
+}
+
+const CARACTERISTICAS_OPCIONES = [
+  'Estacionamiento',
+  'Patio de comidas',
+  'Cines',
+  'Outlet'
+] as const
+
+interface CaracteristicasMultiSelectProps {
+  selected: string[]
+  onChange: (values: string[]) => void
+}
+
+function CaracteristicasShoppingMultiSelect ({
+  selected,
+  onChange
+}: CaracteristicasMultiSelectProps) {
+  const [open, setOpen] = useState(false)
+
+  const toggleValue = (value: string) => {
+    if (selected.includes(value)) {
+      onChange(selected.filter(v => v !== value))
+    } else {
+      onChange([...selected, value])
+    }
+  }
+
+  const label =
+    selected.length === 0 ? 'Seleccioná características' : selected.join(', ')
+
+  return (
+    <div className='flex flex-col gap-1'>
+      <label className='block text-xs mb-1 text-slate-300'>
+        Características
+      </label>
+      <button
+        type='button'
+        onClick={() => setOpen(o => !o)}
+        className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-left text-sm text-slate-100 flex items-center justify-between'
+      >
+        <span className={selected.length === 0 ? 'text-slate-500' : ''}>
+          {label}
+        </span>
+        <span className='text-xs text-slate-500'>▼</span>
+      </button>
+      {open && (
+        <div className='mt-1 rounded-xl border border-slate-700 bg-slate-900 p-2 text-xs text-slate-100 shadow-lg'>
+          {CARACTERISTICAS_OPCIONES.map(op => (
+            <label
+              key={op}
+              className='flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-slate-800 cursor-pointer'
+            >
+              <input
+                type='checkbox'
+                checked={selected.includes(op)}
+                onChange={() => toggleValue(op)}
+                className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+              />
+              <span>{op}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function ShoppingPage () {
@@ -103,10 +166,7 @@ export default function ShoppingPage () {
     telefono: '',
     instagram: '',
     facebook: '',
-    tiene_estacionamiento: false,
-    tiene_patio_comidas: false,
-    tiene_cine: false,
-    es_outlet: false,
+    caracteristicas: [],
     resena: '',
     estado: 'PUBLICADO'
   })
@@ -197,10 +257,7 @@ export default function ShoppingPage () {
       telefono: '',
       instagram: '',
       facebook: '',
-      tiene_estacionamiento: false,
-      tiene_patio_comidas: false,
-      tiene_cine: false,
-      es_outlet: false,
+      caracteristicas: [],
       resena: '',
       estado: 'PUBLICADO'
     })
@@ -208,6 +265,12 @@ export default function ShoppingPage () {
   }
 
   function openEditForm (s: AdminShopping) {
+    const caracteristicas: string[] = []
+    if (s.tiene_estacionamiento) caracteristicas.push('Estacionamiento')
+    if (s.tiene_patio_comidas) caracteristicas.push('Patio de comidas')
+    if (s.tiene_cine) caracteristicas.push('Cines')
+    if (s.es_outlet) caracteristicas.push('Outlet')
+
     setEditing(s)
     setFormValues({
       nombre: s.nombre ?? '',
@@ -231,10 +294,7 @@ export default function ShoppingPage () {
       telefono: s.telefono ?? '',
       instagram: s.instagram ?? '',
       facebook: s.facebook ?? '',
-      tiene_estacionamiento: !!s.tiene_estacionamiento,
-      tiene_patio_comidas: !!s.tiene_patio_comidas,
-      tiene_cine: !!s.tiene_cine,
-      es_outlet: !!s.es_outlet,
+      caracteristicas, // 🔽 NUEVO
       resena: s.resena ?? '',
       estado: (s.estado as FormValues['estado']) ?? 'PUBLICADO'
     })
@@ -299,7 +359,14 @@ export default function ShoppingPage () {
         cantidad_locales:
           formValues.cantidad_locales === ''
             ? null
-            : formValues.cantidad_locales
+            : formValues.cantidad_locales,
+        // 🔽 estos 4 se calculan desde el multiselect:
+        tiene_estacionamiento:
+          formValues.caracteristicas.includes('Estacionamiento'),
+        tiene_patio_comidas:
+          formValues.caracteristicas.includes('Patio de comidas'),
+        tiene_cine: formValues.caracteristicas.includes('Cines'),
+        es_outlet: formValues.caracteristicas.includes('Outlet')
       }
 
       const isEdit = !!editing && editing.id != null
@@ -322,9 +389,7 @@ export default function ShoppingPage () {
         throw new Error(msg || `Error al guardar shopping (${res.status})`)
       }
 
-      await res.json() // no lo usamos, solo aseguramos parseo OK
-
-      // recargo la página actual desde la API
+      await res.json()
       await fetchShopping(currentPage, search)
       closeForm()
     } catch (err: any) {
@@ -645,50 +710,16 @@ export default function ShoppingPage () {
                 </div>
 
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                  <div className='flex flex-col gap-2'>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Características
-                    </label>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
-                      <input
-                        type='checkbox'
-                        name='tiene_estacionamiento'
-                        checked={formValues.tiene_estacionamiento}
-                        onChange={handleChange}
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
-                      />
-                      Estacionamiento
-                    </label>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
-                      <input
-                        type='checkbox'
-                        name='tiene_patio_comidas'
-                        checked={formValues.tiene_patio_comidas}
-                        onChange={handleChange}
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
-                      />
-                      Patio de comidas
-                    </label>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
-                      <input
-                        type='checkbox'
-                        name='tiene_cine'
-                        checked={formValues.tiene_cine}
-                        onChange={handleChange}
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
-                      />
-                      Cines
-                    </label>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
-                      <input
-                        type='checkbox'
-                        name='es_outlet'
-                        checked={formValues.es_outlet}
-                        onChange={handleChange}
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
-                      />
-                      Outlet
-                    </label>
+                  <div>
+                    <CaracteristicasShoppingMultiSelect
+                      selected={formValues.caracteristicas}
+                      onChange={values =>
+                        setFormValues(prev => ({
+                          ...prev,
+                          caracteristicas: values
+                        }))
+                      }
+                    />
                   </div>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
