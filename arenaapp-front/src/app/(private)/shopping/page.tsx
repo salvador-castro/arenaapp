@@ -549,7 +549,7 @@ export default function ShoppingPage () {
                     ⭐
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Outlet
+                    Destacado
                   </th>
                   <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
                     Acciones
@@ -594,7 +594,7 @@ export default function ShoppingPage () {
                       {s.estrellas ? '★'.repeat(Math.min(s.estrellas, 5)) : '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {s.es_outlet ? 'Sí' : 'No'}
+                      {s.es_destacado ? 'Sí' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
                       <div className='inline-flex items-center gap-2'>
