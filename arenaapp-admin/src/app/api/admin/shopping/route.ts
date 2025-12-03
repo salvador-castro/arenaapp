@@ -1,3 +1,4 @@
+//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-admin\src\app\api\admin\shopping\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -255,89 +256,89 @@ export async function POST (req: NextRequest) {
     const db = getDb()
 
     const insertResult = await db.query(
-      `
-      INSERT INTO shopping (
-        slug,
-        nombre,
-        rango_precios,
-        estrellas,
-        zona,
-        direccion,
-        ciudad,
-        provincia,
-        pais,
-        horario_text,
-        sitio_web,
-        url_imagen,
-        cantidad_locales,
-        tiene_estacionamiento,
-        tiene_patio_comidas,
-        tiene_cine,
-        es_outlet,
-        telefono,
-        instagram,
-        facebook,
-        estado,
-        resena
-      )
-      VALUES (
-        $1, $2, $3, $4, $5, $6,
-        $7, $8, $9, $10, $11, $12,
-        $13, $14, $15, $16, $17,
-        $18, $19, $20, $21, $22, $23
-      )
-      RETURNING
-        id,
-        slug,
-        nombre,
-        rango_precios,
-        estrellas,
-        zona,
-        direccion,
-        ciudad,
-        provincia,
-        pais,
-        horario_text,
-        sitio_web,
-        url_imagen,
-        cantidad_locales,
-        tiene_estacionamiento,
-        tiene_patio_comidas,
-        tiene_cine,
-        es_outlet,
-        telefono,
-        instagram,
-        facebook,
-        estado,
-        resena,
-        created_at,
-        updated_at
-      `,
-      [
-        slug,                     // 1
-        nombre,                   // 2
-        rango_precios,            // 3
-        estrellas,                // 4
-        zona,                     // 5
-        direccion,                // 6
-        ciudad || null,           // 7
-        provincia || null,        // 8
-        pais || 'Argentina',      // 9
-        horario_text,             // 10
-        sitio_web || null,        // 11
-        url_imagen,               // 12
-        cantidad_locales ?? null, // 13
-        !!tiene_estacionamiento,  // 14
-        !!tiene_patio_comidas,    // 15
-        !!tiene_cine,             // 16
-        !!es_outlet,              // 17
-        telefono || null,         // 18
-        instagram || null,        // 19
-        facebook || null,         // 20
-        estado || 'PUBLICADO',    // 21
-        resena                    // 22
-      ]
-    )
+  `
+  INSERT INTO shopping (
+    slug,
+    nombre,
+    rango_precios,
+    estrellas,
+    zona,
+    direccion,
+    ciudad,
+    provincia,
+    pais,
+    horario_text,
+    sitio_web,
+    url_imagen,
+    cantidad_locales,
+    tiene_estacionamiento,
+    tiene_patio_comidas,
+    tiene_cine,
+    es_outlet,
+    telefono,
+    instagram,
+    facebook,
+    estado,
+    resena
+  )
+  VALUES (
+    $1, $2, $3, $4, $5, $6,
+    $7, $8, $9, $10, $11, $12,
+    $13, $14, $15, $16, $17,
+    $18, $19, $20, $21, $22
+  )
+  RETURNING
+    id,
+    slug,
+    nombre,
+    rango_precios,
+    estrellas,
+    zona,
+    direccion,
+    ciudad,
+    provincia,
+    pais,
+    horario_text,
+    sitio_web,
+    url_imagen,
+    cantidad_locales,
+    tiene_estacionamiento,
+    tiene_patio_comidas,
+    tiene_cine,
+    es_outlet,
+    telefono,
+    instagram,
+    facebook,
+    estado,
+    resena,
+    created_at,
+    updated_at
+  `,
+  [
+    slug,                     // 1
+    nombre,                   // 2
+    rango_precios,            // 3
+    estrellas,                // 4
+    zona,                     // 5
+    direccion,                // 6
+    ciudad || null,           // 7
+    provincia || null,        // 8
+    pais || 'Argentina',      // 9
+    horario_text,             // 10
+    sitio_web || null,        // 11
+    url_imagen,               // 12
+    cantidad_locales ?? null, // 13
+    !!tiene_estacionamiento,  // 14
+    !!tiene_patio_comidas,    // 15
+    !!tiene_cine,             // 16
+    !!es_outlet,              // 17
+    telefono || null,         // 18
+    instagram || null,        // 19
+    facebook || null,         // 20
+    estado || 'PUBLICADO',    // 21
+    resena                    // 22
+  ]
+)
 
     const shopping = insertResult.rows[0] || null
 
