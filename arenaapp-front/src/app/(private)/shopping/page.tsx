@@ -25,7 +25,7 @@ const PAGE_SIZE = 10
 interface AdminShopping {
   id: number | string
   nombre: string
-  rango_precios?: number | null
+  rango_precios?: number | string | null
   estrellas?: number | null
   zona?: string | null
   direccion: string
@@ -35,11 +35,12 @@ interface AdminShopping {
   horario_text?: string | null
   sitio_web?: string | null
   url_imagen?: string | null
-  cantidad_locales?: number | null
+  cantidad_locales?: number | string | null
   tiene_estacionamiento?: boolean | null
   tiene_patio_comidas?: boolean | null
   tiene_cine?: boolean | null
   es_outlet?: boolean | null
+  es_destacado?: boolean | null
   telefono?: string | null
   instagram?: string | null
   facebook?: string | null
@@ -66,6 +67,7 @@ interface FormValues {
   instagram: string
   facebook: string
   caracteristicas: string[]
+  es_destacado: boolean
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
   resena: string
 }
@@ -194,6 +196,7 @@ export default function ShoppingPage () {
     instagram: '',
     facebook: '',
     caracteristicas: [],
+    es_destacado: false,
     resena: '',
     estado: 'PUBLICADO'
   })
@@ -285,6 +288,7 @@ export default function ShoppingPage () {
       instagram: '',
       facebook: '',
       caracteristicas: [],
+      es_destacado: false,
       resena: '',
       estado: 'PUBLICADO'
     })
@@ -301,7 +305,10 @@ export default function ShoppingPage () {
     setEditing(s)
     setFormValues({
       nombre: s.nombre ?? '',
-      rango_precios: typeof s.rango_precios === 'number' ? s.rango_precios : '',
+      rango_precios:
+        s.rango_precios === null || s.rango_precios === undefined
+          ? ''
+          : Number(s.rango_precios),
       estrellas: typeof s.estrellas === 'number' ? s.estrellas : '',
       zona: s.zona
         ? s.zona
@@ -317,14 +324,18 @@ export default function ShoppingPage () {
       sitio_web: s.sitio_web ?? '',
       url_imagen: s.url_imagen ?? '',
       cantidad_locales:
-        typeof s.cantidad_locales === 'number' ? s.cantidad_locales : '',
+        s.cantidad_locales === null || s.cantidad_locales === undefined
+          ? ''
+          : Number(s.cantidad_locales),
       telefono: s.telefono ?? '',
       instagram: s.instagram ?? '',
       facebook: s.facebook ?? '',
-      caracteristicas, // 🔽 NUEVO
+      caracteristicas,
       resena: s.resena ?? '',
-      estado: (s.estado as FormValues['estado']) ?? 'PUBLICADO'
+      estado: (s.estado as FormValues['estado']) ?? 'PUBLICADO', // ✅ coma
+      es_destacado: !!s.es_destacado // ✅
     })
+
     setIsFormOpen(true)
   }
 
@@ -387,13 +398,13 @@ export default function ShoppingPage () {
           formValues.cantidad_locales === ''
             ? null
             : formValues.cantidad_locales,
-        // 🔽 estos 4 se calculan desde el multiselect:
         tiene_estacionamiento:
           formValues.caracteristicas.includes('Estacionamiento'),
         tiene_patio_comidas:
           formValues.caracteristicas.includes('Patio de comidas'),
         tiene_cine: formValues.caracteristicas.includes('Cines'),
-        es_outlet: formValues.caracteristicas.includes('Outlet')
+        es_outlet: formValues.caracteristicas.includes('Outlet') // ✅ coma
+        // es_destacado ya viene en formValues.es_destacado
       }
 
       const isEdit = !!editing && editing.id != null
@@ -577,7 +588,11 @@ export default function ShoppingPage () {
                       {s.zona || s.ciudad || '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {priceTierToSymbols(s.rango_precios ?? null)}
+                      {priceTierToSymbols(
+                        typeof s.rango_precios === 'number'
+                          ? s.rango_precios
+                          : null
+                      )}
                     </td>
                     <td className='px-3 py-2 text-xs text-yellow-300'>
                       {s.estrellas ? '★'.repeat(Math.min(s.estrellas, 5)) : '-'}
@@ -720,6 +735,18 @@ export default function ShoppingPage () {
                       <option value={4}>4</option>
                       <option value={5}>5</option>
                     </select>
+                  </div>
+                  <div className='flex items-end'>
+                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                      <input
+                        type='checkbox'
+                        name='es_destacado'
+                        checked={formValues.es_destacado}
+                        onChange={handleChange}
+                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                      />
+                      Destacado
+                    </label>
                   </div>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
