@@ -151,7 +151,19 @@ export default function BaresPage () {
 
       const json = await res.json()
 
-      setBares(json.data as AdminBar[])
+      const data: AdminBar[] = (json.data as any[]).map(row => ({
+        ...row,
+        rango_precios:
+          row.rango_precios === null || row.rango_precios === undefined
+            ? null
+            : Number(row.rango_precios),
+        estrellas:
+          row.estrellas === null || row.estrellas === undefined
+            ? null
+            : Number(row.estrellas)
+      }))
+
+      setBares(data)
       setCurrentPage(json.page ?? pageToLoad)
       setTotalPages(json.totalPages ?? 1)
       setTotalItems(json.total ?? 0)
@@ -206,8 +218,8 @@ export default function BaresPage () {
             .map(s => s.trim())
             .filter(Boolean)
         : [],
-      rango_precios: typeof b.rango_precios === 'number' ? b.rango_precios : '',
-      estrellas: typeof b.estrellas === 'number' ? b.estrellas : '',
+      rango_precios: b.rango_precios ?? '',
+      estrellas: b.estrellas ?? '',
       zona: b.zona
         ? b.zona
             .split(',')
