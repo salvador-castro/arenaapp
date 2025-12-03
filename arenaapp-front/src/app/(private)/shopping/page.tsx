@@ -1,6 +1,12 @@
 'use client'
 
-import React, { useEffect, useState, FormEvent, ChangeEvent } from 'react'
+import React, {
+  useEffect,
+  useState,
+  FormEvent,
+  ChangeEvent,
+  useRef
+} from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import UserDropdown from '@/components/UserDropdown'
@@ -68,7 +74,7 @@ function priceTierToSymbols (tier?: number | null) {
   return '$'.repeat(Math.min(tier, 5))
 }
 
-const CARACTERISTICAS_OPCIONES = [
+const opcionesShopping = [
   'Estacionamiento',
   'Patio de comidas',
   'Cines',
@@ -85,6 +91,7 @@ function CaracteristicasShoppingMultiSelect ({
   onChange
 }: CaracteristicasMultiSelectProps) {
   const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
   const toggleValue = (value: string) => {
     if (selected.includes(value)) {
@@ -97,8 +104,27 @@ function CaracteristicasShoppingMultiSelect ({
   const label =
     selected.length === 0 ? 'Seleccioná características' : selected.join(', ')
 
+  // 🔹 Cerrar al hacer click fuera
+  useEffect(() => {
+    if (!open) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [open])
+
   return (
-    <div className='flex flex-col gap-1'>
+    <div ref={containerRef} className='flex flex-col gap-1'>
       <label className='block text-xs mb-1 text-slate-300'>
         Características
       </label>
@@ -114,7 +140,7 @@ function CaracteristicasShoppingMultiSelect ({
       </button>
       {open && (
         <div className='mt-1 rounded-xl border border-slate-700 bg-slate-900 p-2 text-xs text-slate-100 shadow-lg'>
-          {CARACTERISTICAS_OPCIONES.map(op => (
+          {opcionesShopping.map(op => (
             <label
               key={op}
               className='flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-slate-800 cursor-pointer'
