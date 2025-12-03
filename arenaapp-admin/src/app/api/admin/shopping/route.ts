@@ -1,4 +1,3 @@
-//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-admin\src\app\api\admin\shopping\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -27,10 +26,10 @@ export function OPTIONS () {
 function slugify (str: string): string {
   return str
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // quita tildes
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-') // no alfanum => guion
-    .replace(/^-+|-+$/g, '') // bordes
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 // GET todos (admin) con paginación y búsqueda
@@ -75,33 +74,33 @@ export async function GET (req: NextRequest) {
       const result = await db.query(
         `
         SELECT
-  id,
-  slug,
-  nombre,
-  rango_precios,
-  estrellas,
-  zona,
-  direccion,
-  ciudad,
-  provincia,
-  pais,
-  horario_text,
-  sitio_web,
-  url_imagen,
-  cantidad_locales,
-  tiene_estacionamiento,
-  tiene_patio_comidas,
-  tiene_cine,
-  es_outlet,
-  es_destacado,
-  telefono,
-  instagram,
-  facebook,
-  estado,
-  resena,
-  created_at,
-  updated_at
-FROM shopping
+          id,
+          slug,
+          nombre,
+          rango_precios,
+          estrellas,
+          zona,
+          direccion,
+          ciudad,
+          provincia,
+          pais,
+          horario_text,
+          sitio_web,
+          url_imagen,
+          cantidad_locales,
+          tiene_estacionamiento,
+          tiene_patio_comidas,
+          tiene_cine,
+          es_outlet,
+          es_destacado,
+          telefono,
+          instagram,
+          facebook,
+          estado,
+          resena,
+          created_at,
+          updated_at
+        FROM shopping
         WHERE
           LOWER(nombre) LIKE $1
           OR LOWER(COALESCE(zona, '')) LIKE $1
@@ -142,6 +141,7 @@ FROM shopping
           tiene_patio_comidas,
           tiene_cine,
           es_outlet,
+          es_destacado,
           telefono,
           instagram,
           facebook,
@@ -212,30 +212,29 @@ export async function POST (req: NextRequest) {
     const body = await req.json()
 
     const {
-  nombre,
-  rango_precios,
-  estrellas,
-  zona,
-  direccion,
-  ciudad,
-  provincia,
-  pais,
-  horario_text,
-  sitio_web,
-  url_imagen,
-  cantidad_locales,
-  tiene_estacionamiento,
-  tiene_patio_comidas,
-  tiene_cine,
-  es_outlet,
-  es_destacado,
-  telefono,
-  instagram,
-  facebook,
-  estado,
-  resena
-} = body
-
+      nombre,
+      rango_precios,
+      estrellas,
+      zona,
+      direccion,
+      ciudad,
+      provincia,
+      pais,
+      horario_text,
+      sitio_web,
+      url_imagen,
+      cantidad_locales,
+      tiene_estacionamiento,
+      tiene_patio_comidas,
+      tiene_cine,
+      es_outlet,
+      es_destacado,
+      telefono,
+      instagram,
+      facebook,
+      estado,
+      resena
+    } = body
 
     if (
       !nombre ||
@@ -259,93 +258,92 @@ export async function POST (req: NextRequest) {
     const db = getDb()
 
     const insertResult = await db.query(
-  `
-  INSERT INTO shopping (
-  slug,
-  nombre,
-  rango_precios,
-  estrellas,
-  zona,
-  direccion,
-  ciudad,
-  provincia,
-  pais,
-  horario_text,
-  sitio_web,
-  url_imagen,
-  cantidad_locales,
-  tiene_estacionamiento,
-  tiene_patio_comidas,
-  tiene_cine,
-  es_outlet,
-  es_destacado,       -- 👈
-  telefono,
-  instagram,
-  facebook,
-  estado,
-  resena
-)
-VALUES (
-  $1, $2, $3, $4, $5, $6,
-  $7, $8, $9, $10, $11, $12,
-  $13, $14, $15, $16, $17,
-  $18, $19, $20, $21, $22, $23
-)
-  RETURNING
-    id,
-    slug,
-    nombre,
-    rango_precios,
-    estrellas,
-    zona,
-    direccion,
-    es_destacado
-    ciudad,
-    provincia,
-    pais,
-    horario_text,
-    sitio_web,
-    url_imagen,
-    cantidad_locales,
-    tiene_estacionamiento,
-    tiene_patio_comidas,
-    tiene_cine,
-    es_outlet,
-    telefono,
-    instagram,
-    facebook,
-    estado,
-    resena,
-    created_at,
-    updated_at
-  `,
-  [
-  slug,                     // 1
-  nombre,                   // 2
-  rango_precios,            // 3
-  estrellas,                // 4
-  zona,                     // 5
-  direccion,                // 6
-  ciudad || null,           // 7
-  provincia || null,        // 8
-  pais || 'Argentina',      // 9
-  horario_text,             // 10
-  sitio_web || null,        // 11
-  url_imagen,               // 12
-  cantidad_locales ?? null, // 13
-  !!tiene_estacionamiento,  // 14
-  !!tiene_patio_comidas,    // 15
-  !!tiene_cine,             // 16
-  !!es_outlet,              // 17
-  !!es_destacado,           // 18
-  telefono || null,         // 19
-  instagram || null,        // 20
-  facebook || null,         // 21
-  estado || 'PUBLICADO',    // 22
-  resena                    // 23
-]
-
-)
+      `
+      INSERT INTO shopping (
+        slug,
+        nombre,
+        rango_precios,
+        estrellas,
+        zona,
+        direccion,
+        ciudad,
+        provincia,
+        pais,
+        horario_text,
+        sitio_web,
+        url_imagen,
+        cantidad_locales,
+        tiene_estacionamiento,
+        tiene_patio_comidas,
+        tiene_cine,
+        es_outlet,
+        es_destacado,
+        telefono,
+        instagram,
+        facebook,
+        estado,
+        resena
+      )
+      VALUES (
+        $1, $2, $3, $4, $5, $6,
+        $7, $8, $9, $10, $11, $12,
+        $13, $14, $15, $16, $17,
+        $18, $19, $20, $21, $22, $23
+      )
+      RETURNING
+        id,
+        slug,
+        nombre,
+        rango_precios,
+        estrellas,
+        zona,
+        direccion,
+        ciudad,
+        provincia,
+        pais,
+        horario_text,
+        sitio_web,
+        url_imagen,
+        cantidad_locales,
+        tiene_estacionamiento,
+        tiene_patio_comidas,
+        tiene_cine,
+        es_outlet,
+        es_destacado,
+        telefono,
+        instagram,
+        facebook,
+        estado,
+        resena,
+        created_at,
+        updated_at
+      `,
+      [
+        slug,                     // 1
+        nombre,                   // 2
+        rango_precios,            // 3
+        estrellas,                // 4
+        zona,                     // 5
+        direccion,                // 6
+        ciudad || null,           // 7
+        provincia || null,        // 8
+        pais || 'Argentina',      // 9
+        horario_text,             // 10
+        sitio_web || null,        // 11
+        url_imagen,               // 12
+        cantidad_locales ?? null, // 13
+        !!tiene_estacionamiento,  // 14
+        !!tiene_patio_comidas,    // 15
+        !!tiene_cine,             // 16
+        !!es_outlet,              // 17
+        !!es_destacado,           // 18
+        telefono || null,         // 19
+        instagram || null,        // 20
+        facebook || null,         // 21
+        estado || 'PUBLICADO',    // 22
+        resena                    // 23
+      ]
+    )
 
     const shopping = insertResult.rows[0] || null
 

@@ -1,5 +1,3 @@
-//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-admin\src\app\api\admin\shopping\[id]\route.ts
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -60,6 +58,7 @@ export async function GET (
         tiene_patio_comidas,
         tiene_cine,
         es_outlet,
+        es_destacado,
         telefono,
         instagram,
         facebook,
@@ -125,30 +124,29 @@ export async function PUT (
     const body = await req.json()
 
     const {
-  nombre,
-  rango_precios,
-  estrellas,
-  zona,
-  direccion,
-  ciudad,
-  provincia,
-  pais,
-  horario_text,
-  sitio_web,
-  url_imagen,
-  cantidad_locales,
-  tiene_estacionamiento,
-  tiene_patio_comidas,
-  tiene_cine,
-  es_outlet,
-  es_destacado,
-  telefono,
-  instagram,
-  facebook,
-  estado,
-  resena
-} = body
-
+      nombre,
+      rango_precios,
+      estrellas,
+      zona,
+      direccion,
+      ciudad,
+      provincia,
+      pais,
+      horario_text,
+      sitio_web,
+      url_imagen,
+      cantidad_locales,
+      tiene_estacionamiento,
+      tiene_patio_comidas,
+      tiene_cine,
+      es_outlet,
+      es_destacado,
+      telefono,
+      instagram,
+      facebook,
+      estado,
+      resena
+    } = body
 
     if (
       !nombre ||
@@ -171,57 +169,56 @@ export async function PUT (
     await db.query(
       `
       UPDATE shopping
-SET
-  nombre = $1,
-  rango_precios = $2,
-  estrellas = $3,
-  zona = $4,
-  direccion = $5,
-  ciudad = $6,
-  provincia = $7,
-  pais = $8,
-  horario_text = $9,
-  sitio_web = $10,
-  url_imagen = $11,
-  cantidad_locales = $12,
-  tiene_estacionamiento = $13,
-  tiene_patio_comidas = $14,
-  tiene_cine = $15,
-  es_outlet = $16,
-  es_destacado = $17,      // 👈
-  telefono = $18,
-  instagram = $19,
-  facebook = $20,
-  estado = $21,
-  resena = $22
-WHERE id = $23
-
+      SET
+        nombre = $1,
+        rango_precios = $2,
+        estrellas = $3,
+        zona = $4,
+        direccion = $5,
+        ciudad = $6,
+        provincia = $7,
+        pais = $8,
+        horario_text = $9,
+        sitio_web = $10,
+        url_imagen = $11,
+        cantidad_locales = $12,
+        tiene_estacionamiento = $13,
+        tiene_patio_comidas = $14,
+        tiene_cine = $15,
+        es_outlet = $16,
+        es_destacado = $17,
+        telefono = $18,
+        instagram = $19,
+        facebook = $20,
+        estado = $21,
+        resena = $22
+      WHERE id = $23
       `,
       [
-  nombre,                   // 1
-  rango_precios,            // 2
-  estrellas,                // 3
-  zona,                     // 4
-  direccion,                // 5
-  ciudad || null,           // 6
-  provincia || null,        // 7
-  pais || 'Argentina',      // 8
-  horario_text,             // 9
-  sitio_web || null,        // 10
-  url_imagen,               // 11
-  cantidad_locales ?? null, // 12
-  !!tiene_estacionamiento,  // 13
-  !!tiene_patio_comidas,    // 14
-  !!tiene_cine,             // 15
-  !!es_outlet,              // 16
-  !!es_destacado,           // 17
-  telefono || null,         // 18
-  instagram || null,        // 19
-  facebook || null,         // 20
-  estado || 'PUBLICADO',    // 21
-  resena,                   // 22
-  id                        // 23
-]
+        nombre,                   // 1
+        rango_precios,            // 2
+        estrellas,                // 3
+        zona,                     // 4
+        direccion,                // 5
+        ciudad || null,           // 6
+        provincia || null,        // 7
+        pais || 'Argentina',      // 8
+        horario_text,             // 9
+        sitio_web || null,        // 10
+        url_imagen,               // 11
+        cantidad_locales ?? null, // 12
+        !!tiene_estacionamiento,  // 13
+        !!tiene_patio_comidas,    // 14
+        !!tiene_cine,             // 15
+        !!es_outlet,              // 16
+        !!es_destacado,           // 17
+        telefono || null,         // 18
+        instagram || null,        // 19
+        facebook || null,         // 20
+        estado || 'PUBLICADO',    // 21
+        resena,                   // 22
+        id                        // 23
+      ]
     )
 
     const result = await db.query(
@@ -244,6 +241,7 @@ WHERE id = $23
         tiene_patio_comidas,
         tiene_cine,
         es_outlet,
+        es_destacado,
         telefono,
         instagram,
         facebook,
