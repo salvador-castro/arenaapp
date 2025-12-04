@@ -40,7 +40,7 @@ interface AdminGallery {
   facebook?: string | null
   horario_desde?: string | null
   horario_hasta?: string | null
-  url_principal?: string | null
+  url_imagen?: string | null
   meta_title?: string | null
   meta_description?: string | null
 
@@ -59,7 +59,7 @@ interface FormValues {
   tiene_entrada_gratuita: boolean
   es_destacado: boolean
   resena: string
-  url_principal: string
+  url_imagen: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
 }
 
@@ -90,7 +90,7 @@ export default function GaleriasPage () {
     tiene_entrada_gratuita: false,
     es_destacado: false,
     resena: '',
-    url_principal: '',
+    url_imagen: '',
     estado: 'PUBLICADO'
   })
 
@@ -174,7 +174,7 @@ export default function GaleriasPage () {
       tiene_entrada_gratuita: false,
       es_destacado: false,
       resena: '',
-      url_principal: '',
+      url_imagen: '',
       estado: 'PUBLICADO'
     })
     setIsFormOpen(true)
@@ -221,7 +221,7 @@ export default function GaleriasPage () {
       tiene_entrada_gratuita: !!g.tiene_entrada_gratuita,
       es_destacado: !!g.es_destacado,
       resena: g.resena ?? '',
-      url_principal: g.url_principal ?? '', // 👈 importante
+      url_imagen: g.url_imagen ?? '', // 👈 importante
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO'
     })
 
@@ -258,7 +258,7 @@ export default function GaleriasPage () {
     setIsSubmitting(true)
     setError(null)
 
-    if (!formValues.url_principal.trim()) {
+    if (!formValues.url_imagen.trim()) {
       setIsSubmitting(false)
       setError('Subí una imagen antes de guardar.')
       return
@@ -693,23 +693,23 @@ export default function GaleriasPage () {
                     onUploaded={path =>
                       setFormValues(prev => ({
                         ...prev,
-                        url_principal: path
+                        url_imagen: path
                       }))
                     }
                   />
 
                   {/* Info y preview de imagen guardada */}
-                  {formValues.url_principal && (
+                  {formValues.url_imagen && (
                     <div className='mt-2 flex items-center gap-3'>
                       <div className='text-[11px] text-emerald-400 break-all'>
-                        Imagen actual: {formValues.url_principal}
+                        Imagen actual: {formValues.url_imagen}
                       </div>
                       <div className='shrink-0'>
                         <img
                           src={
-                            formValues.url_principal.startsWith('http')
-                              ? formValues.url_principal
-                              : `/${formValues.url_principal}`
+                            formValues.url_imagen.startsWith('http')
+                              ? formValues.url_imagen
+                              : `/${formValues.url_imagen}`
                           }
                           alt='Imagen de la galería'
                           className='h-16 w-16 rounded-lg object-cover border border-slate-700'

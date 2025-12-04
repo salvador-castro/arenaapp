@@ -120,7 +120,7 @@ export async function PUT (
       requiere_reserva,
       horario_desde,
       horario_hasta,
-      url_principal,
+      url_imagen,
       meta_title,
       meta_description,
       es_destacado,
@@ -132,7 +132,7 @@ export async function PUT (
       !nombre ||
       !direccion ||
       !resena ||
-      !url_principal
+      !url_imagen
     ) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
@@ -166,7 +166,7 @@ export async function PUT (
         requiere_reserva = $18,
         horario_desde = $19,
         horario_hasta = $20,
-        url_principal = $21,
+        url_imagen = $21,
         meta_title = $22,
         meta_description = $23,
         es_destacado = $24,
@@ -195,7 +195,7 @@ export async function PUT (
         !!requiere_reserva,                       // $18
         horario_desde || null,                    // $19
         horario_hasta || null,                    // $20
-        url_principal,                            // $21
+        url_imagen,                            // $21
         meta_title || null,                       // $22
         meta_description || null,                 // $23
         !!es_destacado,                           // $24
@@ -229,7 +229,7 @@ export async function PUT (
         requiere_reserva,
         horario_desde,
         horario_hasta,
-        url_principal,
+        url_imagen,
         meta_title,
         meta_description,
         es_destacado,
