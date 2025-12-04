@@ -495,7 +495,7 @@ export default function BaresPage () {
                       {b.estrellas ? '★'.repeat(Math.min(b.estrellas, 5)) : '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {b.es_destacado}
+                      {b.es_destacado ? 'Si' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
                       <div className='inline-flex items-center gap-2'>
