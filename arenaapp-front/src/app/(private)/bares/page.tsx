@@ -446,6 +446,9 @@ export default function BaresPage () {
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     ⭐
                   </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Es destacado
+                  </th>
                   <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
                     Acciones
                   </th>
@@ -490,6 +493,9 @@ export default function BaresPage () {
                     </td>
                     <td className='px-3 py-2 text-xs text-yellow-300'>
                       {b.estrellas ? '★'.repeat(Math.min(b.estrellas, 5)) : '-'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {b.es_destacado}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
                       <div className='inline-flex items-center gap-2'>
