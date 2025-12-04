@@ -193,6 +193,9 @@ export default function GaleriasPage () {
         throw new Error(`Error al cargar detalle de galería (${res.status})`)
       }
       const full = (await res.json()) as AdminGallery
+
+      console.log('DETALLE GALERIA FULL ===>', full) // 👈 revisar en consola
+
       openEditForm(full)
     } catch (err: any) {
       console.error(err)
@@ -218,7 +221,7 @@ export default function GaleriasPage () {
       tiene_entrada_gratuita: !!g.tiene_entrada_gratuita,
       es_destacado: !!g.es_destacado,
       resena: g.resena ?? '',
-      url_principal: g.url_principal ?? '',
+      url_principal: g.url_principal ?? '', // 👈 importante
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO'
     })
 
@@ -684,6 +687,8 @@ export default function GaleriasPage () {
                   <label className='block text-xs mb-1 text-slate-300'>
                     Imagen *
                   </label>
+
+                  {/* Uploader */}
                   <UploadImage
                     onUploaded={path =>
                       setFormValues(prev => ({
@@ -692,11 +697,27 @@ export default function GaleriasPage () {
                       }))
                     }
                   />
+
+                  {/* Info y preview de imagen guardada */}
                   {formValues.url_principal && (
-                    <p className='mt-1 text-[11px] text-emerald-400'>
-                      Imagen subida: {formValues.url_principal}
-                    </p>
+                    <div className='mt-2 flex items-center gap-3'>
+                      <div className='text-[11px] text-emerald-400 break-all'>
+                        Imagen actual: {formValues.url_principal}
+                      </div>
+                      <div className='shrink-0'>
+                        <img
+                          src={
+                            formValues.url_principal.startsWith('http')
+                              ? formValues.url_principal
+                              : `/${formValues.url_principal}`
+                          }
+                          alt='Imagen de la galería'
+                          className='h-16 w-16 rounded-lg object-cover border border-slate-700'
+                        />
+                      </div>
+                    </div>
                   )}
+
                   <p className='mt-1 text-[10px] text-slate-500'>
                     Se guarda en <code>public/uploads/[sección]</code> y en la
                     base se almacena la ruta relativa (por ejemplo:{' '}
