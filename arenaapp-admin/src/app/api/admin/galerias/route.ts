@@ -1,4 +1,3 @@
-//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-admin\src\app\api\admin\galerias\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -86,6 +85,7 @@ export async function GET (req: NextRequest) {
         anio_fundacion,
         tiene_entrada_gratuita,
         requiere_reserva,
+        es_destacado,
         estado,
         created_at,
         updated_at
@@ -171,6 +171,7 @@ export async function POST (req: NextRequest) {
       url_principal,
       meta_title,
       meta_description,
+      es_destacado,
       estado
     } = body
 
@@ -217,6 +218,7 @@ export async function POST (req: NextRequest) {
         url_principal,
         meta_title,
         meta_description,
+        es_destacado,
         estado
       )
       VALUES (
@@ -224,7 +226,8 @@ export async function POST (req: NextRequest) {
         $6, $7, $8, $9, $10,
         $11, $12, $13, $14, $15,
         $16, $17, $18, $19, $20,
-        $21, $22, $23, $24, $25
+        $21, $22, $23, $24, $25,
+        $26
       )
       RETURNING
         id,
@@ -252,6 +255,7 @@ export async function POST (req: NextRequest) {
         url_principal,
         meta_title,
         meta_description,
+        es_destacado,
         estado,
         created_at,
         updated_at
@@ -278,10 +282,11 @@ export async function POST (req: NextRequest) {
         !!requiere_reserva,                  // $19
         horario_desde || null,               // $20
         horario_hasta || null,               // $21
-        url_principal,                    // $22
+        url_principal,                       // $22
         meta_title || null,                  // $23
         meta_description || null,            // $24
-        estado || 'PUBLICADO'                // $25
+        !!es_destacado,                      // $25
+        estado || 'PUBLICADO'                // $26
       ]
     )
 

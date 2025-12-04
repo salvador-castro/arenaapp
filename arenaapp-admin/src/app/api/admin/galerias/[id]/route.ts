@@ -66,6 +66,7 @@ export async function GET (
         url_principal,
         meta_title,
         meta_description,
+        es_destacado,
         estado,
         created_at,
         updated_at
@@ -149,6 +150,7 @@ export async function PUT (
       url_principal,
       meta_title,
       meta_description,
+      es_destacado,
       estado
     } = body
 
@@ -194,9 +196,10 @@ export async function PUT (
         url_principal = $21,
         meta_title = $22,
         meta_description = $23,
-        estado = $24,
+        es_destacado = $24,
+        estado = $25,
         updated_at = now()
-      WHERE id = $25
+      WHERE id = $26
       `,
       [
         nombre,                                   // $1
@@ -219,11 +222,12 @@ export async function PUT (
         !!requiere_reserva,                       // $18
         horario_desde || null,                    // $19
         horario_hasta || null,                    // $20
-        url_principal,                         // $21
+        url_principal,                            // $21
         meta_title || null,                       // $22
         meta_description || null,                 // $23
-        estado || 'PUBLICADO',                    // $24
-        id                                        // $25
+        !!es_destacado,                           // $24
+        estado || 'PUBLICADO',                    // $25
+        id                                        // $26
       ]
     )
 
@@ -255,6 +259,7 @@ export async function PUT (
         url_principal,
         meta_title,
         meta_description,
+        es_destacado,
         estado,
         created_at,
         updated_at

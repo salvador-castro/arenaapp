@@ -1,4 +1,3 @@
-//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\app\(private)\galeria\page.tsx
 'use client'
 
 import React, { useEffect, useState, FormEvent, ChangeEvent } from 'react'
@@ -29,6 +28,7 @@ interface AdminGallery {
   anio_fundacion?: number | null
   tiene_entrada_gratuita?: boolean | null
   requiere_reserva?: boolean | null
+  es_destacado?: boolean | null
   estado?: string | null
   created_at?: string | null
   updated_at?: string | null
@@ -57,6 +57,7 @@ interface FormValues {
   horario_desde: string
   horario_hasta: string
   tiene_entrada_gratuita: boolean
+  es_destacado: boolean
   resena: string
   url_principal: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
@@ -87,6 +88,7 @@ export default function GaleriasPage () {
     horario_desde: '',
     horario_hasta: '',
     tiene_entrada_gratuita: false,
+    es_destacado: false,
     resena: '',
     url_principal: '',
     estado: 'PUBLICADO'
@@ -170,6 +172,7 @@ export default function GaleriasPage () {
       horario_desde: '',
       horario_hasta: '',
       tiene_entrada_gratuita: false,
+      es_destacado: false,
       resena: '',
       url_principal: '',
       estado: 'PUBLICADO'
@@ -213,6 +216,7 @@ export default function GaleriasPage () {
       horario_desde: g.horario_desde ? g.horario_desde.slice(0, 5) : '',
       horario_hasta: g.horario_hasta ? g.horario_hasta.slice(0, 5) : '',
       tiene_entrada_gratuita: !!g.tiene_entrada_gratuita,
+      es_destacado: !!g.es_destacado,
       resena: g.resena ?? '',
       url_principal: g.url_principal ?? '',
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO'
@@ -417,6 +421,9 @@ export default function GaleriasPage () {
                     Entrada gratis
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Destacado
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     Estado
                   </th>
                   <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
@@ -428,7 +435,7 @@ export default function GaleriasPage () {
                 {galerias.length === 0 && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className='px-3 py-4 text-center text-xs text-slate-500'
                     >
                       No hay galerías que coincidan con la búsqueda.
@@ -455,6 +462,9 @@ export default function GaleriasPage () {
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {g.tiene_entrada_gratuita ? 'Sí' : 'No'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {g.es_destacado ? 'Sí' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
                       {g.estado || '-'}
@@ -601,8 +611,8 @@ export default function GaleriasPage () {
                   </div>
                 </div>
 
-                {/* Horarios + entrada gratuita */}
-                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+                {/* Horarios + checkboxes */}
+                <div className='grid grid-cols-1 sm:grid-cols-4 gap-3'>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
                       Hora desde
@@ -639,6 +649,18 @@ export default function GaleriasPage () {
                       Entrada gratuita
                     </label>
                   </div>
+                  <div className='flex items-end'>
+                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                      <input
+                        type='checkbox'
+                        name='es_destacado'
+                        checked={formValues.es_destacado}
+                        onChange={handleChange}
+                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                      />
+                      Es destacado
+                    </label>
+                  </div>
                 </div>
 
                 {/* Reseña */}
@@ -657,7 +679,7 @@ export default function GaleriasPage () {
                   />
                 </div>
 
-                {/* Imagen + */}
+                {/* Imagen */}
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
                     Imagen *
