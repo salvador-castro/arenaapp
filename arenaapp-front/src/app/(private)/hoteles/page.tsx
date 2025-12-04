@@ -508,7 +508,7 @@ export default function HotelesPage () {
                       {h.estrellas ? '★'.repeat(Math.min(h.estrellas, 5)) : '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {h.es_destacado ? 'Sí' : 'No'}
+                      {h.es_destacado ? 'Si' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
                       <div className='inline-flex items-center gap-2'>
