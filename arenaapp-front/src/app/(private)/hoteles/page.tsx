@@ -460,7 +460,7 @@ export default function HotelesPage () {
                     ⭐
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Wifi
+                    Es destacado
                   </th>
                   <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
                     Acciones
@@ -508,7 +508,7 @@ export default function HotelesPage () {
                       {h.estrellas ? '★'.repeat(Math.min(h.estrellas, 5)) : '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {h.detalle?.wifi ? 'Sí' : 'No'}
+                      {h.es_destacado ? 'Sí' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
                       <div className='inline-flex items-center gap-2'>
