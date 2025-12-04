@@ -1,4 +1,4 @@
-// src/components/RestaurantesDashboard.tsx
+// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\components\RestaurantesDashboard.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -41,9 +41,7 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
-const DESTACADOS_ENDPOINT = `${API_BASE}/api/restaurantes/destacados`
-// Ejemplo: en tu backend podés hacer que este endpoint ya filtre es_destacado = true
-// Si no lo tenés, cambiá por el endpoint que tengas disponible.
+const DESTACADOS_ENDPOINT = `${API_BASE}/api/admin/restaurantes/destacados`
 
 function renderPriceRange (rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'

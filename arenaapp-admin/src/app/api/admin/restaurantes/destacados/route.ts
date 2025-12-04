@@ -1,4 +1,4 @@
-// src/app/api/restaurantes/destacados/route.ts
+// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-admin\src\app\api\admin\restaurantes\destacados\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 
