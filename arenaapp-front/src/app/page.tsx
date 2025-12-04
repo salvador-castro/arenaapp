@@ -5,7 +5,7 @@ import AdBanner from 'src/components/AdBanner'
 import CategoryChips from 'src/components/CategoryChips'
 import PromoBanner from 'src/components/PromoBanner'
 import RecommendedSection from 'src/components/RecommendedSection'
-import NearbySection from 'src/components/NearbySection'
+import RestaurantesDashboard from 'src/components/RestaurantesDashboard'
 import WeekendEventsSection from 'src/components/WeekendEventsSection'
 
 export default function HomePage () {
@@ -26,7 +26,7 @@ export default function HomePage () {
         </section>
 
         <section className='px-4 pt-6'>
-          <NearbySection isLoggedIn={isLoggedIn} />
+          <RestaurantesDashboard isLoggedIn={isLoggedIn} />
         </section>
 
         <section className='px-4 pt-6 pb-4'>
