@@ -27,6 +27,7 @@ export function OPTIONS () {
 }
 
 // GET /api/admin/galerias/:id
+// GET /api/admin/galerias/:id
 export async function GET (
   req: NextRequest,
   context: ContextWithId
@@ -40,36 +41,7 @@ export async function GET (
 
     const result = await db.query(
       `
-      SELECT
-        id,
-        nombre,
-        slug,
-        descripcion_corta,
-        resena,
-        direccion,
-        zona,
-        ciudad,
-        provincia,
-        pais,
-        lat,
-        lng,
-        telefono,
-        email_contacto,
-        sitio_web,
-        instagram,
-        facebook,
-        anio_fundacion,
-        tiene_entrada_gratuita,
-        requiere_reserva,
-        horario_desde,
-        horario_hasta,
-        url_principal,
-        meta_title,
-        meta_description,
-        es_destacado,
-        estado,
-        created_at,
-        updated_at
+      SELECT *
       FROM galerias
       WHERE id = $1
       `,
@@ -114,6 +86,7 @@ export async function GET (
     })
   }
 }
+
 
 // PUT /api/admin/galerias/:id
 export async function PUT (
