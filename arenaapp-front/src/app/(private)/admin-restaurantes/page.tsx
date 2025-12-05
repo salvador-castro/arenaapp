@@ -61,12 +61,12 @@ interface FormValues {
   resena: string
 }
 
-function priceTierToSymbols (tier?: number | null) {
+function priceTierToSymbols(tier?: number | null) {
   if (!tier || tier < 1) return '-'
   return '$'.repeat(Math.min(tier, 5))
 }
 
-export default function AdminRestaurantesPage () {
+export default function AdminRestaurantesPage() {
   const router = useRouter()
   const { user, isLoading } = useAuth()
 
@@ -120,7 +120,8 @@ export default function AdminRestaurantesPage () {
     }
   }, [user, isLoading, router])
 
-  async function fetchRestaurants (pageToLoad: number, searchTerm: string) {
+
+  async function fetchRestaurants(pageToLoad: number, searchTerm: string) {
     try {
       if (!user || user.rol !== 'ADMIN') return
 
@@ -168,7 +169,7 @@ export default function AdminRestaurantesPage () {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, search])
 
-  function openCreateForm () {
+  function openCreateForm() {
     setEditing(null)
     setFormValues({
       nombre: '',
@@ -193,23 +194,23 @@ export default function AdminRestaurantesPage () {
     setIsFormOpen(true)
   }
 
-  function openEditForm (r: AdminRestaurant) {
+  function openEditForm(r: AdminRestaurant) {
     setEditing(r)
     setFormValues({
       nombre: r.nombre ?? '',
       tipo_comida: r.tipo_comida
         ? r.tipo_comida
-            .split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
         : [],
       rango_precios: typeof r.rango_precios === 'number' ? r.rango_precios : '',
       estrellas: typeof r.estrellas === 'number' ? r.estrellas : '',
       zona: r.zona
         ? r.zona
-            .split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
         : [],
       direccion: r.direccion ?? '',
       ciudad: r.ciudad ?? '',
@@ -228,12 +229,12 @@ export default function AdminRestaurantesPage () {
     setIsFormOpen(true)
   }
 
-  function closeForm () {
+  function closeForm() {
     setIsFormOpen(false)
     setEditing(null)
   }
 
-  function handleChange (
+  function handleChange(
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) {
     const target = e.target
@@ -261,7 +262,7 @@ export default function AdminRestaurantesPage () {
     }))
   }
 
-  async function handleSubmit (e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
@@ -317,7 +318,7 @@ export default function AdminRestaurantesPage () {
     }
   }
 
-  async function confirmDelete () {
+  async function confirmDelete() {
     if (!deleteTarget) return
     setIsDeleting(true)
     setError(null)
@@ -835,8 +836,8 @@ export default function AdminRestaurantesPage () {
                     {isSubmitting
                       ? 'Guardando...'
                       : editing
-                      ? 'Guardar cambios'
-                      : 'Crear restaurante'}
+                        ? 'Guardar cambios'
+                        : 'Crear restaurante'}
                   </button>
                 </div>
               </form>
