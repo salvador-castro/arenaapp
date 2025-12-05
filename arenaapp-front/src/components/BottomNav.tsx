@@ -45,7 +45,6 @@ export default function BottomNav () {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
-    // cerrar menú cuando cambia la ruta
     setIsMenuOpen(false)
   }, [pathname])
 

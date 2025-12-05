@@ -1,4 +1,4 @@
-// src/components/RestaurantesDashboard.tsx
+//C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-front\src\app\(private)\dashboard\page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
