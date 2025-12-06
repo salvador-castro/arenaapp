@@ -38,7 +38,7 @@ export async function GET (req: NextRequest) {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
 
-    const db = getDb()
+    const db = await getDb()
     const { searchParams } = new URL(req.url)
 
     const page = Number(searchParams.get('page') ?? '1')
@@ -188,7 +188,7 @@ export async function POST (req: NextRequest) {
       })
     }
 
-    const db = getDb()
+    const db = await getDb()
     const slug = slugify(nombre)
 
     const insertResult = await db.query(

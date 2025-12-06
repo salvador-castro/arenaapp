@@ -24,7 +24,7 @@ export function OPTIONS () {
 // GET /api/debug/db
 export async function GET (req: NextRequest) {
   try {
-    const db = await getDb()
+    const db = await await getDb()
 
     const { rows } = await db.query('SELECT now() as ahora')
 

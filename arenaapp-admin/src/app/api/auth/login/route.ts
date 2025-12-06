@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const db = getDb()
+    const db = await getDb()
     const result = await db.query(
       `
       SELECT id, nombre, apellido, email, password_hash, rol

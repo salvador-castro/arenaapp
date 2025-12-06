@@ -37,7 +37,7 @@ export async function GET (
     requireAdmin(payload)
 
     const { id } = await context.params
-    const db = getDb()
+    const db = await getDb()
 
     const result = await db.query(
       `
@@ -140,7 +140,7 @@ export async function PUT (
       })
     }
 
-    const db = getDb()
+    const db = await getDb()
 
     await db.query(
       `
@@ -287,7 +287,7 @@ export async function DELETE (
     requireAdmin(payload)
 
     const { id } = await context.params
-    const db = getDb()
+    const db = await getDb()
 
     await db.query('DELETE FROM galerias WHERE id = $1', [id])
 

@@ -71,7 +71,7 @@ export async function POST (req: NextRequest) {
 
     const relativeUrl = `/uploads/avatars/${filename}`
 
-    const db = getDb()
+    const db = await getDb()
     await db.query(
       `
       UPDATE usuarios

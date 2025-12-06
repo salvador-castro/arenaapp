@@ -25,7 +25,7 @@ export function OPTIONS () {
 // GET /api/restaurantes  (público: USER, ADMIN, invitado si querés)
 export async function GET (req: NextRequest) {
   try {
-    const db = getDb()
+    const db = await getDb()
     const { searchParams } = new URL(req.url)
     const search = (searchParams.get('search') || '').trim().toLowerCase()
 

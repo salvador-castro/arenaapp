@@ -36,7 +36,7 @@ export async function GET (req: NextRequest) {
       })
     }
 
-    const db = getDb()
+    const db = await getDb()
     const result = await db.query(
       `
       SELECT
@@ -125,7 +125,7 @@ export async function PUT (req: NextRequest) {
       })
     }
 
-    const db = getDb()
+    const db = await getDb()
 
     // Si quiere cambiar contraseña, validamos la actual y seteamos la nueva
     if (passwordActual || passwordNueva) {

@@ -25,7 +25,7 @@ export function OPTIONS () {
 // GET /api/restaurantes/destacados  (público, sin admin)
 export async function GET (req: NextRequest) {
   try {
-    const db = getDb()
+    const db = await getDb()
 
     const result = await db.query(
       `

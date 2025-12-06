@@ -31,7 +31,7 @@ export async function GET (req: NextRequest) {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
 
-    const db = getDb()
+    const db = await getDb()
 
     const { rows } = await db.query(
       `
@@ -116,7 +116,7 @@ export async function POST (req: NextRequest) {
     const activoFinal = activo ? 1 : 0
 
     const passwordHash = await bcrypt.hash(password, 10)
-    const db = getDb()
+    const db = await getDb()
 
     // INSERT + RETURNING en Postgres
     const { rows } = await db.query(

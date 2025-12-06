@@ -34,7 +34,7 @@ export async function GET (
     const payload = await verifyAuth(req)
     requireAdmin(payload)
 
-    const db = getDb()
+    const db = await getDb()
 
     const { rows } = await db.query(
       `
@@ -133,7 +133,7 @@ export async function PUT (
     const rolFinal = rol === 'ADMIN' ? 'ADMIN' : 'USER'
     const activoFinal = activo ? 1 : 0
 
-    const db = getDb()
+    const db = await getDb()
 
     // Si viene password nueva → también actualizamos password_hash
     if (password && password.trim().length > 0) {
@@ -286,7 +286,7 @@ export async function DELETE (
     const payload = await verifyAuth(req)
     requireAdmin(payload)
 
-    const db = getDb()
+    const db = await getDb()
 
     const result = await db.query(
       'DELETE FROM usuarios WHERE id = $1',

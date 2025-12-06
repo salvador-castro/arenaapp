@@ -83,7 +83,7 @@ export async function POST (req: NextRequest) {
     const docNormalized =
       tipo_documento === 'Pasaporte' ? docTrim.toUpperCase() : docTrim
 
-    const db = getDb()
+    const db = await getDb()
 
     const exists = await db.query(
       `

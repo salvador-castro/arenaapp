@@ -33,7 +33,7 @@ export async function GET (req: NextRequest, context: ContextWithId) {
     requireAdmin(payload)
 
     const { id } = await context.params
-    const db = getDb()
+    const db = await getDb()
 
     const result = await db.query(
       `
@@ -157,7 +157,7 @@ export async function PUT (req: NextRequest, context: ContextWithId) {
       })
     }
 
-    const db = getDb()
+    const db = await getDb()
 
     await db.query(
       `
@@ -283,7 +283,7 @@ export async function DELETE (req: NextRequest, context: ContextWithId) {
     requireAdmin(payload)
 
     const { id } = await context.params
-    const db = getDb()
+    const db = await getDb()
 
     await db.query('DELETE FROM bares WHERE id = $1', [id])
 
