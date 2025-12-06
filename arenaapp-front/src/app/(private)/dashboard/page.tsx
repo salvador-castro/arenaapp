@@ -43,9 +43,6 @@ export default function DashboardPage () {
                 className='h-8 w-auto'
                 priority
               />
-              <span className='text-sm font-semibold text-slate-100'>
-                ArenaPress
-              </span>
             </div>
           </button>
 
