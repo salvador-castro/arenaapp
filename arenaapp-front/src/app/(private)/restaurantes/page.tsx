@@ -1,4 +1,3 @@
-// C:\Users\salvaCastro\Desktop\arenaapp-front\src\app\(private)\restaurantes\page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -68,9 +67,8 @@ export default function RestaurantesPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // 👇 Usamos la forma consistente con el resto del proyecto
-  const { auth, isLoading }: any = useAuth()
-  const user = auth?.user
+  // 👈 AHORA usamos user directo del contexto
+  const { user, isLoading }: any = useAuth()
 
   const restauranteIdParam = searchParams.get('restauranteId')
   const restauranteId = restauranteIdParam ? Number(restauranteIdParam) : null
@@ -89,7 +87,7 @@ export default function RestaurantesPage () {
   const [priceFilter, setPriceFilter] = useState('')
   const [tiposFilter, setTiposFilter] = useState<string[]>([])
 
-  // 1) Guardia de auth: permite USER y ADMIN, pero obliga a estar logueado
+  // 1) Guardia de auth: obliga a estar logueado
   useEffect(() => {
     if (isLoading) return
 
@@ -148,7 +146,6 @@ export default function RestaurantesPage () {
   const closeModal = () => {
     setIsModalOpen(false)
     setSelectedRestaurant(null)
-    // limpiar el query param al cerrar
     router.push('/restaurantes')
   }
 
@@ -228,7 +225,6 @@ export default function RestaurantesPage () {
       )
     }
 
-    // orden simple: destacados primero, luego estrellas, luego nombre
     result.sort((a, b) => {
       if (a.es_destacado && !b.es_destacado) return -1
       if (!a.es_destacado && b.es_destacado) return 1
@@ -387,7 +383,6 @@ export default function RestaurantesPage () {
                 onClick={() => {
                   setSelectedRestaurant(place)
                   setIsModalOpen(true)
-                  // actualizamos la URL para compartir / recargar directo
                   router.push(`/restaurantes?restauranteId=${place.id}`)
                 }}
                 className='text-left rounded-2xl border border-slate-800 bg-slate-900/50 p-3 flex gap-3 hover:border-emerald-500/60 transition-colors'

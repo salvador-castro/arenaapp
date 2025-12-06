@@ -1,14 +1,9 @@
-//C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-front\src\app\(private)\dashboard\page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
 import { useAuthRedirect } from 'src/hooks/useAuthRedirect'
 import { useAuth } from '@/context/AuthContext'
-import { Card, CardHeader, CardBody, Image as HeroImage } from '@heroui/react'
-
-type Props = {
-  isLoggedIn: boolean
-}
+import { Card, CardHeader, Image as HeroImage } from '@heroui/react'
 
 interface Restaurant {
   id: number
@@ -35,19 +30,16 @@ interface Restaurant {
   resena: string | null
 }
 
-// BASE: dominio del admin (según tu .env)
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
-// Endpoint que ya tenés en el admin:
-// src/app/api/admin/restaurantes/destacados/route.ts
 const DESTACADOS_ENDPOINT = `${API_BASE}/api/admin/restaurantes/destacados`
 
-export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
+export default function DashboardPage () {
+  const { user, isLoading }: any = useAuth()
+  const isLoggedIn = !isLoading && !!user
   const { goTo } = useAuthRedirect(isLoggedIn)
-  const { auth }: any = useAuth()
-  const userRole: string | undefined = auth?.user?.role
 
   const [places, setPlaces] = useState<Restaurant[]>([])
   const [loading, setLoading] = useState<boolean>(false)
@@ -74,7 +66,6 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
           ? data
           : data.restaurantes ?? []
 
-        // Por seguridad, filtramos otra vez es_destacado
         const destacados = restaurantes.filter(r => r.es_destacado === true)
 
         setPlaces(destacados)
@@ -90,20 +81,8 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
   }, [])
 
   const handleMoreInfo = (place: Restaurant) => {
-    // No logueado → register
-    if (!isLoggedIn) {
-      goTo('/register')
-      return
-    }
-
-    // Logueado como "user" → /restaurantes con el id del destacado
-    if (userRole === 'user') {
-      goTo(`/restaurantes?restauranteId=${place.id}`)
-      return
-    }
-
-    // Cualquier otro rol (ej. admin) simplemente va a /restaurantes
-    goTo('/restaurantes')
+    // siempre usamos goTo con la ruta PROTEGIDA
+    goTo(`/restaurantes?restauranteId=${place.id}`)
   }
 
   return (
@@ -114,7 +93,7 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
         <button
           type='button'
           className='text-xs font-medium text-emerald-400 underline underline-offset-4 cursor-pointer hover:text-emerald-300'
-          onClick={() => goTo('/lugares')}
+          onClick={() => goTo('/restaurantes')}
         >
           Ver más
         </button>
@@ -124,9 +103,7 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
         <p className='text-xs text-slate-400'>Cargando restaurantes...</p>
       )}
 
-      {error && !loading && (
-        <p className='text-xs text-red-400'>{error}</p>
-      )}
+      {error && !loading && <p className='text-xs text-red-400'>{error}</p>}
 
       {!loading && !error && places.length === 0 && (
         <p className='text-xs text-slate-400'>
@@ -141,7 +118,6 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
               key={place.id}
               className='bg-slate-900/60 border border-slate-800 overflow-hidden'
             >
-              {/* Imagen arriba, full width */}
               <HeroImage
                 alt={place.nombre}
                 className='w-full h-40 object-cover'
@@ -153,7 +129,6 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
                 height={160}
               />
 
-              {/* Texto + botón abajo */}
               <CardHeader className='px-4 py-3 flex items-center justify-between gap-3'>
                 <div className='flex flex-col gap-1 min-w-0'>
                   <p className='text-[10px] uppercase font-semibold text-emerald-400 truncate'>
