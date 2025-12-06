@@ -34,14 +34,19 @@ export default function DashboardPage () {
             onClick={handleLogoClick}
             className='flex items-center gap-2 focus:outline-none'
           >
-            <Image
-              src={LOGO_URL}
-              alt='ArenaPress'
-              width={120}
-              height={32}
-              className='h-8 w-auto'
-              priority
-            />
+            <div className='flex items-center gap-2'>
+              <Image
+                src={LOGO_URL}
+                alt='ArenaPress'
+                width={120}
+                height={32}
+                className='h-8 w-auto'
+                priority
+              />
+              <span className='text-sm font-semibold text-slate-100'>
+                ArenaPress
+              </span>
+            </div>
           </button>
 
           <UserDropdown />
@@ -52,12 +57,12 @@ export default function DashboardPage () {
       <main className='flex-1 max-w-3xl mx-auto px-4 pt-4 pb-4 space-y-6'>
         {/* Saludo */}
         <header className='flex flex-col gap-1'>
-          <h1 className='text-xs text-slate-400'>
+          <p className='text-xs text-slate-400'>
             Bienvenido{firstName ? `, ${firstName}` : ''} 👋
-          </h1>
-          <h2 className='text-xl font-semibold'>
+          </p>
+          <h1 className='text-xl font-semibold'>
             ¿Qué te gustaría explorar hoy?
-          </h2>
+          </h1>
         </header>
 
         {/* Explorá por categoría */}
