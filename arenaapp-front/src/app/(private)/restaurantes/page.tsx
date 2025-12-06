@@ -76,6 +76,7 @@ export default function RestaurantesPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // 🔐 compat: lee user directo o auth.user
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
 
@@ -159,6 +160,12 @@ export default function RestaurantesPage () {
     setIsModalOpen(false)
     setSelectedRestaurant(null)
     router.push('/restaurantes')
+  }
+
+  const openModalFromCard = (place: Restaurant) => {
+    setSelectedRestaurant(place)
+    setIsModalOpen(true)
+    router.push(`/restaurantes?restauranteId=${place.id}`)
   }
 
   // 4) Opciones dinámicas para filtros
@@ -422,15 +429,9 @@ export default function RestaurantesPage () {
           <>
             <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
               {paginatedRestaurants.map(place => (
-                <button
+                <div
                   key={place.id}
-                  type='button'
-                  onClick={() => {
-                    setSelectedRestaurant(place)
-                    setIsModalOpen(true)
-                    router.push(`/restaurantes?restauranteId=${place.id}`)
-                  }}
-                  className='text-left rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
+                  className='rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
                 >
                   <div className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800'>
                     <Image
@@ -479,8 +480,18 @@ export default function RestaurantesPage () {
                         {place.direccion}
                       </p>
                     )}
+
+                    <div className='mt-2 flex justify-end'>
+                      <button
+                        type='button'
+                        onClick={() => openModalFromCard(place)}
+                        className='rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors'
+                      >
+                        Más info
+                      </button>
+                    </div>
                   </div>
-                </button>
+                </div>
               ))}
             </section>
 
@@ -515,8 +526,8 @@ export default function RestaurantesPage () {
 
         {/* MODAL detalle */}
         {isModalOpen && selectedRestaurant && (
-          <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-10 pb-24'>
-            <div className='relative w-full max-w-lg max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
+          <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'>
+            <div className='relative mt-10 mb-24 w-full max-w-lg max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
               <button
                 type='button'
                 onClick={closeModal}
