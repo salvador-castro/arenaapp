@@ -4,8 +4,9 @@
 import { useEffect, useState } from 'react'
 import { useAuthRedirect } from 'src/hooks/useAuthRedirect'
 import { useAuth } from '@/context/AuthContext'
-import { Card, CardHeader, CardBody, Image as HeroImage } from '@heroui/react'
+import { Card, CardHeader, CardBody } from '@heroui/react'
 import { Instagram } from 'lucide-react'
+import Image from 'next/image'
 
 type Props = {
   isLoggedIn: boolean
@@ -36,7 +37,6 @@ interface Restaurant {
   resena: string | null
 }
 
-// Ajustá el endpoint según tu backend
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
@@ -69,7 +69,7 @@ function getInstagramHandle (url: string | null): string {
 
 export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
   const { goTo } = useAuthRedirect(isLoggedIn)
-  const { auth }: any = useAuth() // cast a any para no pelear con los tipos que ya tengas
+  const { auth }: any = useAuth()
   const userRole: string | undefined = auth?.user?.role
 
   const [places, setPlaces] = useState<Restaurant[]>([])
@@ -97,14 +97,10 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
 
         const data = await res.json()
 
-        // Adaptá esto según cómo responda tu API:
-        // - si la API devuelve { restaurantes: [...] }
-        // - o si devuelve directamente [...]
         const restaurantes: Restaurant[] = Array.isArray(data)
           ? data
           : data.restaurantes ?? []
 
-        // Filtro de seguridad por si el endpoint no filtra es_destacado
         const destacados = restaurantes.filter(r => r.es_destacado === true)
 
         setPlaces(destacados)
@@ -120,13 +116,14 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
   }, [])
 
   const handleMoreInfo = (place: Restaurant) => {
-    // Solo usuarios logueados con rol 'user' pueden ver el modal
-    if (!isLoggedIn || userRole !== 'user') {
-      // Podés cambiar la ruta si tu login está en otro path
-      goTo('/login')
+    // si NO está logueado → login con redirect a /restaurantes?restauranteId=ID
+    if (!isLoggedIn) {
+      const redirectUrl = `/restaurantes?restauranteId=${place.id}`
+      goTo(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
       return
     }
 
+    // si está logueado (user o admin) → solo mostrar modal
     setSelectedPlace(place)
     setIsModalOpen(true)
   }
@@ -195,16 +192,18 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
 
               <CardBody className='overflow-visible py-2 px-4'>
                 <div className='flex items-center gap-3'>
-                  <HeroImage
-                    alt={place.nombre}
-                    className='object-cover rounded-xl w-24 h-24 shrink-0'
-                    src={
-                      place.url_imagen ||
-                      '/images/placeholders/restaurante-placeholder.jpg'
-                    }
-                    width={96}
-                    height={96}
-                  />
+                  <div className='relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-800'>
+                    <Image
+                      alt={place.nombre}
+                      src={
+                        place.url_imagen ||
+                        '/images/placeholders/restaurante-placeholder.jpg'
+                      }
+                      fill
+                      className='object-cover'
+                      sizes='96px'
+                    />
+                  </div>
 
                   <div className='flex flex-col gap-1 text-[11px]'>
                     <div className='flex items-center gap-2'>
@@ -231,11 +230,10 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
         </div>
       )}
 
-      {/* Modal de detalle */}
+      {/* Modal de detalle (igual que antes) */}
       {isModalOpen && selectedPlace && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4'>
           <div className='relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
-            {/* Cerrar */}
             <button
               type='button'
               onClick={closeModal}
@@ -245,18 +243,19 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
             </button>
 
             <div className='p-4 sm:p-6 space-y-4'>
-              {/* Encabezado */}
               <div className='flex flex-col sm:flex-row gap-4'>
-                <HeroImage
-                  alt={selectedPlace.nombre}
-                  className='object-cover rounded-xl w-full sm:w-40 h-32 sm:h-40'
-                  src={
-                    selectedPlace.url_imagen ||
-                    '/images/placeholders/restaurante-placeholder.jpg'
-                  }
-                  width={160}
-                  height={160}
-                />
+                <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
+                  <Image
+                    alt={selectedPlace.nombre}
+                    src={
+                      selectedPlace.url_imagen ||
+                      '/images/placeholders/restaurante-placeholder.jpg'
+                    }
+                    fill
+                    className='object-cover'
+                    sizes='(max-width: 640px) 100vw, 160px'
+                  />
+                </div>
 
                 <div className='flex-1 space-y-1'>
                   <p className='text-[11px] uppercase font-semibold text-emerald-400'>
@@ -295,7 +294,6 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
                 </div>
               </div>
 
-              {/* Reseña */}
               {selectedPlace.resena && (
                 <div className='space-y-1'>
                   <h4 className='text-sm font-semibold'>Reseña</h4>
@@ -305,7 +303,6 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
                 </div>
               )}
 
-              {/* Datos prácticos */}
               <div className='grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]'>
                 <div className='space-y-1'>
                   <p className='text-xs font-semibold text-slate-300'>
@@ -376,7 +373,6 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
                 </div>
               </div>
 
-              {/* Footer */}
               <div className='flex justify-end pt-2'>
                 <button
                   type='button'
