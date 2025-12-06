@@ -1,4 +1,4 @@
-// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\components\RestaurantesDashboard.tsx
+// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\components\RestaurantesDestacados.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -67,7 +67,7 @@ function getInstagramHandle (url: string | null): string {
   }
 }
 
-export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
+export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
   const { goTo } = useAuthRedirect(isLoggedIn)
   const { auth }: any = useAuth()
   const userRole: string | undefined = auth?.user?.role
