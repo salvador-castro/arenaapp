@@ -116,13 +116,15 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
   }, [])
 
   const handleMoreInfo = (place: Restaurant) => {
+    // si NO está logueado → login con redirect a /restaurantes?restauranteId=ID
     if (!isLoggedIn) {
       const redirectUrl = `/restaurantes?restauranteId=${place.id}`
-      goTo(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
+
+      goTo(redirectUrl)
       return
     }
 
-    // Logueado (user o admin) → abre modal local
+    // si está logueado (user o admin) → solo mostrar modal
     setSelectedPlace(place)
     setIsModalOpen(true)
   }

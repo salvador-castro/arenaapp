@@ -1,14 +1,13 @@
+// C:\Users\salvaCastro\Desktop\arenaapp-front\src\app\(private)\restaurantes\page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Image from 'next/image'
-import { Instagram } from 'lucide-react'
-
 import { useAuth } from '@/context/AuthContext'
+import Image from 'next/image'
+import { Instagram, SlidersHorizontal } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import UserDropdown from '@/components/UserDropdown'
-import TipoComidaMultiSelect from '@/components/TipoComidaRestaurantes'
 
 interface Restaurant {
   id: number
@@ -39,6 +38,8 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
+const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/restaurantes/public`
+
 function renderPriceRange (rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
   const value = Math.min(Math.max(rango, 1), 5)
@@ -67,40 +68,42 @@ export default function RestaurantesPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // tu AuthContext realmente expone { auth, isLoading }
+  // 👇 Usamos la forma consistente con el resto del proyecto
   const { auth, isLoading }: any = useAuth()
   const user = auth?.user
 
   const restauranteIdParam = searchParams.get('restauranteId')
+  const restauranteId = restauranteIdParam ? Number(restauranteIdParam) : null
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<Restaurant | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   // Filtros
   const [search, setSearch] = useState('')
   const [zonaFilter, setZonaFilter] = useState('')
   const [priceFilter, setPriceFilter] = useState('')
-  const [tiposSeleccionados, setTiposSeleccionados] = useState<string[]>([])
+  const [tiposFilter, setTiposFilter] = useState<string[]>([])
 
-  // 🔐 Obligatorio estar logueado (USER o ADMIN)
+  // 1) Guardia de auth: permite USER y ADMIN, pero obliga a estar logueado
   useEffect(() => {
     if (isLoading) return
 
     if (!user) {
-      const redirectUrl = restauranteIdParam
-        ? `/restaurantes?restauranteId=${restauranteIdParam}`
+      const redirectUrl = restauranteId
+        ? `/restaurantes?restauranteId=${restauranteId}`
         : '/restaurantes'
 
       router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
       return
     }
-  }, [user, isLoading, router, restauranteIdParam])
+  }, [user, isLoading, router, restauranteId])
 
-  // 📥 Cargar TODOS los restaurantes públicos
+  // 2) Cargar TODOS los restaurantes PUBLICADOS (endpoint público)
   useEffect(() => {
     if (!user) return
 
@@ -109,7 +112,7 @@ export default function RestaurantesPage () {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(`${API_BASE}/api/admin/restaurantes/public`, {
+        const res = await fetch(PUBLIC_ENDPOINT, {
           method: 'GET'
         })
 
@@ -121,7 +124,7 @@ export default function RestaurantesPage () {
         setRestaurants(data)
       } catch (err: any) {
         console.error('Error cargando restaurantes públicos', err)
-        setError(err.message ?? 'Error al cargar los restaurantes')
+        setError(err.message ?? 'Error al cargar restaurantes')
       } finally {
         setLoading(false)
       }
@@ -130,29 +133,27 @@ export default function RestaurantesPage () {
     fetchRestaurants()
   }, [user])
 
-  // 🔁 Si viene restauranteId por query y ya tengo la lista, abro el modal
+  // 3) Si venimos con ?restauranteId=9 desde el dashboard, abrir ese modal
   useEffect(() => {
     if (!restaurants.length) return
-    if (!restauranteIdParam) return
+    if (!restauranteId) return
 
-    const idNum = Number(restauranteIdParam)
-    if (Number.isNaN(idNum)) return
-
-    const r = restaurants.find(rest => rest.id === idNum)
-    if (r) {
-      setSelectedRestaurant(r)
+    const found = restaurants.find(r => r.id === restauranteId)
+    if (found) {
+      setSelectedRestaurant(found)
       setIsModalOpen(true)
     }
-  }, [restaurants, restauranteIdParam])
+  }, [restaurants, restauranteId])
 
   const closeModal = () => {
     setIsModalOpen(false)
     setSelectedRestaurant(null)
+    // limpiar el query param al cerrar
     router.push('/restaurantes')
   }
 
-  // Opciones de zona para el select (únicas, no nulas)
-  const zonasOptions = useMemo(
+  // 4) Opciones dinámicas para filtros
+  const zonas = useMemo(
     () =>
       Array.from(
         new Set(
@@ -164,47 +165,89 @@ export default function RestaurantesPage () {
     [restaurants]
   )
 
-  // Lista filtrada según buscador + zona + precio + tipos de comida
-  const filteredRestaurants = useMemo(() => {
-    return restaurants.filter(r => {
-      // Buscador
-      const term = search.trim().toLowerCase()
-      if (term) {
-        const hayMatch =
-          r.nombre.toLowerCase().includes(term) ||
-          (r.zona ?? '').toLowerCase().includes(term) ||
-          (r.ciudad ?? '').toLowerCase().includes(term) ||
-          (r.tipo_comida ?? '').toLowerCase().includes(term)
-        if (!hayMatch) return false
-      }
-
-      // Zona
-      if (zonaFilter && r.zona !== zonaFilter) return false
-
-      // Rango de precios (1–5)
-      if (priceFilter) {
-        const priceNumber = Number(priceFilter)
-        if (Number.isNaN(priceNumber)) return false
-        if ((r.rango_precios ?? 0) !== priceNumber) return false
-      }
-
-      // Multi-select tipo de comida
-      if (tiposSeleccionados.length > 0) {
-        const tiposRest = (r.tipo_comida ?? '')
-          .split(',')
-          .map(t => t.trim().toLowerCase())
-          .filter(Boolean)
-
-        const hayInterseccion = tiposSeleccionados.some(t =>
-          tiposRest.includes(t.toLowerCase())
+  const precios = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          restaurants
+            .map(r => r.rango_precios)
+            .filter(
+              (p): p is number => typeof p === 'number' && !Number.isNaN(p)
+            )
         )
+      ).sort((a, b) => a - b),
+    [restaurants]
+  )
 
-        if (!hayInterseccion) return false
+  const tiposComida = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          restaurants
+            .map(r => r.tipo_comida)
+            .filter((t): t is string => !!t && t.trim().length > 0)
+        )
+      ).sort(),
+    [restaurants]
+  )
+
+  // 5) Aplicar filtros
+  const filteredRestaurants = useMemo(() => {
+    let result = [...restaurants]
+
+    const term = search.trim().toLowerCase()
+    if (term) {
+      result = result.filter(r => {
+        const nombre = r.nombre.toLowerCase()
+        const tipo = (r.tipo_comida || '').toLowerCase()
+        const zona = (r.zona || '').toLowerCase()
+        const ciudad = (r.ciudad || '').toLowerCase()
+        return (
+          nombre.includes(term) ||
+          tipo.includes(term) ||
+          zona.includes(term) ||
+          ciudad.includes(term)
+        )
+      })
+    }
+
+    if (zonaFilter) {
+      result = result.filter(r => r.zona === zonaFilter)
+    }
+
+    if (priceFilter) {
+      const priceNumber = Number(priceFilter)
+      if (!Number.isNaN(priceNumber)) {
+        result = result.filter(r => r.rango_precios === priceNumber)
       }
+    }
 
-      return true
+    if (tiposFilter.length > 0) {
+      result = result.filter(
+        r => r.tipo_comida && tiposFilter.includes(r.tipo_comida)
+      )
+    }
+
+    // orden simple: destacados primero, luego estrellas, luego nombre
+    result.sort((a, b) => {
+      if (a.es_destacado && !b.es_destacado) return -1
+      if (!a.es_destacado && b.es_destacado) return 1
+
+      const ea = a.estrellas || 0
+      const eb = b.estrellas || 0
+      if (eb !== ea) return eb - ea
+
+      return a.nombre.localeCompare(b.nombre)
     })
-  }, [restaurants, search, zonaFilter, priceFilter, tiposSeleccionados])
+
+    return result
+  }, [restaurants, search, zonaFilter, priceFilter, tiposFilter])
+
+  const toggleTipoComida = (tipo: string) => {
+    setTiposFilter(prev =>
+      prev.includes(tipo) ? prev.filter(t => t !== tipo) : [...prev, tipo]
+    )
+  }
 
   if (isLoading || (!user && !error)) {
     return (
@@ -216,91 +259,109 @@ export default function RestaurantesPage () {
 
   return (
     <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
-      {/* Header */}
       <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
         <div className='max-w-4xl mx-auto flex items-center justify-between px-4 py-3'>
           <div>
             <h1 className='text-lg font-semibold'>Restaurantes</h1>
             <p className='text-xs text-slate-400'>
-              Explorá todos los lugares recomendados.
+              Explorá los lugares recomendados.
             </p>
           </div>
           <UserDropdown />
         </div>
       </header>
 
-      {/* Contenido */}
       <main className='max-w-4xl mx-auto px-4 pt-4 pb-6 space-y-4'>
         {/* Filtros */}
-        <section className='space-y-3 rounded-2xl border border-slate-800 bg-slate-900/40 p-3'>
-          <h2 className='text-sm font-semibold text-slate-100'>
-            Filtrar restaurantes
-          </h2>
+        <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
+          <div className='flex items-center justify-between gap-2'>
+            <h2 className='text-sm font-semibold flex items-center gap-2'>
+              <SlidersHorizontal size={14} />
+              <span>Filtros</span>
+            </h2>
+          </div>
 
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+          <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
             {/* Buscador */}
-            <div className='flex flex-col gap-1'>
-              <label className='text-[11px] font-medium text-slate-400'>
+            <div className='sm:col-span-1'>
+              <label className='block text-[11px] font-medium text-slate-300 mb-1'>
                 Buscar
               </label>
               <input
                 type='text'
-                className='w-full rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/70'
-                placeholder='Nombre, zona, ciudad...'
                 value={search}
                 onChange={e => setSearch(e.target.value)}
+                placeholder='Nombre, zona, ciudad...'
+                className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
               />
             </div>
 
             {/* Zona */}
-            <div className='flex flex-col gap-1'>
-              <label className='text-[11px] font-medium text-slate-400'>
+            <div>
+              <label className='block text-[11px] font-medium text-slate-300 mb-1'>
                 Zona
               </label>
               <select
-                className='w-full rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500/70'
                 value={zonaFilter}
                 onChange={e => setZonaFilter(e.target.value)}
+                className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
               >
-                <option value=''>Todas las zonas</option>
-                {zonasOptions.map(zona => (
-                  <option key={zona} value={zona}>
-                    {zona}
+                <option value=''>Todas</option>
+                {zonas.map(z => (
+                  <option key={z} value={z}>
+                    {z}
                   </option>
                 ))}
               </select>
             </div>
 
             {/* Rango de precios */}
-            <div className='flex flex-col gap-1'>
-              <label className='text-[11px] font-medium text-slate-400'>
+            <div>
+              <label className='block text-[11px] font-medium text-slate-300 mb-1'>
                 Rango de precios
               </label>
               <select
-                className='w-full rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500/70'
                 value={priceFilter}
                 onChange={e => setPriceFilter(e.target.value)}
+                className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
               >
                 <option value=''>Todos</option>
-                <option value='1'>$</option>
-                <option value='2'>$$</option>
-                <option value='3'>$$$</option>
-                <option value='4'>$$$$</option>
-                <option value='5'>$$$$$</option>
+                {precios.map(p => (
+                  <option key={p} value={p}>
+                    {renderPriceRange(p)}
+                  </option>
+                ))}
               </select>
             </div>
-
-            {/* Multi-select tipo de comida */}
-            <div className='flex flex-col gap-1'>
-              <label className='text-[11px] font-medium text-slate-400'>
-                Tipo de comida
-              </label>
-              <TipoComidaMultiSelect
-                selected={tiposSeleccionados}
-                onChange={setTiposSeleccionados}
-              />
-            </div>
           </div>
+
+          {/* Multiselect tipo de comida */}
+          {tiposComida.length > 0 && (
+            <div className='space-y-1'>
+              <p className='text-[11px] font-medium text-slate-300'>
+                Tipo de comida
+              </p>
+              <div className='flex flex-wrap gap-2'>
+                {tiposComida.map(tipo => {
+                  const active = tiposFilter.includes(tipo)
+                  return (
+                    <button
+                      key={tipo}
+                      type='button'
+                      onClick={() => toggleTipoComida(tipo)}
+                      className={`rounded-full border px-3 py-1 text-[11px] ${
+                        active
+                          ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
+                          : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-400/60'
+                      }`}
+                    >
+                      {tipo}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Estado de carga / error */}
@@ -310,7 +371,7 @@ export default function RestaurantesPage () {
 
         {error && <p className='text-xs text-red-400'>{error}</p>}
 
-        {/* Grid de cards (tipo C) */}
+        {/* Listado */}
         {!loading && !error && filteredRestaurants.length === 0 && (
           <p className='text-xs text-slate-400'>
             No se encontraron restaurantes con los filtros actuales.
@@ -318,59 +379,72 @@ export default function RestaurantesPage () {
         )}
 
         {!loading && !error && filteredRestaurants.length > 0 && (
-          <section className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
-            {filteredRestaurants.map(r => (
+          <section className='grid grid-cols-1 gap-3'>
+            {filteredRestaurants.map(place => (
               <button
-                key={r.id}
+                key={place.id}
                 type='button'
                 onClick={() => {
-                  setSelectedRestaurant(r)
+                  setSelectedRestaurant(place)
                   setIsModalOpen(true)
-                  // actualizo query param por si recarga / comparte link
-                  const params = new URLSearchParams(
-                    Array.from(searchParams.entries())
-                  )
-                  params.set('restauranteId', String(r.id))
-                  router.push(`/restaurantes?${params.toString()}`)
+                  // actualizamos la URL para compartir / recargar directo
+                  router.push(`/restaurantes?restauranteId=${place.id}`)
                 }}
-                className='group flex flex-col rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden hover:border-emerald-500/70 hover:bg-slate-900 transition-colors'
+                className='text-left rounded-2xl border border-slate-800 bg-slate-900/50 p-3 flex gap-3 hover:border-emerald-500/60 transition-colors'
               >
-                <div className='relative w-full aspect-[4/3] bg-slate-800'>
+                <div className='relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-800'>
                   <Image
-                    alt={r.nombre}
+                    alt={place.nombre}
                     src={
-                      r.url_imagen ||
+                      place.url_imagen ||
                       '/images/placeholders/restaurante-placeholder.jpg'
                     }
                     fill
-                    className='object-cover group-hover:scale-[1.03] transition-transform'
-                    sizes='(max-width: 640px) 50vw, 33vw'
+                    className='object-cover'
+                    sizes='96px'
                   />
                 </div>
 
-                <div className='px-2.5 py-2 flex flex-col gap-1'>
-                  <p className='text-[10px] uppercase font-semibold text-emerald-400 line-clamp-1'>
-                    {r.zona || 'Zona no especificada'}
+                <div className='flex-1 flex flex-col gap-1 text-[11px]'>
+                  <p className='text-[10px] uppercase font-semibold text-emerald-400'>
+                    {place.zona || 'Zona no especificada'}
                   </p>
-                  <p className='text-xs font-semibold line-clamp-1'>
-                    {r.nombre}
-                  </p>
+                  <h3 className='text-sm font-semibold line-clamp-1'>
+                    {place.nombre}
+                  </h3>
 
-                  <div className='flex items-center justify-between text-[10px] mt-1'>
+                  {place.descripcion_corta && (
+                    <p className='text-slate-400 line-clamp-2'>
+                      {place.descripcion_corta}
+                    </p>
+                  )}
+
+                  <div className='flex items-center gap-2'>
                     <span className='text-amber-400'>
-                      {renderStars(r.estrellas)}
+                      {renderStars(place.estrellas)}
                     </span>
                     <span className='text-slate-400'>
-                      {renderPriceRange(r.rango_precios)}
+                      {renderPriceRange(place.rango_precios)}
                     </span>
+                    {place.tipo_comida && (
+                      <span className='rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        {place.tipo_comida}
+                      </span>
+                    )}
                   </div>
+
+                  {place.direccion && (
+                    <p className='text-[10px] text-slate-500 line-clamp-1'>
+                      {place.direccion}
+                    </p>
+                  )}
                 </div>
               </button>
             ))}
           </section>
         )}
 
-        {/* Modal de detalle */}
+        {/* MODAL detalle */}
         {isModalOpen && selectedRestaurant && (
           <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4'>
             <div className='relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
