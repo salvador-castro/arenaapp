@@ -33,8 +33,8 @@ export async function GET (
   context: ContextWithId
 ) {
   try {
-    const payload = await verifyAuth(req)
-    requireAdmin(payload)
+    // 👇 solo verifico token, NO exijo admin
+    await verifyAuth(req)
 
     const { id } = await context.params
     const db = getDb()
@@ -88,19 +88,17 @@ export async function GET (
   } catch (err: any) {
     console.error('Error GET /api/admin/restaurantes/[id]:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
         headers: corsBaseHeaders()
       })
     }
-    if (err.message === 'FORBIDDEN_NOT_ADMIN') {
-      return new NextResponse('Prohibido', {
-        status: 403,
-        headers: corsBaseHeaders()
-      })
-    }
 
+    // 👇 ya no chequeamos FORBIDDEN_NOT_ADMIN porque no usamos requireAdmin
     return new NextResponse(err?.message || 'Error al obtener restaurante', {
       status: 500,
       headers: corsBaseHeaders()

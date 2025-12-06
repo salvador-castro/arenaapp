@@ -65,7 +65,10 @@ function getInstagramHandle (url: string | null): string {
 export default function RestaurantesPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, isLoading } = useAuth()
+
+  // 👇 misma forma que usás en otros componentes
+  const { auth, isLoading }: any = useAuth()
+  const user = auth?.user
 
   const restauranteId = searchParams.get('restauranteId')
 
@@ -127,7 +130,6 @@ export default function RestaurantesPage () {
 
   const closeModal = () => {
     setIsModalOpen(false)
-    // si querés que al cerrar se limpie el query param:
     router.push('/restaurantes')
   }
 
@@ -154,7 +156,6 @@ export default function RestaurantesPage () {
       </header>
 
       <main className='max-w-4xl mx-auto px-4 pt-4 pb-6'>
-        {/* Acá más adelante podés listar todos los restaurantes, filtros, etc. */}
         <p className='text-xs text-slate-400 mb-4'>
           Próximamente listado completo de restaurantes. Si llegaste desde un
           destacado, vas a ver el detalle abajo.
@@ -166,7 +167,6 @@ export default function RestaurantesPage () {
 
         {error && <p className='text-xs text-red-400'>{error}</p>}
 
-        {/* Modal de detalle si hay restaurante seleccionado */}
         {isModalOpen && selectedRestaurant && (
           <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4'>
             <div className='relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
