@@ -269,6 +269,12 @@ export default function AdminEventosPage () {
       return
     }
 
+    if (!formValues.imagen_principal.trim()) {
+      setIsSubmitting(false)
+      setError('La imagen principal es obligatoria.')
+      return
+    }
+
     try {
       const payload: any = {
         ...formValues,
@@ -630,8 +636,12 @@ export default function AdminEventosPage () {
                   </div>
                 </div>
 
+                {/* Bloque alineado: Todo el día / Es gratuito / Precio desde */}
                 <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                  <div className='flex items-end'>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Duración
+                    </label>
                     <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
                       <input
                         type='checkbox'
@@ -646,7 +656,7 @@ export default function AdminEventosPage () {
 
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      ¿Es gratuito? *
+                      ¿Es gratuito?
                     </label>
                     <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
                       <input
@@ -732,7 +742,7 @@ export default function AdminEventosPage () {
 
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
-                    Imagen principal
+                    Imagen principal *
                   </label>
                   <UploadImage
                     onUploaded={path =>
