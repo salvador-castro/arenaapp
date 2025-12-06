@@ -4,7 +4,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthRedirect } from 'src/hooks/useAuthRedirect'
 import { useAuth } from '@/context/AuthContext'
-import { Card, CardHeader, CardBody } from '@heroui/react'
 import { Instagram } from 'lucide-react'
 import Image from 'next/image'
 
@@ -134,22 +133,34 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
     setSelectedPlace(null)
   }
 
+  const topPlaces = places.slice(0, 4)
+
   return (
-    <section className='space-y-3'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-lg font-semibold'>Restaurantes destacados</h2>
+    <section className='mt-4 space-y-3'>
+      {/* Header igual al de BaresDestacados */}
+      <div className='flex items-center justify-between gap-2'>
+        <div>
+          <h2 className='text-sm font-semibold text-slate-100'>
+            Restaurantes destacados
+          </h2>
+          <p className='text-[11px] text-slate-400'>
+            Elegidos por su propuesta gastronómica y experiencia.
+          </p>
+        </div>
 
         <button
           type='button'
-          className='text-xs font-medium text-emerald-400 underline underline-offset-4 cursor-pointer hover:text-emerald-300'
+          className='text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2'
           onClick={() => goTo('/restaurantes')}
         >
-          Ver más
+          Ver todos
         </button>
       </div>
 
       {loading && (
-        <p className='text-xs text-slate-400'>Cargando restaurantes...</p>
+        <p className='text-xs text-slate-400'>
+          Cargando restaurantes destacados...
+        </p>
       )}
 
       {error && !loading && <p className='text-xs text-red-400'>{error}</p>}
@@ -160,78 +171,71 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
         </p>
       )}
 
-      {!loading && !error && places.length > 0 && (
-        <div className='grid grid-cols-1 gap-3'>
-          {places.map(place => (
-            <Card
+      {!loading && !error && topPlaces.length > 0 && (
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'>
+          {topPlaces.map(place => (
+            <button
               key={place.id}
-              className='py-3 bg-slate-900/60 border border-slate-800'
+              type='button'
+              onClick={() => handleMoreInfo(place)}
+              className='group text-left rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/70 hover:bg-slate-900 transition-colors flex flex-col overflow-hidden'
             >
-              <CardHeader className='pb-0 pt-2 px-4 flex w-full items-start justify-between gap-2'>
-                <div className='flex flex-col gap-1'>
-                  <p className='text-[10px] uppercase font-semibold text-emerald-400'>
-                    {place.zona || 'Zona no especificada'}
+              {/* Imagen arriba como en BaresDestacados */}
+              <div className='relative w-full h-28 sm:h-32 bg-slate-800'>
+                <Image
+                  alt={place.nombre}
+                  src={
+                    place.url_imagen ||
+                    '/images/placeholders/restaurante-placeholder.jpg'
+                  }
+                  fill
+                  className='object-cover group-hover:scale-[1.03] transition-transform'
+                  sizes='(max-width: 768px) 100vw, 25vw'
+                />
+              </div>
+
+              {/* Contenido igual al de bares */}
+              <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
+                <p className='text-[10px] uppercase font-semibold text-emerald-400'>
+                  {place.zona || place.ciudad || 'Zona no especificada'}
+                </p>
+                <h3 className='text-sm font-semibold line-clamp-1'>
+                  {place.nombre}
+                </h3>
+
+                {place.descripcion_corta && (
+                  <p className='text-slate-400 line-clamp-2'>
+                    {place.descripcion_corta}
                   </p>
-                  <h4 className='font-semibold text-sm line-clamp-1'>
-                    {place.nombre}
-                  </h4>
-                  {place.descripcion_corta && (
-                    <p className='text-[11px] text-slate-400 line-clamp-2'>
-                      {place.descripcion_corta}
-                    </p>
-                  )}
+                )}
+
+                <div className='flex items-center gap-2 mt-1'>
+                  <span className='text-amber-400'>
+                    {renderStars(place.estrellas)}
+                  </span>
+                  <span className='text-slate-400'>
+                    {renderPriceRange(place.rango_precios)}
+                  </span>
                 </div>
 
-                <button
-                  type='button'
-                  onClick={() => handleMoreInfo(place)}
-                  className='ml-auto inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors'
-                >
-                  Más info
-                </button>
-              </CardHeader>
+                {place.tipo_comida && (
+                  <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                    {place.tipo_comida}
+                  </span>
+                )}
 
-              <CardBody className='overflow-visible py-2 px-4'>
-                <div className='flex items-center gap-3'>
-                  <div className='relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-800'>
-                    <Image
-                      alt={place.nombre}
-                      src={
-                        place.url_imagen ||
-                        '/images/placeholders/restaurante-placeholder.jpg'
-                      }
-                      fill
-                      className='object-cover'
-                      sizes='96px'
-                    />
-                  </div>
-
-                  <div className='flex flex-col gap-1 text-[11px]'>
-                    <div className='flex items-center gap-2'>
-                      <span className='text-amber-400'>
-                        {renderStars(place.estrellas)}
-                      </span>
-                      <span className='text-slate-400'>
-                        {renderPriceRange(place.rango_precios)}
-                      </span>
-                    </div>
-                    {place.tipo_comida && (
-                      <p className='text-slate-400'>{place.tipo_comida}</p>
-                    )}
-                    {place.direccion && (
-                      <p className='text-slate-500 line-clamp-1'>
-                        {place.direccion}
-                      </p>
-                    )}
-                  </div>
+                <div className='mt-2 flex justify-end'>
+                  <span className='text-[11px] font-medium text-emerald-300 group-hover:text-emerald-200'>
+                    Ver más
+                  </span>
                 </div>
-              </CardBody>
-            </Card>
+              </div>
+            </button>
           ))}
         </div>
       )}
 
-      {/* Modal de detalle (igual que antes) */}
+      {/* Modal de detalle (igual al que ya tenías) */}
       {isModalOpen && selectedPlace && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4'>
           <div className='relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
