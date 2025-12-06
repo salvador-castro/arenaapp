@@ -83,8 +83,16 @@ export default function BottomNav () {
     { href: '/admin-hoteles', label: 'Hoteles', icon: <Hotel size={16} /> },
     { href: '/admin-galeria', label: 'Galería', icon: <Image size={16} /> },
     /* { href: '/salidas', label: 'Salidas', icon: <PartyPopper size={16} /> }, */
-    { href: '/admin-shopping', label: 'Shopping', icon: <ShoppingBag size={16} /> }
-    { href: '/admin-eventos', label: 'Eventos', icon: <PartyPopper size={16} /> }
+    {
+      href: '/admin-shopping',
+      label: 'Shopping',
+      icon: <ShoppingBag size={16} />
+    },
+    {
+      href: '/admin-eventos',
+      label: 'Eventos',
+      icon: <PartyPopper size={16} />
+    }
   ]
 
   const items = isLoggedIn
