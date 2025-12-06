@@ -76,8 +76,8 @@ export default function RestaurantesPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const { auth, isLoading }: any = useAuth()
-  const user = auth?.user
+  const { user: ctxUser, auth, isLoading }: any = useAuth()
+  const user = ctxUser || auth?.user || null
 
   const restauranteIdParam = searchParams.get('restauranteId')
   const restauranteId = restauranteIdParam ? Number(restauranteIdParam) : null
