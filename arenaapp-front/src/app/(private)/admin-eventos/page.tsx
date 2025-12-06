@@ -269,6 +269,12 @@ export default function AdminEventosPage () {
       return
     }
 
+    if (!formValues.resena.trim()) {
+      setIsSubmitting(false)
+      setError('La reseña es obligatoria.')
+      return
+    }
+
     if (!formValues.imagen_principal.trim()) {
       setIsSubmitting(false)
       setError('La imagen principal es obligatoria.')
@@ -728,13 +734,14 @@ export default function AdminEventosPage () {
 
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
-                    Reseña
+                    Reseña *
                   </label>
                   <textarea
                     name='resena'
                     value={formValues.resena}
                     onChange={handleChange}
                     rows={4}
+                    required
                     className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     placeholder='Descripción del evento, artistas, ambiente, etc.'
                   />

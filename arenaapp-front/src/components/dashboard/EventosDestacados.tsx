@@ -61,7 +61,7 @@ function formatDateRange (inicio: string, fin: string | null): string {
   return `${start.toLocaleString()} – ${end.toLocaleString()}`
 }
 
-export default function WeekendEventsSection ({ isLoggedIn }: Props) {
+export default function EventosDestacados ({ isLoggedIn }: Props) {
   const { goTo } = useAuthRedirect(isLoggedIn)
 
   const [eventos, setEventos] = useState<Evento[]>([])
