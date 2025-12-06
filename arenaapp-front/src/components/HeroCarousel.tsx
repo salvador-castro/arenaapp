@@ -11,30 +11,30 @@ type HeroCarouselProps = {
 const slides = [
   {
     id: 1,
-    title: 'Descubrí dónde ir hoy',
-    description: 'Restaurantes, bares, cafés y planes cerca tuyo.',
+    title: 'Descubrí los mejores bares',
+    description: 'Los spots ideales para salir con amigos.',
     image:
-      'https://images.pexels.com/photos/3184192/pexels-photo-3184192.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    cta: 'Explorar lugares',
-    target: '/lugares' // ruta a donde queremos ir
+      'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/bars.jpg',
+    cta: 'Ver bares',
+    target: '/bares'
   },
   {
     id: 2,
-    title: 'Guardá tus favoritos',
-    description: 'Armá tu lista de spots para volver cuando quieras.',
+    title: 'Eventos y actividades',
+    description: 'Lo mejor que está pasando en la ciudad hoy.',
     image:
-      'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    cta: 'Ver favoritos',
-    target: '/favoritos'
+      'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/eventos.jpg',
+    cta: 'Ver eventos',
+    target: '/eventos'
   },
   {
     id: 3,
-    title: 'Eventos y planes',
-    description: 'Enterate qué está pasando este finde en la ciudad.',
+    title: 'Gastronomía gourmet',
+    description: 'Restaurantes destacados para disfrutar.',
     image:
-      'https://images.pexels.com/photos/154147/pexels-photo-154147.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    cta: 'Ver agenda',
-    target: '/agenda'
+      'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/gourmet.jpg',
+    cta: 'Ver restaurantes',
+    target: '/restaurantes'
   }
 ]
 
@@ -46,7 +46,7 @@ export default function HeroCarousel ({ isLoggedIn }: HeroCarouselProps) {
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveIndex(prev => (prev + 1) % total)
-    }, 5000) // 5s
+    }, 5000)
 
     return () => clearInterval(timer)
   }, [total])
@@ -73,7 +73,7 @@ export default function HeroCarousel ({ isLoggedIn }: HeroCarouselProps) {
 
       {/* Contenido */}
       <div className='relative z-10 h-full flex flex-col justify-between px-5 pt-6 pb-5'>
-        {/* Dots arriba derecha (pager) */}
+        {/* Dots */}
         <div className='flex justify-end gap-1.5'>
           {slides.map((slide, idx) => (
             <button
@@ -87,7 +87,7 @@ export default function HeroCarousel ({ isLoggedIn }: HeroCarouselProps) {
           ))}
         </div>
 
-        {/* Texto principal */}
+        {/* Texto */}
         <div className='mt-6'>
           <h1 className='text-3xl font-semibold tracking-tight drop-shadow-md'>
             {current.title}
@@ -97,7 +97,7 @@ export default function HeroCarousel ({ isLoggedIn }: HeroCarouselProps) {
           </p>
         </div>
 
-        {/* CTA y flechas */}
+        {/* CTA + flechas */}
         <div className='flex items-center justify-between mt-6'>
           <button
             className='px-4 py-2.5 rounded-full bg-white text-slate-900 text-sm font-semibold shadow-md hover:bg-slate-100 active:scale-[0.98] transition cursor-pointer'
