@@ -4,20 +4,16 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import UserDropdown from '@/components/UserDropdown'
+import Image from 'next/image'
+import { Instagram } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
-
-const API_BASE = (
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-).replace(/\/$/, '')
-
-const PUBLIC_RESTAURANTS_ENDPOINT = `${API_BASE}/api/restaurantes`
+import UserDropdown from '@/components/UserDropdown'
 
 interface Restaurant {
   id: number
   nombre: string
   tipo_comida: string | null
-  slug: string | null
+  slug: string
   descripcion_corta: string | null
   descripcion_larga: string | null
   direccion: string | null
@@ -38,14 +34,32 @@ interface Restaurant {
   resena: string | null
 }
 
-function priceTierToSymbols (tier?: number | null) {
-  if (!tier || tier < 1) return '-'
-  return '$'.repeat(Math.min(tier, 5))
+const API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+).replace(/\/$/, '')
+
+function renderPriceRange (rango: number | null | undefined): string {
+  if (!rango || rango < 1) return '-'
+  const value = Math.min(Math.max(rango, 1), 5)
+  return '$'.repeat(value)
 }
 
-function starsToSymbols (stars?: number | null) {
-  if (!stars || stars < 1) return '-'
-  return '★'.repeat(Math.min(stars, 5))
+function renderStars (estrellas: number | null | undefined): string {
+  if (!estrellas || estrellas < 1) return '-'
+  const value = Math.min(Math.max(estrellas, 1), 5)
+  return '★'.repeat(value)
+}
+
+function getInstagramHandle (url: string | null): string {
+  if (!url) return 'Instagram'
+  try {
+    const u = new URL(url)
+    const cleanPath = u.pathname.replace(/\/$/, '')
+    const last = cleanPath.split('/').filter(Boolean).pop()
+    return last || 'Instagram'
+  } catch {
+    return 'Instagram'
+  }
 }
 
 export default function RestaurantesPage () {
@@ -53,92 +67,71 @@ export default function RestaurantesPage () {
   const searchParams = useSearchParams()
   const { user, isLoading } = useAuth()
 
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
+  const restauranteId = searchParams.get('restauranteId')
+
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<Restaurant | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<Restaurant | null>(null)
 
-  // 🔐 Solo usuarios logueados con perfil USER o ADMIN
+  // auth: permite USER y ADMIN, pero obliga a estar logueado
   useEffect(() => {
     if (isLoading) return
 
     if (!user) {
-      router.push('/login?redirect=/restaurantes')
+      const redirectUrl = restauranteId
+        ? `/restaurantes?restauranteId=${restauranteId}`
+        : '/restaurantes'
+
+      router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
       return
     }
+  }, [user, isLoading, router, restauranteId])
 
-    if (user.rol !== 'USER' && user.rol !== 'ADMIN') {
-      router.push('/dashboard')
-    }
-  }, [user, isLoading, router])
-
-  // Cargar restaurantes públicos
+  // cargar restaurante por ID (si viene restauranteId en la URL)
   useEffect(() => {
-    const fetchRestaurants = async () => {
+    if (!user) return
+    if (!restauranteId) return
+
+    const fetchRestaurant = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        const params = new URLSearchParams()
-        if (search.trim()) {
-          params.set('search', search.trim())
-        }
-
-        const url = params.toString()
-          ? `${PUBLIC_RESTAURANTS_ENDPOINT}?${params.toString()}`
-          : PUBLIC_RESTAURANTS_ENDPOINT
-
-        const res = await fetch(url, {
-          headers: {
-            'Content-Type': 'application/json'
+        const res = await fetch(
+          `${API_BASE}/api/admin/restaurantes/${restauranteId}`,
+          {
+            method: 'GET',
+            credentials: 'include'
           }
-        })
+        )
 
         if (!res.ok) {
           throw new Error(`Error HTTP ${res.status}`)
         }
 
-        const data = await res.json()
-        const list: Restaurant[] = Array.isArray(data) ? data : []
-
-        setRestaurants(list)
-      } catch (e: any) {
-        console.error('Error cargando restaurantes públicos', e)
-        setError('No se pudieron cargar los restaurantes.')
+        const data: Restaurant = await res.json()
+        setSelectedRestaurant(data)
+        setIsModalOpen(true)
+      } catch (err: any) {
+        console.error('Error cargando restaurante', err)
+        setError(err.message ?? 'Error al cargar el restaurante')
       } finally {
         setLoading(false)
       }
     }
 
-    // Solo buscar si el user está autorizado
-    if (user && (user.rol === 'USER' || user.rol === 'ADMIN')) {
-      fetchRestaurants()
-    }
-  }, [user, search])
-
-  // Si viene con ?restauranteId= desde el dashboard → abrir modal
-  useEffect(() => {
-    const restauranteId = searchParams.get('restauranteId')
-    if (!restauranteId || restaurants.length === 0) return
-
-    const found = restaurants.find(r => String(r.id) === restauranteId)
-    if (found) {
-      setSelected(found)
-    }
-  }, [searchParams, restaurants])
-
-  const handleCardClick = (restaurant: Restaurant) => {
-    // Acá ya sabemos que está logueado (protección arriba),
-    // así que simplemente abrimos el modal.
-    setSelected(restaurant)
-  }
+    fetchRestaurant()
+  }, [user, restauranteId])
 
   const closeModal = () => {
-    setSelected(null)
+    setIsModalOpen(false)
+    // si querés que al cerrar se limpie el query param:
+    router.push('/restaurantes')
   }
 
-  if (isLoading || !user) {
+  if (isLoading || (!user && !error)) {
     return (
       <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
         <p className='text-sm text-slate-400'>Cargando...</p>
@@ -148,240 +141,184 @@ export default function RestaurantesPage () {
 
   return (
     <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
-      {/* Header */}
       <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
         <div className='max-w-4xl mx-auto flex items-center justify-between px-4 py-3'>
           <div>
             <h1 className='text-lg font-semibold'>Restaurantes</h1>
             <p className='text-xs text-slate-400'>
-              Explorá todos los restaurantes cargados en ArenaApp.
+              Explorá los lugares recomendados.
             </p>
           </div>
           <UserDropdown />
         </div>
       </header>
 
-      <main className='max-w-4xl mx-auto px-4 pt-4 pb-6 space-y-4'>
-        {/* Buscador simple */}
-        <div className='flex flex-col sm:flex-row sm:items-center gap-3'>
-          <input
-            type='text'
-            placeholder='Buscar por nombre, tipo de comida, zona...'
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500'
-          />
-        </div>
-
-        {/* Mensajes */}
-        {error && (
-          <div className='rounded-xl border border-red-700 bg-red-950/50 px-3 py-2 text-xs text-red-200'>
-            {error}
-          </div>
-        )}
+      <main className='max-w-4xl mx-auto px-4 pt-4 pb-6'>
+        {/* Acá más adelante podés listar todos los restaurantes, filtros, etc. */}
+        <p className='text-xs text-slate-400 mb-4'>
+          Próximamente listado completo de restaurantes. Si llegaste desde un
+          destacado, vas a ver el detalle abajo.
+        </p>
 
         {loading && (
-          <p className='text-xs text-slate-400'>Cargando restaurantes...</p>
+          <p className='text-xs text-slate-400'>Cargando restaurante...</p>
         )}
 
-        {!loading && !error && restaurants.length === 0 && (
-          <p className='text-xs text-slate-400'>
-            No se encontraron restaurantes. Probá cambiando la búsqueda.
-          </p>
-        )}
+        {error && <p className='text-xs text-red-400'>{error}</p>}
 
-        {/* Grid de cards */}
-        {!loading && !error && restaurants.length > 0 && (
-          <div className='grid grid-cols-1 gap-4'>
-            {restaurants.map(r => (
+        {/* Modal de detalle si hay restaurante seleccionado */}
+        {isModalOpen && selectedRestaurant && (
+          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4'>
+            <div className='relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
               <button
-                key={r.id}
                 type='button'
-                onClick={() => handleCardClick(r)}
-                className='w-full text-left rounded-2xl overflow-hidden bg-slate-900/70 border border-slate-800 hover:border-emerald-500/70 hover:bg-slate-900 transition-colors'
+                onClick={closeModal}
+                className='absolute right-3 top-3 rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700'
               >
-                {/* Imagen */}
-                <div className='w-full h-40 overflow-hidden'>
-                  {/* Usá <img> simple para evitar problemas de next/image con rutas relativas */}
-                  <img
-                    src={
-                      r.url_imagen ||
-                      '/images/placeholders/restaurante-placeholder.jpg'
-                    }
-                    alt={r.nombre}
-                    className='w-full h-full object-cover'
-                  />
-                </div>
-
-                {/* Contenido */}
-                <div className='px-4 py-3 space-y-1.5'>
-                  <div className='flex items-center justify-between gap-2'>
-                    <div className='flex flex-col gap-0.5 min-w-0'>
-                      <p className='text-[10px] uppercase font-semibold text-emerald-400 truncate'>
-                        {r.zona || r.ciudad || 'Zona no especificada'}
-                      </p>
-                      <h2 className='font-semibold text-sm truncate'>
-                        {r.nombre}
-                      </h2>
-                    </div>
-                    <div className='text-right text-[11px] text-yellow-300'>
-                      <div>{starsToSymbols(r.estrellas)}</div>
-                      <div className='text-[10px] text-slate-400'>
-                        {priceTierToSymbols(r.rango_precios)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {r.descripcion_corta && (
-                    <p className='text-[11px] text-slate-300 line-clamp-2'>
-                      {r.descripcion_corta}
-                    </p>
-                  )}
-
-                  <div className='flex items-center justify-between pt-1'>
-                    <span className='text-[10px] text-slate-500'>
-                      {r.horario_text || 'Horario no informado'}
-                    </span>
-                    <span className='text-[11px] text-emerald-400 font-medium'>
-                      Ver más detalles
-                    </span>
-                  </div>
-                </div>
+                ✕
               </button>
-            ))}
-          </div>
-        )}
 
-        {/* Modal de detalle */}
-        {selected && (
-          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4'>
-            <div className='w-full max-w-lg rounded-3xl bg-slate-950 border border-slate-700 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col'>
-              {/* Header modal */}
-              <div className='flex items-center justify-between px-4 py-3 border-b border-slate-800'>
-                <div className='min-w-0'>
-                  <p className='text-[10px] uppercase font-semibold text-emerald-400 truncate'>
-                    {selected.zona || selected.ciudad || 'Zona no especificada'}
-                  </p>
-                  <h2 className='text-sm font-semibold truncate'>
-                    {selected.nombre}
-                  </h2>
-                </div>
-                <button
-                  type='button'
-                  onClick={closeModal}
-                  className='text-slate-400 hover:text-slate-100 text-lg leading-none'
-                >
-                  ✕
-                </button>
-              </div>
+              <div className='p-4 sm:p-6 space-y-4'>
+                <div className='flex flex-col sm:flex-row gap-4'>
+                  <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
+                    <Image
+                      alt={selectedRestaurant.nombre}
+                      src={
+                        selectedRestaurant.url_imagen ||
+                        '/images/placeholders/restaurante-placeholder.jpg'
+                      }
+                      fill
+                      className='object-cover'
+                      sizes='(max-width: 640px) 100vw, 160px'
+                    />
+                  </div>
 
-              {/* Scroll interno */}
-              <div className='flex-1 overflow-y-auto'>
-                {/* Imagen grande */}
-                <div className='w-full h-52 overflow-hidden'>
-                  <img
-                    src={
-                      selected.url_imagen ||
-                      '/images/placeholders/restaurante-placeholder.jpg'
-                    }
-                    alt={selected.nombre}
-                    className='w-full h-full object-cover'
-                  />
-                </div>
-
-                <div className='px-4 py-4 space-y-3'>
-                  {/* Info rápida */}
-                  <div className='flex items-center justify-between text-[11px]'>
-                    <div className='space-y-0.5'>
-                      <p className='text-slate-300'>
-                        {starsToSymbols(selected.estrellas)}{' '}
-                        <span className='text-slate-500'>
-                          • {priceTierToSymbols(selected.rango_precios)}
+                  <div className='flex-1 space-y-1'>
+                    <p className='text-[11px] uppercase font-semibold text-emerald-400'>
+                      {selectedRestaurant.zona || 'Zona no especificada'}
+                    </p>
+                    <h3 className='text-lg font-semibold'>
+                      {selectedRestaurant.nombre}
+                    </h3>
+                    <div className='flex flex-wrap items-center gap-2 text-[12px]'>
+                      <span className='text-amber-400'>
+                        {renderStars(selectedRestaurant.estrellas)}
+                      </span>
+                      <span className='text-slate-400'>
+                        {renderPriceRange(selectedRestaurant.rango_precios)}
+                      </span>
+                      {selectedRestaurant.tipo_comida && (
+                        <span className='rounded-full border border-slate-700 px-2 py-[2px] text-[11px] text-slate-300'>
+                          {selectedRestaurant.tipo_comida}
                         </span>
-                      </p>
-                      {selected.tipo_comida && (
-                        <p className='text-slate-400'>
-                          {selected.tipo_comida}
-                        </p>
                       )}
                     </div>
-                    {selected.es_destacado && (
-                      <span className='inline-flex items-center rounded-full bg-emerald-500/10 border border-emerald-500/40 px-3 py-1 text-[10px] font-semibold text-emerald-300 uppercase tracking-wide'>
-                        Destacado
-                      </span>
+
+                    {selectedRestaurant.url_instagram && (
+                      <a
+                        href={selectedRestaurant.url_instagram}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1'
+                      >
+                        <Instagram size={14} />
+                        <span>
+                          @
+                          {getInstagramHandle(selectedRestaurant.url_instagram)}
+                        </span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {selectedRestaurant.resena && (
+                  <div className='space-y-1'>
+                    <h4 className='text-sm font-semibold'>Reseña</h4>
+                    <p className='text-[12px] text-slate-300 whitespace-pre-line'>
+                      {selectedRestaurant.resena}
+                    </p>
+                  </div>
+                )}
+
+                <div className='grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]'>
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      Dirección
+                    </p>
+                    <p className='text-slate-400'>
+                      {selectedRestaurant.direccion || '-'}
+                    </p>
+                    {selectedRestaurant.url_maps && (
+                      <a
+                        href={selectedRestaurant.url_maps}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 mt-1 inline-block'
+                      >
+                        Cómo llegar
+                      </a>
                     )}
                   </div>
 
-                  {/* Dirección */}
-                  <div className='text-[11px] text-slate-300 space-y-0.5'>
-                    <p className='font-semibold text-slate-200'>Dirección</p>
-                    <p>
-                      {selected.direccion || 'Dirección no informada'}
-                      {selected.ciudad ? `, ${selected.ciudad}` : ''}
-                      {selected.provincia ? `, ${selected.provincia}` : ''}
-                      {selected.pais ? `, ${selected.pais}` : ''}
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      Horario
+                    </p>
+                    <p className='text-slate-400'>
+                      {selectedRestaurant.horario_text || '-'}
                     </p>
                   </div>
 
-                  {/* Horario */}
-                  <div className='text-[11px] text-slate-300 space-y-0.5'>
-                    <p className='font-semibold text-slate-200'>Horarios</p>
-                    <p>{selected.horario_text || 'No informado'}</p>
-                  </div>
-
-                  {/* Reseña */}
-                  {selected.resena && (
-                    <div className='text-[11px] text-slate-300 space-y-0.5'>
-                      <p className='font-semibold text-slate-200'>Reseña</p>
-                      <p className='whitespace-pre-line'>
-                        {selected.resena}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Links */}
-                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2'>
-                    {selected.url_maps && (
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      Sitio web
+                    </p>
+                    {selectedRestaurant.sitio_web ? (
                       <a
-                        href={selected.url_maps}
+                        href={selectedRestaurant.sitio_web}
                         target='_blank'
                         rel='noreferrer'
-                        className='text-[11px] text-center rounded-xl border border-slate-700 px-3 py-2 text-emerald-300 hover:bg-slate-900'
+                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
                       >
-                        Ver en Google Maps
+                        {selectedRestaurant.sitio_web}
                       </a>
-                    )}
-                    {selected.url_reserva && (
-                      <a
-                        href={selected.url_reserva}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='text-[11px] text-center rounded-xl border border-emerald-600/70 bg-emerald-600/10 px-3 py-2 text-emerald-300 hover:bg-emerald-600/20'
-                      >
-                        Reservar mesa
-                      </a>
-                    )}
-                    {selected.url_instagram && (
-                      <a
-                        href={selected.url_instagram}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='text-[11px] text-center rounded-xl border border-slate-700 px-3 py-2 text-emerald-300 hover:bg-slate-900'
-                      >
-                        Ver en Instagram
-                      </a>
-                    )}
-                    {selected.sitio_web && (
-                      <a
-                        href={selected.sitio_web}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='text-[11px] text-center rounded-xl border border-slate-700 px-3 py-2 text-emerald-300 hover:bg-slate-900'
-                      >
-                        Sitio web
-                      </a>
+                    ) : (
+                      <p className='text-slate-400'>-</p>
                     )}
                   </div>
+
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      Reservas
+                    </p>
+                    {selectedRestaurant.url_reservas ||
+                    selectedRestaurant.url_reserva ? (
+                      <a
+                        href={
+                          selectedRestaurant.url_reservas ||
+                          selectedRestaurant.url_reserva ||
+                          '#'
+                        }
+                        target='_blank'
+                        rel='noreferrer'
+                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
+                      >
+                        Hacer reserva
+                      </a>
+                    ) : (
+                      <p className='text-slate-400'>-</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className='flex justify-end pt-2'>
+                  <button
+                    type='button'
+                    onClick={closeModal}
+                    className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                  >
+                    Cerrar
+                  </button>
                 </div>
               </div>
             </div>
