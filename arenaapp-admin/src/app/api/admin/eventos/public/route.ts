@@ -40,29 +40,20 @@ export async function GET (req: NextRequest) {
           id,
           titulo,
           slug,
-          descripcion_corta,
-          descripcion_larga,
           categoria,
           es_destacado,
           fecha_inicio,
           fecha_fin,
           es_todo_el_dia,
-          lugar_id,
-          nombre_lugar,
+          zona,
           direccion,
-          ciudad,
-          provincia,
-          pais,
-          lat,
-          lng,
           es_gratuito,
           precio_desde,
           moneda,
           url_entradas,
-          edad_minima,
           estado,
           visibilidad,
-          published_at,
+          resena,
           imagen_principal
         FROM eventos
         WHERE
@@ -70,8 +61,8 @@ export async function GET (req: NextRequest) {
           AND visibilidad = 'PUBLICO'
           AND (
             LOWER(titulo) LIKE $1
-            OR LOWER(COALESCE(nombre_lugar, '')) LIKE $1
-            OR LOWER(COALESCE(ciudad, '')) LIKE $1
+            OR LOWER(COALESCE(zona, '')) LIKE $1
+            OR LOWER(COALESCE(categoria::text, '')) LIKE $1
           )
         ORDER BY
           fecha_inicio ASC NULLS LAST,
@@ -88,29 +79,20 @@ export async function GET (req: NextRequest) {
           id,
           titulo,
           slug,
-          descripcion_corta,
-          descripcion_larga,
           categoria,
           es_destacado,
           fecha_inicio,
           fecha_fin,
           es_todo_el_dia,
-          lugar_id,
-          nombre_lugar,
+          zona,
           direccion,
-          ciudad,
-          provincia,
-          pais,
-          lat,
-          lng,
           es_gratuito,
           precio_desde,
           moneda,
           url_entradas,
-          edad_minima,
           estado,
           visibilidad,
-          published_at,
+          resena,
           imagen_principal
         FROM eventos
         WHERE
