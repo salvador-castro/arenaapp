@@ -7,7 +7,7 @@ import PromoBanner from 'src/components/PromoBanner'
 import RecommendedSection from 'src/components/RecommendedSection'
 import RestaurantesDestacados from 'src/components/dashboard/RestaurantesDestacados'
 import BaresDestacados from 'src/components/dashboard/BaresDestacados'
-import WeekendEventsSection from 'src/components/WeekendEventsSection'
+import EventosDestacados from 'src/components/dashboard/BaresDestacados'
 
 export default function HomePage () {
   // Más adelante esto va a salir de un contexto / cookie de auth
@@ -35,7 +35,7 @@ export default function HomePage () {
         </section>
 
         <section className='px-4 pt-6 pb-4'>
-          <WeekendEventsSection isLoggedIn={isLoggedIn} />
+          <EventosDestacados isLoggedIn={isLoggedIn} />
         </section>
 
         <AdBanner />
