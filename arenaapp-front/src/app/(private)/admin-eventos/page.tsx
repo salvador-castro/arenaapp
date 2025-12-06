@@ -1,396 +1,944 @@
-// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\components\RestaurantesDestacados.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useAuthRedirect } from 'src/hooks/useAuthRedirect'
+import React, { useEffect, useState, FormEvent, ChangeEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { Instagram } from 'lucide-react'
-import Image from 'next/image'
-
-type Props = {
-  isLoggedIn: boolean
-}
-
-interface Restaurant {
-  id: number
-  nombre: string
-  tipo_comida: string | null
-  slug: string
-  descripcion_corta: string | null
-  descripcion_larga: string | null
-  direccion: string | null
-  url_maps: string | null
-  horario_text: string | null
-  ciudad: string | null
-  provincia: string | null
-  zona: string | null
-  pais: string | null
-  sitio_web: string | null
-  rango_precios: number | null
-  estrellas: number | null
-  es_destacado: boolean
-  url_reservas: string | null
-  url_reserva: string | null
-  url_instagram: string | null
-  url_imagen: string | null
-  resena: string | null
-}
+import UserDropdown from '@/components/UserDropdown'
+import BottomNav from '@/components/BottomNav'
+import UploadImage from '@/components/UploadImage'
 
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
-const DESTACADOS_ENDPOINT = `${API_BASE}/api/admin/restaurantes/destacados`
+const PAGE_SIZE = 10
 
-function renderPriceRange (rango: number | null | undefined): string {
-  if (!rango || rango < 1) return '-'
-  const value = Math.min(Math.max(rango, 1), 5)
-  return '$'.repeat(value)
+type EstadoEvento = 'DRAFT' | 'PUBLICADO' | 'CANCELADO' | 'ARCHIVADO'
+type VisibilidadEvento = 'PUBLICO' | 'PRIVADO'
+
+interface AdminEvent {
+  id: number | string
+  titulo: string
+  slug?: string
+  descripcion_corta?: string | null
+  descripcion_larga?: string | null
+  categoria?: string | null
+  es_destacado?: boolean
+  fecha_inicio: string
+  fecha_fin?: string | null
+  es_todo_el_dia?: boolean
+  lugar_id?: number | null
+  nombre_lugar?: string | null
+  direccion?: string | null
+  ciudad?: string | null
+  provincia?: string | null
+  pais?: string | null
+  lat?: number | null
+  lng?: number | null
+  es_gratuito?: boolean
+  precio_desde?: number | null
+  moneda?: string | null
+  url_entradas?: string | null
+  edad_minima?: number | null
+  estado?: EstadoEvento | null
+  visibilidad?: VisibilidadEvento | null
+  published_at?: string | null
+  created_at?: string | null
+  updated_at?: string | null
+  imagen_principal?: string | null
 }
 
-function renderStars (estrellas: number | null | undefined): string {
-  if (!estrellas || estrellas < 1) return '-'
-  const value = Math.min(Math.max(estrellas, 1), 5)
-  return '★'.repeat(value)
+interface FormValues {
+  titulo: string
+  descripcion_corta: string
+  descripcion_larga: string
+  categoria: string
+  es_destacado: boolean
+  fecha_inicio: string
+  fecha_fin: string
+  es_todo_el_dia: boolean
+  nombre_lugar: string
+  direccion: string
+  ciudad: string
+  provincia: string
+  pais: string
+  es_gratuito: boolean
+  precio_desde: number | ''
+  moneda: string
+  url_entradas: string
+  edad_minima: number | ''
+  estado: EstadoEvento
+  visibilidad: VisibilidadEvento
+  imagen_principal: string
 }
 
-function getInstagramHandle (url: string | null): string {
-  if (!url) return 'Instagram'
-  try {
-    const u = new URL(url)
-    const cleanPath = u.pathname.replace(/\/$/, '')
-    const last = cleanPath.split('/').filter(Boolean).pop()
-    return last || 'Instagram'
-  } catch {
-    return 'Instagram'
-  }
+function formatDateTimeLocal (dateStr?: string | null): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  const mm = pad(d.getMonth() + 1)
+  const dd = pad(d.getDate())
+  const hh = pad(d.getHours())
+  const mi = pad(d.getMinutes())
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`
 }
 
-export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
-  const { goTo } = useAuthRedirect(isLoggedIn)
-  const { auth }: any = useAuth()
-  const userRole: string | undefined = auth?.user?.role
+export default function AdminEventosPage () {
+  const router = useRouter()
+  const { user, isLoading } = useAuth()
 
-  const [places, setPlaces] = useState<Restaurant[]>([])
-  const [loading, setLoading] = useState<boolean>(false)
+  const [events, setEvents] = useState<AdminEvent[]>([])
+  const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [selectedPlace, setSelectedPlace] = useState<Restaurant | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
+
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editing, setEditing] = useState<AdminEvent | null>(null)
+
+  const [formValues, setFormValues] = useState<FormValues>({
+    titulo: '',
+    descripcion_corta: '',
+    descripcion_larga: '',
+    categoria: 'OTROS',
+    es_destacado: false,
+    fecha_inicio: '',
+    fecha_fin: '',
+    es_todo_el_dia: false,
+    nombre_lugar: '',
+    direccion: '',
+    ciudad: '',
+    provincia: '',
+    pais: 'Argentina',
+    es_gratuito: true,
+    precio_desde: '',
+    moneda: 'ARS',
+    url_entradas: '',
+    edad_minima: '',
+    estado: 'DRAFT',
+    visibilidad: 'PUBLICO',
+    imagen_principal: ''
+  })
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // 🔐 Solo ADMIN
+  useEffect(() => {
+    if (isLoading) return
+    if (!user) {
+      router.push('/login?redirect=/admin-eventos')
+      return
+    }
+    if (user.rol !== 'ADMIN') {
+      router.push('/dashboard')
+      return
+    }
+  }, [user, isLoading, router])
+
+  async function fetchEvents (pageToLoad: number, searchTerm: string) {
+    try {
+      if (!user || user.rol !== 'ADMIN') return
+
+      setIsFetching(true)
+      setError(null)
+
+      const params = new URLSearchParams({
+        page: String(pageToLoad),
+        pageSize: String(PAGE_SIZE)
+      })
+
+      if (searchTerm.trim()) {
+        params.append('search', searchTerm.trim())
+      }
+
+      const res = await fetch(
+        `${API_BASE}/api/admin/eventos?${params.toString()}`,
+        {
+          method: 'GET',
+          credentials: 'include'
+        }
+      )
+
+      if (!res.ok) {
+        throw new Error(`Error al cargar eventos (${res.status})`)
+      }
+
+      const json = await res.json()
+
+      setEvents(json.data as AdminEvent[])
+      setCurrentPage(json.page ?? pageToLoad)
+      setTotalPages(json.totalPages ?? 1)
+      setTotalItems(json.total ?? 0)
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message ?? 'Error al cargar eventos')
+    } finally {
+      setIsFetching(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchDestacados = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+    if (!user || user.rol !== 'ADMIN') return
+    fetchEvents(currentPage, search)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, currentPage, search])
 
-        const res = await fetch(DESTACADOS_ENDPOINT, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
+  function openCreateForm () {
+    setEditing(null)
+    setFormValues({
+      titulo: '',
+      descripcion_corta: '',
+      descripcion_larga: '',
+      categoria: 'OTROS',
+      es_destacado: false,
+      fecha_inicio: '',
+      fecha_fin: '',
+      es_todo_el_dia: false,
+      nombre_lugar: '',
+      direccion: '',
+      ciudad: '',
+      provincia: '',
+      pais: 'Argentina',
+      es_gratuito: true,
+      precio_desde: '',
+      moneda: 'ARS',
+      url_entradas: '',
+      edad_minima: '',
+      estado: 'DRAFT',
+      visibilidad: 'PUBLICO',
+      imagen_principal: ''
+    })
+    setIsFormOpen(true)
+  }
 
-        if (!res.ok) {
-          throw new Error(`Error HTTP ${res.status}`)
-        }
+  function openEditForm (e: AdminEvent) {
+    setEditing(e)
+    setFormValues({
+      titulo: e.titulo ?? '',
+      descripcion_corta: e.descripcion_corta ?? '',
+      descripcion_larga: e.descripcion_larga ?? '',
+      categoria: e.categoria ?? 'OTROS',
+      es_destacado: !!e.es_destacado,
+      fecha_inicio: formatDateTimeLocal(e.fecha_inicio),
+      fecha_fin: formatDateTimeLocal(e.fecha_fin ?? null),
+      es_todo_el_dia: !!e.es_todo_el_dia,
+      nombre_lugar: e.nombre_lugar ?? '',
+      direccion: e.direccion ?? '',
+      ciudad: e.ciudad ?? '',
+      provincia: e.provincia ?? '',
+      pais: e.pais ?? 'Argentina',
+      es_gratuito: !!e.es_gratuito,
+      precio_desde: typeof e.precio_desde === 'number' ? e.precio_desde : '',
+      moneda: e.moneda ?? 'ARS',
+      url_entradas: e.url_entradas ?? '',
+      edad_minima: typeof e.edad_minima === 'number' ? e.edad_minima : '',
+      estado: (e.estado as EstadoEvento) ?? 'DRAFT',
+      visibilidad: (e.visibilidad as VisibilidadEvento) ?? 'PUBLICO',
+      imagen_principal: e.imagen_principal ?? ''
+    })
+    setIsFormOpen(true)
+  }
 
-        const data = await res.json()
+  function closeForm () {
+    setIsFormOpen(false)
+    setEditing(null)
+  }
 
-        const restaurantes: Restaurant[] = Array.isArray(data)
-          ? data
-          : data.restaurantes ?? []
+  function handleChange (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) {
+    const target = e.target
+    const { name, value } = target
 
-        const destacados = restaurantes.filter(r => r.es_destacado === true)
-
-        setPlaces(destacados)
-      } catch (e: any) {
-        console.error('Error cargando restaurantes destacados', e)
-        setError('No se pudieron cargar los restaurantes destacados.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchDestacados()
-  }, [])
-
-  const handleMoreInfo = (place: Restaurant) => {
-    // si NO está logueado → login con redirect a /restaurantes?restauranteId=ID
-    if (!isLoggedIn) {
-      const redirectUrl = `/restaurantes?restauranteId=${place.id}`
-
-      goTo(redirectUrl)
+    if (target instanceof HTMLInputElement && target.type === 'checkbox') {
+      setFormValues(prev => ({
+        ...prev,
+        [name]: target.checked
+      }))
       return
     }
 
-    // si está logueado (user o admin) → solo mostrar modal
-    setSelectedPlace(place)
-    setIsModalOpen(true)
+    if (name === 'precio_desde' || name === 'edad_minima') {
+      setFormValues(prev => ({
+        ...prev,
+        [name]: value === '' ? '' : Number(value)
+      }))
+      return
+    }
+
+    setFormValues(prev => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
-  const closeModal = () => {
-    setIsModalOpen(false)
-    setSelectedPlace(null)
+  async function handleSubmit (e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError(null)
+
+    if (!formValues.imagen_principal.trim()) {
+      setIsSubmitting(false)
+      setError('Subí una imagen antes de guardar.')
+      return
+    }
+
+    if (!formValues.fecha_inicio) {
+      setIsSubmitting(false)
+      setError('La fecha de inicio es obligatoria.')
+      return
+    }
+
+    try {
+      const payload: any = {
+        ...formValues,
+        precio_desde:
+          formValues.precio_desde === '' ? null : formValues.precio_desde,
+        edad_minima:
+          formValues.edad_minima === '' ? null : formValues.edad_minima
+      }
+
+      const isEdit = !!editing && editing.id != null
+      const idForUrl = editing?.id != null ? String(editing.id) : undefined
+
+      const url = isEdit
+        ? `${API_BASE}/api/admin/eventos/${idForUrl}`
+        : `${API_BASE}/api/admin/eventos`
+      const method = isEdit ? 'PUT' : 'POST'
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      })
+
+      if (!res.ok) {
+        const msg = await res.text()
+        throw new Error(msg || `Error al guardar evento (${res.status})`)
+      }
+
+      await res.json()
+      await fetchEvents(currentPage, search)
+      closeForm()
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message ?? 'Error al guardar evento')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const topPlaces = places.slice(0, 4)
+  async function confirmDelete () {
+    if (!deleteTarget) return
+    setIsDeleting(true)
+    setError(null)
+
+    try {
+      const url = `${API_BASE}/api/admin/eventos/${String(deleteTarget.id)}`
+
+      const res = await fetch(url, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (!res.ok) {
+        const msg = await res.text()
+        throw new Error(msg || `Error al eliminar evento (${res.status})`)
+      }
+
+      setDeleteTarget(null)
+      await fetchEvents(currentPage, search)
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message ?? 'Error al eliminar evento')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  if (isLoading || !user || user.rol !== 'ADMIN') {
+    return (
+      <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
+        <p className='text-sm text-slate-400'>Cargando...</p>
+      </div>
+    )
+  }
+
+  const fromItem = totalItems === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
+  const toItem =
+    totalItems === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalItems)
 
   return (
-    <section className='mt-4 space-y-3'>
-      {/* Header igual al de BaresDestacados */}
-      <div className='flex items-center justify-between gap-2'>
-        <div>
-          <h2 className='text-sm font-semibold text-slate-100'>
-            Restaurantes destacados
-          </h2>
-          <p className='text-[11px] text-slate-400'>
-            Elegidos por su propuesta gastronómica y experiencia.
-          </p>
+    <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
+      <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
+        <div className='max-w-4xl mx-auto flex items-center justify-between px-4 py-3'>
+          <div>
+            <h1 className='text-lg font-semibold'>Gestión de eventos</h1>
+            <p className='text-xs text-slate-400'>
+              Crear, editar y eliminar eventos de ArenaApp.
+            </p>
+          </div>
+          <UserDropdown />
+        </div>
+      </header>
+
+      <main className='max-w-4xl mx-auto px-4 pt-4 pb-6'>
+        <div className='flex flex-col sm:flex-row sm:items-center gap-3 mb-4'>
+          <div className='flex-1'>
+            <input
+              type='text'
+              placeholder='Buscar por título, lugar, ciudad...'
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value)
+                setCurrentPage(1)
+              }}
+              className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500'
+            />
+          </div>
+          <button
+            type='button'
+            onClick={openCreateForm}
+            className='inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition'
+          >
+            + Nuevo evento
+          </button>
         </div>
 
-        <button
-          type='button'
-          className='text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2'
-          onClick={() => goTo('/restaurantes')}
-        >
-          Ver todos
-        </button>
-      </div>
+        {error && (
+          <div className='mb-3 rounded-xl border border-red-700 bg-red-950/50 px-3 py-2 text-xs text-red-200'>
+            {error}
+          </div>
+        )}
+        {isFetching && (
+          <div className='mb-3 text-xs text-slate-400'>Cargando eventos...</div>
+        )}
 
-      {loading && (
-        <p className='text-xs text-slate-400'>
-          Cargando restaurantes destacados...
-        </p>
-      )}
-
-      {error && !loading && <p className='text-xs text-red-400'>{error}</p>}
-
-      {!loading && !error && places.length === 0 && (
-        <p className='text-xs text-slate-400'>
-          Cuando el admin cargue lugares, los vas a ver listados acá.
-        </p>
-      )}
-
-      {!loading && !error && topPlaces.length > 0 && (
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'>
-          {topPlaces.map(place => (
-            <button
-              key={place.id}
-              type='button'
-              onClick={() => handleMoreInfo(place)}
-              className='group text-left rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/70 hover:bg-slate-900 transition-colors flex flex-col overflow-hidden'
-            >
-              {/* Imagen arriba como en BaresDestacados */}
-              <div className='relative w-full h-28 sm:h-32 bg-slate-800'>
-                <Image
-                  alt={place.nombre}
-                  src={
-                    place.url_imagen ||
-                    '/images/placeholders/restaurante-placeholder.jpg'
-                  }
-                  fill
-                  className='object-cover group-hover:scale-[1.03] transition-transform'
-                  sizes='(max-width: 768px) 100vw, 25vw'
-                />
-              </div>
-
-              {/* Contenido igual al de bares */}
-              <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
-                <p className='text-[10px] uppercase font-semibold text-emerald-400'>
-                  {place.zona || place.ciudad || 'Zona no especificada'}
-                </p>
-                <h3 className='text-sm font-semibold line-clamp-1'>
-                  {place.nombre}
-                </h3>
-
-                {place.descripcion_corta && (
-                  <p className='text-slate-400 line-clamp-2'>
-                    {place.descripcion_corta}
-                  </p>
+        <div className='overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70'>
+          <div className='overflow-x-auto'>
+            <table className='min-w-full text-sm'>
+              <thead className='bg-slate-900/90'>
+                <tr>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    ID
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Título
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Fecha
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Ciudad
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Estado
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Destacado
+                  </th>
+                  <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {events.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className='px-3 py-4 text-center text-xs text-slate-500'
+                    >
+                      No hay eventos que coincidan con la búsqueda.
+                    </td>
+                  </tr>
                 )}
 
-                <div className='flex items-center gap-2 mt-1'>
-                  <span className='text-amber-400'>
-                    {renderStars(place.estrellas)}
-                  </span>
-                  <span className='text-slate-400'>
-                    {renderPriceRange(place.rango_precios)}
-                  </span>
-                </div>
+                {events.map(e => (
+                  <tr
+                    key={String(e.id)}
+                    className='border-t border-slate-800/80 hover:bg-slate-900/80'
+                  >
+                    <td className='px-3 py-2 text-xs text-slate-400'>
+                      {String(e.id)}
+                    </td>
+                    <td className='px-3 py-2'>
+                      <div className='flex flex-col'>
+                        <span className='text-sm'>{e.titulo}</span>
+                        {e.nombre_lugar && (
+                          <span className='text-[11px] text-slate-400'>
+                            {e.nombre_lugar}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {e.fecha_inicio
+                        ? new Date(e.fecha_inicio).toLocaleString()
+                        : '-'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {e.ciudad || e.provincia || '-'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {e.estado || '-'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {e.es_destacado ? 'Sí' : 'No'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-right'>
+                      <div className='inline-flex items-center gap-2'>
+                        <button
+                          type='button'
+                          onClick={() => openEditForm(e)}
+                          className='rounded-lg border border-slate-600 px-2 py-1 hover:bg-slate-800'
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type='button'
+                          onClick={() => setDeleteTarget(e)}
+                          className='rounded-lg border border-red-700 px-2 py-1 text-red-300 hover:bg-red-950/40'
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-                {place.tipo_comida && (
-                  <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
-                    {place.tipo_comida}
+            {totalItems > 0 && (
+              <div className='flex items-center justify-between px-4 py-2 border-t border-slate-800 text-[11px] text-slate-300'>
+                <span>
+                  Mostrando {fromItem}-{toItem} de {totalItems}
+                </span>
+                <div className='inline-flex gap-1'>
+                  <button
+                    type='button'
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className='px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800'
+                  >
+                    Anterior
+                  </button>
+                  <span className='px-2 py-1'>
+                    Página {currentPage} de {totalPages}
                   </span>
-                )}
-
-                <div className='mt-2 flex justify-end'>
-                  <span className='text-[11px] font-medium text-emerald-300 group-hover:text-emerald-200'>
-                    Ver más
-                  </span>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Modal de detalle (igual al que ya tenías) */}
-      {isModalOpen && selectedPlace && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4'>
-          <div className='relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
-            <button
-              type='button'
-              onClick={closeModal}
-              className='absolute right-3 top-3 rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700'
-            >
-              ✕
-            </button>
-
-            <div className='p-4 sm:p-6 space-y-4'>
-              <div className='flex flex-col sm:flex-row gap-4'>
-                <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
-                  <Image
-                    alt={selectedPlace.nombre}
-                    src={
-                      selectedPlace.url_imagen ||
-                      '/images/placeholders/restaurante-placeholder.jpg'
+                  <button
+                    type='button'
+                    onClick={() =>
+                      setCurrentPage(p => Math.min(totalPages, p + 1))
                     }
-                    fill
-                    className='object-cover'
-                    sizes='(max-width: 640px) 100vw, 160px'
+                    disabled={currentPage === totalPages}
+                    className='px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800'
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Modal formulario */}
+        {isFormOpen && (
+          <div className='fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4'>
+            <div className='w-full max-w-2xl mx-auto my-8 rounded-3xl bg-slate-950 border border-slate-700 p-6 md:p-8 shadow-2xl max-h-[88vh] overflow-y-auto'>
+              <div className='flex items-center justify-between mb-3'>
+                <h2 className='text-sm font-semibold'>
+                  {editing ? 'Editar evento' : 'Nuevo evento'}
+                </h2>
+                <button
+                  type='button'
+                  onClick={closeForm}
+                  className='text-slate-400 hover:text-slate-200 text-sm'
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className='space-y-3'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Título *
+                    </label>
+                    <input
+                      type='text'
+                      name='titulo'
+                      value={formValues.titulo}
+                      onChange={handleChange}
+                      required
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Categoría
+                    </label>
+                    <select
+                      name='categoria'
+                      value={formValues.categoria}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    >
+                      <option value='OTROS'>Otros</option>
+                      <option value='MUSICA'>Música</option>
+                      <option value='CINE'>Cine</option>
+                      <option value='TEATRO'>Teatro</option>
+                      <option value='GASTRONOMIA'>Gastronomía</option>
+                      <option value='NIGHTLIFE'>Nightlife</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Fecha inicio *
+                    </label>
+                    <input
+                      type='datetime-local'
+                      name='fecha_inicio'
+                      value={formValues.fecha_inicio}
+                      onChange={handleChange}
+                      required
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Fecha fin
+                    </label>
+                    <input
+                      type='datetime-local'
+                      name='fecha_fin'
+                      value={formValues.fecha_fin}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                </div>
+
+                <div className='flex items-center gap-4'>
+                  <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                    <input
+                      type='checkbox'
+                      name='es_todo_el_dia'
+                      checked={formValues.es_todo_el_dia}
+                      onChange={handleChange}
+                      className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                    />
+                    Todo el día
+                  </label>
+
+                  <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                    <input
+                      type='checkbox'
+                      name='es_destacado'
+                      checked={formValues.es_destacado}
+                      onChange={handleChange}
+                      className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                    />
+                    Destacado
+                  </label>
+                </div>
+
+                <div>
+                  <label className='block text-xs mb-1 text-slate-300'>
+                    Lugar
+                  </label>
+                  <input
+                    type='text'
+                    name='nombre_lugar'
+                    value={formValues.nombre_lugar}
+                    onChange={handleChange}
+                    placeholder='Nombre del lugar / venue'
+                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                   />
                 </div>
 
-                <div className='flex-1 space-y-1'>
-                  <p className='text-[11px] uppercase font-semibold text-emerald-400'>
-                    {selectedPlace.zona || 'Zona no especificada'}
-                  </p>
-                  <h3 className='text-lg font-semibold'>
-                    {selectedPlace.nombre}
-                  </h3>
-                  <div className='flex flex-wrap items-center gap-2 text-[12px]'>
-                    <span className='text-amber-400'>
-                      {renderStars(selectedPlace.estrellas)}
-                    </span>
-                    <span className='text-slate-400'>
-                      {renderPriceRange(selectedPlace.rango_precios)}
-                    </span>
-                    {selectedPlace.tipo_comida && (
-                      <span className='rounded-full border border-slate-700 px-2 py-[2px] text-[11px] text-slate-300'>
-                        {selectedPlace.tipo_comida}
-                      </span>
-                    )}
+                <div>
+                  <label className='block text-xs mb-1 text-slate-300'>
+                    Dirección *
+                  </label>
+                  <input
+                    type='text'
+                    name='direccion'
+                    value={formValues.direccion}
+                    onChange={handleChange}
+                    required
+                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                  />
+                </div>
+
+                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Ciudad *
+                    </label>
+                    <input
+                      type='text'
+                      name='ciudad'
+                      value={formValues.ciudad}
+                      onChange={handleChange}
+                      required
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
                   </div>
-
-                  {selectedPlace.url_instagram && (
-                    <a
-                      href={selectedPlace.url_instagram}
-                      target='_blank'
-                      rel='noreferrer'
-                      className='inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1'
-                    >
-                      <Instagram size={14} />
-                      <span>
-                        @{getInstagramHandle(selectedPlace.url_instagram)}
-                      </span>
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              {selectedPlace.resena && (
-                <div className='space-y-1'>
-                  <h4 className='text-sm font-semibold'>Reseña</h4>
-                  <p className='text-[12px] text-slate-300 whitespace-pre-line'>
-                    {selectedPlace.resena}
-                  </p>
-                </div>
-              )}
-
-              <div className='grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]'>
-                <div className='space-y-1'>
-                  <p className='text-xs font-semibold text-slate-300'>
-                    Dirección
-                  </p>
-                  <p className='text-slate-400'>
-                    {selectedPlace.direccion || '-'}
-                  </p>
-                  {selectedPlace.url_maps && (
-                    <a
-                      href={selectedPlace.url_maps}
-                      target='_blank'
-                      rel='noreferrer'
-                      className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 mt-1 inline-block'
-                    >
-                      Cómo llegar
-                    </a>
-                  )}
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Provincia
+                    </label>
+                    <input
+                      type='text'
+                      name='provincia'
+                      value={formValues.provincia}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      País
+                    </label>
+                    <input
+                      type='text'
+                      name='pais'
+                      value={formValues.pais}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
                 </div>
 
-                <div className='space-y-1'>
-                  <p className='text-xs font-semibold text-slate-300'>
-                    Horario
-                  </p>
-                  <p className='text-slate-400'>
-                    {selectedPlace.horario_text || '-'}
-                  </p>
-                </div>
-
-                <div className='space-y-1'>
-                  <p className='text-xs font-semibold text-slate-300'>
-                    Sitio web
-                  </p>
-                  {selectedPlace.sitio_web ? (
-                    <a
-                      href={selectedPlace.sitio_web}
-                      target='_blank'
-                      rel='noreferrer'
-                      className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
-                    >
-                      {selectedPlace.sitio_web}
-                    </a>
-                  ) : (
-                    <p className='text-slate-400'>-</p>
-                  )}
-                </div>
-
-                <div className='space-y-1'>
-                  <p className='text-xs font-semibold text-slate-300'>
-                    Reservas
-                  </p>
-                  {selectedPlace.url_reservas || selectedPlace.url_reserva ? (
-                    <a
-                      href={
-                        selectedPlace.url_reservas ||
-                        selectedPlace.url_reserva ||
-                        '#'
+                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      ¿Es gratuito?
+                    </label>
+                    <select
+                      name='es_gratuito'
+                      value={formValues.es_gratuito ? 'true' : 'false'}
+                      onChange={e =>
+                        setFormValues(prev => ({
+                          ...prev,
+                          es_gratuito: e.target.value === 'true'
+                        }))
                       }
-                      target='_blank'
-                      rel='noreferrer'
-                      className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     >
-                      Hacer reserva
-                    </a>
-                  ) : (
-                    <p className='text-slate-400'>-</p>
-                  )}
+                      <option value='true'>Sí</option>
+                      <option value='false'>No</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Precio desde
+                    </label>
+                    <input
+                      type='number'
+                      name='precio_desde'
+                      value={formValues.precio_desde}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Moneda
+                    </label>
+                    <input
+                      type='text'
+                      name='moneda'
+                      value={formValues.moneda}
+                      onChange={handleChange}
+                      maxLength={3}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className='flex justify-end pt-2'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      URL entradas
+                    </label>
+                    <input
+                      type='url'
+                      name='url_entradas'
+                      value={formValues.url_entradas}
+                      onChange={handleChange}
+                      placeholder='https://...'
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Edad mínima
+                    </label>
+                    <input
+                      type='number'
+                      name='edad_minima'
+                      value={formValues.edad_minima}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className='block text-xs mb-1 text-slate-300'>
+                    Descripción corta
+                  </label>
+                  <input
+                    type='text'
+                    name='descripcion_corta'
+                    value={formValues.descripcion_corta}
+                    onChange={handleChange}
+                    maxLength={255}
+                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-xs mb-1 text-slate-300'>
+                    Descripción larga
+                  </label>
+                  <textarea
+                    name='descripcion_larga'
+                    value={formValues.descripcion_larga}
+                    onChange={handleChange}
+                    rows={4}
+                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-xs mb-1 text-slate-300'>
+                    Imagen principal *
+                  </label>
+                  <UploadImage
+                    onUploaded={path =>
+                      setFormValues(prev => ({
+                        ...prev,
+                        imagen_principal: path
+                      }))
+                    }
+                  />
+                  {formValues.imagen_principal && (
+                    <p className='mt-1 text-[11px] text-emerald-400'>
+                      Imagen subida: {formValues.imagen_principal}
+                    </p>
+                  )}
+                  <p className='mt-1 text-[10px] text-slate-500'>
+                    Se guarda en <code>public/uploads/eventos</code> y en la
+                    base se almacena la ruta relativa (por ejemplo:{' '}
+                    <code>uploads/eventos/archivo.jpg</code>).
+                  </p>
+                </div>
+
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Estado
+                    </label>
+                    <select
+                      name='estado'
+                      value={formValues.estado}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    >
+                      <option value='DRAFT'>DRAFT</option>
+                      <option value='PUBLICADO'>PUBLICADO</option>
+                      <option value='CANCELADO'>CANCELADO</option>
+                      <option value='ARCHIVADO'>ARCHIVADO</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      Visibilidad
+                    </label>
+                    <select
+                      name='visibilidad'
+                      value={formValues.visibilidad}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    >
+                      <option value='PUBLICO'>Público</option>
+                      <option value='PRIVADO'>Privado</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className='flex justify-end gap-2 pt-2'>
+                  <button
+                    type='button'
+                    onClick={closeForm}
+                    className='rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800'
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type='submit'
+                    disabled={isSubmitting}
+                    className='rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60'
+                  >
+                    {isSubmitting
+                      ? 'Guardando...'
+                      : editing
+                      ? 'Guardar cambios'
+                      : 'Crear evento'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm delete */}
+        {deleteTarget && (
+          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60'>
+            <div className='w-full max-w-sm rounded-2xl bg-slate-950 border border-slate-700 p-4 shadow-2xl'>
+              <h2 className='text-sm font-semibold mb-2'>Eliminar evento</h2>
+              <p className='text-xs text-slate-300 mb-3'>
+                Estás por eliminar{' '}
+                <span className='font-semibold'>{deleteTarget.titulo}</span>.
+                Esta acción no se puede deshacer.
+              </p>
+              <div className='flex justify-end gap-2'>
                 <button
                   type='button'
-                  onClick={closeModal}
-                  className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                  onClick={() => setDeleteTarget(null)}
+                  className='rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800'
                 >
-                  Cerrar
+                  Cancelar
+                </button>
+                <button
+                  type='button'
+                  onClick={confirmDelete}
+                  disabled={isDeleting}
+                  className='rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-60'
+                >
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </section>
+        )}
+      </main>
+
+      <BottomNav />
+    </div>
   )
 }
