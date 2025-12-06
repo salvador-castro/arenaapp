@@ -141,7 +141,7 @@ export default function RestaurantesDashboard ({ isLoggedIn }: Props) {
         <button
           type='button'
           className='text-xs font-medium text-emerald-400 underline underline-offset-4 cursor-pointer hover:text-emerald-300'
-          onClick={() => goTo('/lugares')}
+          onClick={() => goTo('/restaurantes')}
         >
           Ver más
         </button>
