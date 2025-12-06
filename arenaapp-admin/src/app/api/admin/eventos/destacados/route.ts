@@ -1,3 +1,4 @@
+// C:\Users\salvaCastro\Desktop\arenaapp-admin\src\app\api\admin\eventos\destacados\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 
@@ -21,7 +22,7 @@ export function OPTIONS () {
   })
 }
 
-// GET /api/admin/eventos/destacados (público)
+// GET /api/admin/eventos/destacados  (público)
 export async function GET (req: NextRequest) {
   try {
     const db = await getDb()
@@ -32,39 +33,27 @@ export async function GET (req: NextRequest) {
         id,
         titulo,
         slug,
-        descripcion_corta,
-        descripcion_larga,
         categoria,
         es_destacado,
         fecha_inicio,
         fecha_fin,
         es_todo_el_dia,
-        lugar_id,
-        nombre_lugar,
+        zona,
         direccion,
-        ciudad,
-        provincia,
-        pais,
-        lat,
-        lng,
         es_gratuito,
         precio_desde,
         moneda,
         url_entradas,
-        edad_minima,
         estado,
         visibilidad,
-        published_at,
+        resena,
         imagen_principal
       FROM eventos
       WHERE
         es_destacado = TRUE
         AND estado = 'PUBLICADO'
         AND visibilidad = 'PUBLICO'
-      ORDER BY
-        fecha_inicio ASC NULLS LAST,
-        titulo ASC
-      LIMIT 20
+      ORDER BY fecha_inicio ASC, id ASC
       `
     )
 

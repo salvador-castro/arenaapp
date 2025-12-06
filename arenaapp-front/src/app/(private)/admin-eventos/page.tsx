@@ -1,3 +1,4 @@
+// C:\Users\salvaCastro\Desktop\arenaapp-front\src\app\(private)\admin-eventos\page.tsx
 'use client'
 
 import React, { useEffect, useState, FormEvent, ChangeEvent } from 'react'
@@ -6,6 +7,7 @@ import { useAuth } from '@/context/AuthContext'
 import UserDropdown from '@/components/UserDropdown'
 import BottomNav from '@/components/BottomNav'
 import UploadImage from '@/components/UploadImage'
+import ZonasLugares from '@/components/Zonas'
 
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
@@ -13,83 +15,61 @@ const API_BASE = (
 
 const PAGE_SIZE = 10
 
-type EstadoEvento = 'DRAFT' | 'PUBLICADO' | 'CANCELADO' | 'ARCHIVADO'
-type VisibilidadEvento = 'PUBLICO' | 'PRIVADO'
-
-interface AdminEvent {
+interface AdminEvento {
   id: number | string
   titulo: string
   slug?: string
-  descripcion_corta?: string | null
-  descripcion_larga?: string | null
-  categoria?: string | null
-  es_destacado?: boolean
-  fecha_inicio: string
-  fecha_fin?: string | null
-  es_todo_el_dia?: boolean
-  lugar_id?: number | null
-  nombre_lugar?: string | null
-  direccion?: string | null
-  ciudad?: string | null
-  provincia?: string | null
-  pais?: string | null
-  lat?: number | null
-  lng?: number | null
-  es_gratuito?: boolean
-  precio_desde?: number | null
-  moneda?: string | null
-  url_entradas?: string | null
-  edad_minima?: number | null
-  estado?: EstadoEvento | null
-  visibilidad?: VisibilidadEvento | null
-  published_at?: string | null
-  created_at?: string | null
-  updated_at?: string | null
-  imagen_principal?: string | null
-}
-
-interface FormValues {
-  titulo: string
-  descripcion_corta: string
-  descripcion_larga: string
   categoria: string
   es_destacado: boolean
   fecha_inicio: string
-  fecha_fin: string
+  fecha_fin: string | null
   es_todo_el_dia: boolean
-  nombre_lugar: string
+  zona: string | null
+  direccion: string | null
+  es_gratuito: boolean
+  precio_desde: number | null
+  moneda: string | null
+  url_entradas: string | null
+  estado: string
+  visibilidad?: string
+  resena: string | null
+  imagen_principal: string | null
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+interface FormValuesEvento {
+  titulo: string
+  categoria: string
+  zona: string[]
   direccion: string
-  ciudad: string
-  provincia: string
-  pais: string
   es_gratuito: boolean
   precio_desde: number | ''
   moneda: string
   url_entradas: string
-  edad_minima: number | ''
-  estado: EstadoEvento
-  visibilidad: VisibilidadEvento
+  estado: 'DRAFT' | 'PUBLICADO' | 'ARCHIVADO'
+  fecha_inicio: string
+  fecha_fin: string
+  es_todo_el_dia: boolean
+  es_destacado: boolean
+  resena: string
   imagen_principal: string
 }
 
-function formatDateTimeLocal (dateStr?: string | null): string {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  if (Number.isNaN(d.getTime())) return ''
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const yyyy = d.getFullYear()
-  const mm = pad(d.getMonth() + 1)
-  const dd = pad(d.getDate())
-  const hh = pad(d.getHours())
-  const mi = pad(d.getMinutes())
-  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`
-}
+const CATEGORIAS_EVENTO = [
+  'MUSICA',
+  'TEATRO',
+  'GASTRONOMIA',
+  'DEPORTES',
+  'FIESTA',
+  'OTROS'
+]
 
 export default function AdminEventosPage () {
   const router = useRouter()
   const { user, isLoading } = useAuth()
 
-  const [events, setEvents] = useState<AdminEvent[]>([])
+  const [eventos, setEventos] = useState<AdminEvento[]>([])
   const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -99,34 +79,28 @@ export default function AdminEventosPage () {
   const [totalItems, setTotalItems] = useState(0)
 
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editing, setEditing] = useState<AdminEvent | null>(null)
+  const [editing, setEditing] = useState<AdminEvento | null>(null)
 
-  const [formValues, setFormValues] = useState<FormValues>({
+  const [formValues, setFormValues] = useState<FormValuesEvento>({
     titulo: '',
-    descripcion_corta: '',
-    descripcion_larga: '',
     categoria: 'OTROS',
-    es_destacado: false,
+    zona: [],
+    direccion: '',
+    es_gratuito: false,
+    precio_desde: '',
+    moneda: 'URU',
+    url_entradas: '',
+    estado: 'PUBLICADO',
     fecha_inicio: '',
     fecha_fin: '',
     es_todo_el_dia: false,
-    nombre_lugar: '',
-    direccion: '',
-    ciudad: '',
-    provincia: '',
-    pais: 'Argentina',
-    es_gratuito: true,
-    precio_desde: '',
-    moneda: 'ARS',
-    url_entradas: '',
-    edad_minima: '',
-    estado: 'DRAFT',
-    visibilidad: 'PUBLICO',
+    es_destacado: false,
+    resena: '',
     imagen_principal: ''
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminEvento | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   // 🔐 Solo ADMIN
@@ -142,7 +116,7 @@ export default function AdminEventosPage () {
     }
   }, [user, isLoading, router])
 
-  async function fetchEvents (pageToLoad: number, searchTerm: string) {
+  async function fetchEventos (pageToLoad: number, searchTerm: string) {
     try {
       if (!user || user.rol !== 'ADMIN') return
 
@@ -172,7 +146,7 @@ export default function AdminEventosPage () {
 
       const json = await res.json()
 
-      setEvents(json.data as AdminEvent[])
+      setEventos(json.data as AdminEvento[])
       setCurrentPage(json.page ?? pageToLoad)
       setTotalPages(json.totalPages ?? 1)
       setTotalItems(json.total ?? 0)
@@ -186,7 +160,7 @@ export default function AdminEventosPage () {
 
   useEffect(() => {
     if (!user || user.rol !== 'ADMIN') return
-    fetchEvents(currentPage, search)
+    fetchEventos(currentPage, search)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, search])
 
@@ -194,53 +168,46 @@ export default function AdminEventosPage () {
     setEditing(null)
     setFormValues({
       titulo: '',
-      descripcion_corta: '',
-      descripcion_larga: '',
       categoria: 'OTROS',
-      es_destacado: false,
+      zona: [],
+      direccion: '',
+      es_gratuito: false,
+      precio_desde: '',
+      moneda: 'URU',
+      url_entradas: '',
+      estado: 'PUBLICADO',
       fecha_inicio: '',
       fecha_fin: '',
       es_todo_el_dia: false,
-      nombre_lugar: '',
-      direccion: '',
-      ciudad: '',
-      provincia: '',
-      pais: 'Argentina',
-      es_gratuito: true,
-      precio_desde: '',
-      moneda: 'ARS',
-      url_entradas: '',
-      edad_minima: '',
-      estado: 'DRAFT',
-      visibilidad: 'PUBLICO',
+      es_destacado: false,
+      resena: '',
       imagen_principal: ''
     })
     setIsFormOpen(true)
   }
 
-  function openEditForm (e: AdminEvent) {
+  function openEditForm (e: AdminEvento) {
     setEditing(e)
     setFormValues({
       titulo: e.titulo ?? '',
-      descripcion_corta: e.descripcion_corta ?? '',
-      descripcion_larga: e.descripcion_larga ?? '',
       categoria: e.categoria ?? 'OTROS',
-      es_destacado: !!e.es_destacado,
-      fecha_inicio: formatDateTimeLocal(e.fecha_inicio),
-      fecha_fin: formatDateTimeLocal(e.fecha_fin ?? null),
-      es_todo_el_dia: !!e.es_todo_el_dia,
-      nombre_lugar: e.nombre_lugar ?? '',
+      zona: e.zona
+        ? e.zona
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+        : [],
       direccion: e.direccion ?? '',
-      ciudad: e.ciudad ?? '',
-      provincia: e.provincia ?? '',
-      pais: e.pais ?? 'Argentina',
       es_gratuito: !!e.es_gratuito,
       precio_desde: typeof e.precio_desde === 'number' ? e.precio_desde : '',
-      moneda: e.moneda ?? 'ARS',
+      moneda: e.moneda ?? 'URU',
       url_entradas: e.url_entradas ?? '',
-      edad_minima: typeof e.edad_minima === 'number' ? e.edad_minima : '',
-      estado: (e.estado as EstadoEvento) ?? 'DRAFT',
-      visibilidad: (e.visibilidad as VisibilidadEvento) ?? 'PUBLICO',
+      estado: (e.estado as FormValuesEvento['estado']) ?? 'PUBLICADO',
+      fecha_inicio: e.fecha_inicio ? e.fecha_inicio.substring(0, 16) : '',
+      fecha_fin: e.fecha_fin ? e.fecha_fin.substring(0, 16) : '',
+      es_todo_el_dia: !!e.es_todo_el_dia,
+      es_destacado: !!e.es_destacado,
+      resena: e.resena ?? '',
       imagen_principal: e.imagen_principal ?? ''
     })
     setIsFormOpen(true)
@@ -265,7 +232,7 @@ export default function AdminEventosPage () {
       return
     }
 
-    if (name === 'precio_desde' || name === 'edad_minima') {
+    if (name === 'precio_desde') {
       setFormValues(prev => ({
         ...prev,
         [name]: value === '' ? '' : Number(value)
@@ -284,25 +251,32 @@ export default function AdminEventosPage () {
     setIsSubmitting(true)
     setError(null)
 
-    if (!formValues.imagen_principal.trim()) {
-      setIsSubmitting(false)
-      setError('Subí una imagen antes de guardar.')
-      return
-    }
-
     if (!formValues.fecha_inicio) {
       setIsSubmitting(false)
       setError('La fecha de inicio es obligatoria.')
       return
     }
 
+    if (!formValues.url_entradas.trim()) {
+      setIsSubmitting(false)
+      setError('La URL de entradas es obligatoria.')
+      return
+    }
+
+    if (!formValues.direccion.trim()) {
+      setIsSubmitting(false)
+      setError('La dirección es obligatoria.')
+      return
+    }
+
     try {
       const payload: any = {
         ...formValues,
-        precio_desde:
-          formValues.precio_desde === '' ? null : formValues.precio_desde,
-        edad_minima:
-          formValues.edad_minima === '' ? null : formValues.edad_minima
+        zona: formValues.zona.length > 0 ? formValues.zona : [],
+        precio_desde: formValues.es_gratuito ? null : formValues.precio_desde,
+        moneda: formValues.moneda || 'URU',
+        fecha_inicio: formValues.fecha_inicio,
+        fecha_fin: formValues.fecha_fin || null
       }
 
       const isEdit = !!editing && editing.id != null
@@ -326,7 +300,7 @@ export default function AdminEventosPage () {
       }
 
       await res.json()
-      await fetchEvents(currentPage, search)
+      await fetchEventos(currentPage, search)
       closeForm()
     } catch (err: any) {
       console.error(err)
@@ -355,7 +329,7 @@ export default function AdminEventosPage () {
       }
 
       setDeleteTarget(null)
-      await fetchEvents(currentPage, search)
+      await fetchEventos(currentPage, search)
     } catch (err: any) {
       console.error(err)
       setError(err.message ?? 'Error al eliminar evento')
@@ -395,7 +369,7 @@ export default function AdminEventosPage () {
           <div className='flex-1'>
             <input
               type='text'
-              placeholder='Buscar por título, lugar, ciudad...'
+              placeholder='Buscar por título, categoría, zona...'
               value={search}
               onChange={e => {
                 setSearch(e.target.value)
@@ -434,13 +408,16 @@ export default function AdminEventosPage () {
                     Título
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Categoría
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                    Zona
+                  </th>
+                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     Fecha
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Ciudad
-                  </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
-                    Estado
+                    Gratuito
                   </th>
                   <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
                     Destacado
@@ -451,10 +428,10 @@ export default function AdminEventosPage () {
                 </tr>
               </thead>
               <tbody>
-                {events.length === 0 && (
+                {eventos.length === 0 && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className='px-3 py-4 text-center text-xs text-slate-500'
                     >
                       No hay eventos que coincidan con la búsqueda.
@@ -462,50 +439,51 @@ export default function AdminEventosPage () {
                   </tr>
                 )}
 
-                {events.map(e => (
+                {eventos.map(ev => (
                   <tr
-                    key={String(e.id)}
+                    key={String(ev.id)}
                     className='border-t border-slate-800/80 hover:bg-slate-900/80'
                   >
                     <td className='px-3 py-2 text-xs text-slate-400'>
-                      {String(e.id)}
+                      {String(ev.id)}
                     </td>
                     <td className='px-3 py-2'>
                       <div className='flex flex-col'>
-                        <span className='text-sm'>{e.titulo}</span>
-                        {e.nombre_lugar && (
-                          <span className='text-[11px] text-slate-400'>
-                            {e.nombre_lugar}
-                          </span>
-                        )}
+                        <span className='text-sm'>{ev.titulo}</span>
+                        <span className='text-[11px] text-slate-400'>
+                          {ev.direccion}
+                        </span>
                       </div>
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {e.fecha_inicio
-                        ? new Date(e.fecha_inicio).toLocaleString()
+                      {ev.categoria}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {ev.zona || '-'}
+                    </td>
+                    <td className='px-3 py-2 text-xs text-slate-300'>
+                      {ev.fecha_inicio
+                        ? new Date(ev.fecha_inicio).toLocaleString()
                         : '-'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {e.ciudad || e.provincia || '-'}
+                      {ev.es_gratuito ? 'Sí' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-slate-300'>
-                      {e.estado || '-'}
-                    </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
-                      {e.es_destacado ? 'Sí' : 'No'}
+                      {ev.es_destacado ? 'Sí' : 'No'}
                     </td>
                     <td className='px-3 py-2 text-xs text-right'>
                       <div className='inline-flex items-center gap-2'>
                         <button
                           type='button'
-                          onClick={() => openEditForm(e)}
+                          onClick={() => openEditForm(ev)}
                           className='rounded-lg border border-slate-600 px-2 py-1 hover:bg-slate-800'
                         >
                           Editar
                         </button>
                         <button
                           type='button'
-                          onClick={() => setDeleteTarget(e)}
+                          onClick={() => setDeleteTarget(ev)}
                           className='rounded-lg border border-red-700 px-2 py-1 text-red-300 hover:bg-red-950/40'
                         >
                           Eliminar
@@ -567,6 +545,7 @@ export default function AdminEventosPage () {
                 </button>
               </div>
 
+              {/* FORM */}
               <form onSubmit={handleSubmit} className='space-y-3'>
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                   <div>
@@ -584,22 +563,43 @@ export default function AdminEventosPage () {
                   </div>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      Categoría
+                      Categoría *
                     </label>
                     <select
                       name='categoria'
                       value={formValues.categoria}
                       onChange={handleChange}
+                      required
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     >
-                      <option value='OTROS'>Otros</option>
-                      <option value='MUSICA'>Música</option>
-                      <option value='CINE'>Cine</option>
-                      <option value='TEATRO'>Teatro</option>
-                      <option value='GASTRONOMIA'>Gastronomía</option>
-                      <option value='NIGHTLIFE'>Nightlife</option>
+                      {CATEGORIAS_EVENTO.map(cat => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
                     </select>
                   </div>
+                </div>
+
+                <ZonasLugares
+                  selected={formValues.zona}
+                  onChange={values =>
+                    setFormValues(prev => ({ ...prev, zona: values }))
+                  }
+                />
+
+                <div>
+                  <label className='block text-xs mb-1 text-slate-300'>
+                    Dirección *
+                  </label>
+                  <input
+                    type='text'
+                    name='direccion'
+                    value={formValues.direccion}
+                    onChange={handleChange}
+                    required
+                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                  />
                 </div>
 
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
@@ -630,141 +630,57 @@ export default function AdminEventosPage () {
                   </div>
                 </div>
 
-                <div className='flex items-center gap-4'>
-                  <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
-                    <input
-                      type='checkbox'
-                      name='es_todo_el_dia'
-                      checked={formValues.es_todo_el_dia}
-                      onChange={handleChange}
-                      className='h-4 w-4 rounded border-slate-600 bg-slate-900'
-                    />
-                    Todo el día
-                  </label>
-
-                  <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
-                    <input
-                      type='checkbox'
-                      name='es_destacado'
-                      checked={formValues.es_destacado}
-                      onChange={handleChange}
-                      className='h-4 w-4 rounded border-slate-600 bg-slate-900'
-                    />
-                    Destacado
-                  </label>
-                </div>
-
-                <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
-                    Lugar
-                  </label>
-                  <input
-                    type='text'
-                    name='nombre_lugar'
-                    value={formValues.nombre_lugar}
-                    onChange={handleChange}
-                    placeholder='Nombre del lugar / venue'
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
-                    Dirección *
-                  </label>
-                  <input
-                    type='text'
-                    name='direccion'
-                    value={formValues.direccion}
-                    onChange={handleChange}
-                    required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                  />
-                </div>
-
                 <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Ciudad *
+                  <div className='flex items-end'>
+                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                      <input
+                        type='checkbox'
+                        name='es_todo_el_dia'
+                        checked={formValues.es_todo_el_dia}
+                        onChange={handleChange}
+                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                      />
+                      Todo el día
                     </label>
-                    <input
-                      type='text'
-                      name='ciudad'
-                      value={formValues.ciudad}
-                      onChange={handleChange}
-                      required
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
                   </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Provincia
-                    </label>
-                    <input
-                      type='text'
-                      name='provincia'
-                      value={formValues.provincia}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      País
-                    </label>
-                    <input
-                      type='text'
-                      name='pais'
-                      value={formValues.pais}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      ¿Es gratuito?
+                      ¿Es gratuito? *
                     </label>
-                    <select
-                      name='es_gratuito'
-                      value={formValues.es_gratuito ? 'true' : 'false'}
-                      onChange={e =>
-                        setFormValues(prev => ({
-                          ...prev,
-                          es_gratuito: e.target.value === 'true'
-                        }))
-                      }
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    >
-                      <option value='true'>Sí</option>
-                      <option value='false'>No</option>
-                    </select>
+                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                      <input
+                        type='checkbox'
+                        name='es_gratuito'
+                        checked={formValues.es_gratuito}
+                        onChange={e =>
+                          setFormValues(prev => ({
+                            ...prev,
+                            es_gratuito: e.target.checked,
+                            precio_desde: e.target.checked
+                              ? ''
+                              : prev.precio_desde
+                          }))
+                        }
+                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                      />
+                      Gratuito
+                    </label>
                   </div>
+
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      Precio desde
+                      Precio desde{' '}
+                      {formValues.es_gratuito ? '(no aplica)' : '*'}
                     </label>
                     <input
                       type='number'
                       name='precio_desde'
                       value={formValues.precio_desde}
                       onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Moneda
-                    </label>
-                    <input
-                      type='text'
-                      name='moneda'
-                      value={formValues.moneda}
-                      onChange={handleChange}
-                      maxLength={3}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      disabled={formValues.es_gratuito}
+                      required={!formValues.es_gratuito}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 disabled:opacity-50'
                     />
                   </div>
                 </div>
@@ -772,26 +688,29 @@ export default function AdminEventosPage () {
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                   <div>
                     <label className='block text-xs mb-1 text-slate-300'>
-                      URL entradas
+                      Moneda *
+                    </label>
+                    <select
+                      name='moneda'
+                      value={formValues.moneda}
+                      onChange={handleChange}
+                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    >
+                      <option value='URU'>URU</option>
+                      <option value='ARS'>ARS</option>
+                      <option value='USD'>USD</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className='block text-xs mb-1 text-slate-300'>
+                      URL entradas *
                     </label>
                     <input
                       type='url'
                       name='url_entradas'
                       value={formValues.url_entradas}
                       onChange={handleChange}
-                      placeholder='https://...'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Edad mínima
-                    </label>
-                    <input
-                      type='number'
-                      name='edad_minima'
-                      value={formValues.edad_minima}
-                      onChange={handleChange}
+                      required
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     />
                   </div>
@@ -799,34 +718,21 @@ export default function AdminEventosPage () {
 
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
-                    Descripción corta
-                  </label>
-                  <input
-                    type='text'
-                    name='descripcion_corta'
-                    value={formValues.descripcion_corta}
-                    onChange={handleChange}
-                    maxLength={255}
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
-                    Descripción larga
+                    Reseña
                   </label>
                   <textarea
-                    name='descripcion_larga'
-                    value={formValues.descripcion_larga}
+                    name='resena'
+                    value={formValues.resena}
                     onChange={handleChange}
                     rows={4}
                     className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    placeholder='Descripción del evento, artistas, ambiente, etc.'
                   />
                 </div>
 
                 <div>
                   <label className='block text-xs mb-1 text-slate-300'>
-                    Imagen principal *
+                    Imagen principal
                   </label>
                   <UploadImage
                     onUploaded={path =>
@@ -842,7 +748,7 @@ export default function AdminEventosPage () {
                     </p>
                   )}
                   <p className='mt-1 text-[10px] text-slate-500'>
-                    Se guarda en <code>public/uploads/eventos</code> y en la
+                    Se guarda en <code>public/uploads/[sección]</code> y en la
                     base se almacena la ruta relativa (por ejemplo:{' '}
                     <code>uploads/eventos/archivo.jpg</code>).
                   </p>
@@ -859,25 +765,22 @@ export default function AdminEventosPage () {
                       onChange={handleChange}
                       className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
                     >
-                      <option value='DRAFT'>DRAFT</option>
                       <option value='PUBLICADO'>PUBLICADO</option>
-                      <option value='CANCELADO'>CANCELADO</option>
+                      <option value='DRAFT'>BORRADOR</option>
                       <option value='ARCHIVADO'>ARCHIVADO</option>
                     </select>
                   </div>
-                  <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
-                      Visibilidad
+                  <div className='flex items-end'>
+                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                      <input
+                        type='checkbox'
+                        name='es_destacado'
+                        checked={formValues.es_destacado}
+                        onChange={handleChange}
+                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                      />
+                      Destacado (aparece en inicio)
                     </label>
-                    <select
-                      name='visibilidad'
-                      value={formValues.visibilidad}
-                      onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    >
-                      <option value='PUBLICO'>Público</option>
-                      <option value='PRIVADO'>Privado</option>
-                    </select>
                   </div>
                 </div>
 

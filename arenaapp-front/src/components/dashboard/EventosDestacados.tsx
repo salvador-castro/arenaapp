@@ -1,34 +1,32 @@
+// C:\Users\salvaCastro\Desktop\arenaapp-front\src\components\EventosDestacados.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { useAuthRedirect } from 'src/hooks/useAuthRedirect'
+import Image from 'next/image'
 
 type Props = {
   isLoggedIn: boolean
 }
 
-interface Event {
+interface Evento {
   id: number
   titulo: string
   slug: string
-  descripcion_corta: string | null
-  descripcion_larga: string | null
-  categoria: string | null
+  categoria: string
   es_destacado: boolean
   fecha_inicio: string
   fecha_fin: string | null
   es_todo_el_dia: boolean
-  nombre_lugar: string | null
+  zona: string | null
   direccion: string | null
-  ciudad: string | null
-  provincia: string | null
-  pais: string | null
   es_gratuito: boolean
   precio_desde: number | null
   moneda: string | null
   url_entradas: string | null
-  edad_minima: number | null
+  estado: string
+  visibilidad: string
+  resena: string | null
   imagen_principal: string | null
 }
 
@@ -36,65 +34,41 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
-const DESTACADOS_ENDPOINT = `${API_BASE}/api/admin/eventos/destacados`
+const DESTACADOS_EVENTOS_ENDPOINT = `${API_BASE}/api/admin/eventos/destacados`
 
-function formatDateRange (ev: Event): string {
-  const start = ev.fecha_inicio ? new Date(ev.fecha_inicio) : null
-  const end = ev.fecha_fin ? new Date(ev.fecha_fin) : null
+function formatDateRange (inicio: string, fin: string | null): string {
+  if (!inicio) return '-'
+  const start = new Date(inicio)
 
-  if (!start) return '-'
-
-  const optsDay: Intl.DateTimeFormatOptions = {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit'
-  }
-  const optsTime: Intl.DateTimeFormatOptions = {
-    hour: '2-digit',
-    minute: '2-digit'
+  if (!fin) {
+    return start.toLocaleString()
   }
 
-  const startDay = start.toLocaleDateString('es-AR', optsDay)
-  const startTime = start.toLocaleTimeString('es-AR', optsTime)
-
-  if (!end || ev.es_todo_el_dia) {
-    return ev.es_todo_el_dia
-      ? `${startDay} · Todo el día`
-      : `${startDay} · ${startTime} hs`
-  }
+  const end = new Date(fin)
 
   const sameDay =
     start.getFullYear() === end.getFullYear() &&
     start.getMonth() === end.getMonth() &&
     start.getDate() === end.getDate()
 
-  const endTime = end.toLocaleTimeString('es-AR', optsTime)
-
   if (sameDay) {
-    return `${startDay} · ${startTime} - ${endTime} hs`
+    return `${start.toLocaleDateString()} · ${start.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    })} – ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
   }
 
-  const endDay = end.toLocaleDateString('es-AR', optsDay)
-  return `${startDay} ${startTime} hs → ${endDay} ${endTime} hs`
-}
-
-function formatPrice (ev: Event): string {
-  if (ev.es_gratuito) return 'Entrada gratuita'
-  if (ev.precio_desde != null) {
-    const currency = (ev.moneda || 'ARS').toUpperCase()
-    return `Desde ${currency} ${ev.precio_desde.toLocaleString('es-AR')}`
-  }
-  return 'Consultar precio'
+  return `${start.toLocaleString()} – ${end.toLocaleString()}`
 }
 
 export default function WeekendEventsSection ({ isLoggedIn }: Props) {
   const { goTo } = useAuthRedirect(isLoggedIn)
 
-  const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(false)
+  const [eventos, setEventos] = useState<Evento[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [selected, setSelected] = useState<Event | null>(null)
+  const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
@@ -103,7 +77,7 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(DESTACADOS_ENDPOINT, {
+        const res = await fetch(DESTACADOS_EVENTOS_ENDPOINT, {
           headers: {
             'Content-Type': 'application/json'
           }
@@ -114,9 +88,12 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
         }
 
         const data = await res.json()
-        const eventos: Event[] = Array.isArray(data) ? data : data.eventos ?? []
 
-        setEvents(eventos)
+        const eventosResp: Evento[] = Array.isArray(data)
+          ? data
+          : data.eventos ?? []
+
+        setEventos(eventosResp)
       } catch (e: any) {
         console.error('Error cargando eventos destacados', e)
         setError('No se pudieron cargar los eventos destacados.')
@@ -128,18 +105,23 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
     fetchDestacados()
   }, [])
 
-  const handleMoreInfo = (ev: Event) => {
-    // Podés usar esta lógica para redirigir a /eventos?eventoId=...
-    setSelected(ev)
+  const handleMoreInfo = (evento: Evento) => {
+    if (!isLoggedIn) {
+      const redirectUrl = `/eventos?eventoId=${evento.id}`
+      goTo(redirectUrl)
+      return
+    }
+
+    setSelectedEvento(evento)
     setIsModalOpen(true)
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
-    setSelected(null)
+    setSelectedEvento(null)
   }
 
-  const topEvents = events.slice(0, 4)
+  const topEventos = eventos.slice(0, 4)
 
   return (
     <section className='mt-4 space-y-3'>
@@ -149,7 +131,7 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
             Eventos destacados del finde
           </h2>
           <p className='text-[11px] text-slate-400'>
-            Recitales, salidas y planes para aprovechar la ciudad.
+            Recitales, fiestas y actividades para salir.
           </p>
         </div>
 
@@ -168,15 +150,15 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
 
       {error && !loading && <p className='text-xs text-red-400'>{error}</p>}
 
-      {!loading && !error && topEvents.length === 0 && (
+      {!loading && !error && eventos.length === 0 && (
         <p className='text-xs text-slate-400'>
-          Cuando el admin cargue eventos, los vas a ver listados acá.
+          Cuando el admin cargue eventos destacados, los vas a ver listados acá.
         </p>
       )}
 
-      {!loading && !error && topEvents.length > 0 && (
+      {!loading && !error && topEventos.length > 0 && (
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'>
-          {topEvents.map(ev => (
+          {topEventos.map(ev => (
             <button
               key={ev.id}
               type='button'
@@ -198,35 +180,27 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
 
               <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
                 <p className='text-[10px] uppercase font-semibold text-emerald-400'>
-                  {ev.categoria || 'Evento'}
+                  {ev.zona || 'Zona no especificada'}
                 </p>
                 <h3 className='text-sm font-semibold line-clamp-1'>
                   {ev.titulo}
                 </h3>
 
-                {ev.nombre_lugar && (
-                  <p className='text-[11px] text-slate-300 line-clamp-1'>
-                    {ev.nombre_lugar}
-                  </p>
-                )}
-
-                <p className='text-[11px] text-slate-400'>
-                  {formatDateRange(ev)}
+                <p className='text-slate-400 line-clamp-2'>
+                  {formatDateRange(ev.fecha_inicio, ev.fecha_fin)}
                 </p>
 
-                {ev.descripcion_corta && (
-                  <p className='text-slate-400 line-clamp-2'>
-                    {ev.descripcion_corta}
-                  </p>
-                )}
-
-                <p className='mt-1 text-[11px] text-emerald-300'>
-                  {formatPrice(ev)}
-                </p>
+                <div className='mt-1 text-[11px] text-slate-300'>
+                  {ev.es_gratuito
+                    ? 'Entrada gratuita'
+                    : ev.precio_desde
+                    ? `Desde ${ev.precio_desde} ${ev.moneda || ''}`
+                    : 'Consultar precios'}
+                </div>
 
                 <div className='mt-2 flex justify-end'>
                   <span className='text-[11px] font-medium text-emerald-300 group-hover:text-emerald-200'>
-                    Más info
+                    Ver más
                   </span>
                 </div>
               </div>
@@ -235,7 +209,7 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
         </div>
       )}
 
-      {isModalOpen && selected && (
+      {isModalOpen && selectedEvento && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4'>
           <div className='relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
             <button
@@ -250,9 +224,9 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
               <div className='flex flex-col sm:flex-row gap-4'>
                 <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
                   <Image
-                    alt={selected.titulo}
+                    alt={selectedEvento.titulo}
                     src={
-                      selected.imagen_principal ||
+                      selectedEvento.imagen_principal ||
                       '/images/placeholders/evento-placeholder.jpg'
                     }
                     fill
@@ -263,33 +237,35 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
 
                 <div className='flex-1 space-y-1'>
                   <p className='text-[11px] uppercase font-semibold text-emerald-400'>
-                    {selected.categoria || 'Evento'}
+                    {selectedEvento.categoria}
                   </p>
-                  <h3 className='text-lg font-semibold'>{selected.titulo}</h3>
-
+                  <h3 className='text-lg font-semibold'>
+                    {selectedEvento.titulo}
+                  </h3>
                   <p className='text-[12px] text-slate-300'>
-                    {selected.nombre_lugar || selected.direccion || '-'}
-                  </p>
-                  <p className='text-[12px] text-slate-400'>
-                    {selected.ciudad}
-                    {selected.provincia ? `, ${selected.provincia}` : ''}{' '}
-                    {selected.pais ? `(${selected.pais})` : ''}
+                    {formatDateRange(
+                      selectedEvento.fecha_inicio,
+                      selectedEvento.fecha_fin
+                    )}
                   </p>
 
-                  <p className='text-[12px] text-emerald-300'>
-                    {formatDateRange(selected)}
-                  </p>
-                  <p className='text-[12px] text-emerald-300'>
-                    {formatPrice(selected)}
+                  <p className='text-[12px] text-slate-400'>
+                    {selectedEvento.es_gratuito
+                      ? 'Entrada gratuita'
+                      : selectedEvento.precio_desde
+                      ? `Desde ${selectedEvento.precio_desde} ${
+                          selectedEvento.moneda || ''
+                        }`
+                      : 'Consultar precios'}
                   </p>
                 </div>
               </div>
 
-              {selected.descripcion_larga && (
+              {selectedEvento.resena && (
                 <div className='space-y-1'>
                   <h4 className='text-sm font-semibold'>Descripción</h4>
                   <p className='text-[12px] text-slate-300 whitespace-pre-line'>
-                    {selected.descripcion_larga}
+                    {selectedEvento.resena}
                   </p>
                 </div>
               )}
@@ -299,16 +275,23 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
                   <p className='text-xs font-semibold text-slate-300'>
                     Dirección
                   </p>
-                  <p className='text-slate-400'>{selected.direccion || '-'}</p>
+                  <p className='text-slate-400'>
+                    {selectedEvento.direccion || '-'}
+                  </p>
+                </div>
+
+                <div className='space-y-1'>
+                  <p className='text-xs font-semibold text-slate-300'>Zona</p>
+                  <p className='text-slate-400'>{selectedEvento.zona || '-'}</p>
                 </div>
 
                 <div className='space-y-1'>
                   <p className='text-xs font-semibold text-slate-300'>
                     Entradas
                   </p>
-                  {selected.url_entradas ? (
+                  {selectedEvento.url_entradas ? (
                     <a
-                      href={selected.url_entradas}
+                      href={selectedEvento.url_entradas}
                       target='_blank'
                       rel='noreferrer'
                       className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
@@ -318,17 +301,6 @@ export default function WeekendEventsSection ({ isLoggedIn }: Props) {
                   ) : (
                     <p className='text-slate-400'>-</p>
                   )}
-                </div>
-
-                <div className='space-y-1'>
-                  <p className='text-xs font-semibold text-slate-300'>
-                    Edad mínima
-                  </p>
-                  <p className='text-slate-400'>
-                    {selected.edad_minima != null
-                      ? `${selected.edad_minima}+`
-                      : 'Apta para todo público'}
-                  </p>
                 </div>
               </div>
 

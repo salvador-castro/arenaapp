@@ -1,3 +1,4 @@
+// C:\Users\salvaCastro\Desktop\arenaapp-admin\src\app\api\admin\eventos\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -32,14 +33,13 @@ function slugify (str: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-// GET /api/admin/eventos (admin) con paginación y búsqueda
+// ========= GET lista (admin, con paginación y búsqueda) =========
 export async function GET (req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
 
     const db = await getDb()
-
     const { searchParams } = new URL(req.url)
 
     const pageParam = searchParams.get('page') || '1'
@@ -62,9 +62,9 @@ export async function GET (req: NextRequest) {
         FROM eventos
         WHERE
           LOWER(titulo) LIKE $1
-          OR LOWER(COALESCE(nombre_lugar, '')) LIKE $1
-          OR LOWER(COALESCE(ciudad, '')) LIKE $1
-          OR LOWER(COALESCE(provincia, '')) LIKE $1
+          OR LOWER(COALESCE(categoria::text, '')) LIKE $1
+          OR LOWER(COALESCE(zona, '')) LIKE $1
+          OR LOWER(COALESCE(direccion, '')) LIKE $1
         `,
         [like]
       )
@@ -76,39 +76,30 @@ export async function GET (req: NextRequest) {
           id,
           titulo,
           slug,
-          descripcion_corta,
-          descripcion_larga,
           categoria,
           es_destacado,
           fecha_inicio,
           fecha_fin,
           es_todo_el_dia,
-          lugar_id,
-          nombre_lugar,
+          zona,
           direccion,
-          ciudad,
-          provincia,
-          pais,
-          lat,
-          lng,
           es_gratuito,
           precio_desde,
           moneda,
           url_entradas,
-          edad_minima,
           estado,
           visibilidad,
-          published_at,
+          resena,
           imagen_principal,
           created_at,
           updated_at
         FROM eventos
         WHERE
           LOWER(titulo) LIKE $1
-          OR LOWER(COALESCE(nombre_lugar, '')) LIKE $1
-          OR LOWER(COALESCE(ciudad, '')) LIKE $1
-          OR LOWER(COALESCE(provincia, '')) LIKE $1
-        ORDER BY fecha_inicio DESC NULLS LAST, id DESC
+          OR LOWER(COALESCE(categoria::text, '')) LIKE $1
+          OR LOWER(COALESCE(zona, '')) LIKE $1
+          OR LOWER(COALESCE(direccion, '')) LIKE $1
+        ORDER BY fecha_inicio ASC, id ASC
         LIMIT $2 OFFSET $3
         `,
         [like, pageSize, offset]
@@ -127,34 +118,25 @@ export async function GET (req: NextRequest) {
           id,
           titulo,
           slug,
-          descripcion_corta,
-          descripcion_larga,
           categoria,
           es_destacado,
           fecha_inicio,
           fecha_fin,
           es_todo_el_dia,
-          lugar_id,
-          nombre_lugar,
+          zona,
           direccion,
-          ciudad,
-          provincia,
-          pais,
-          lat,
-          lng,
           es_gratuito,
           precio_desde,
           moneda,
           url_entradas,
-          edad_minima,
           estado,
           visibilidad,
-          published_at,
+          resena,
           imagen_principal,
           created_at,
           updated_at
         FROM eventos
-        ORDER BY fecha_inicio DESC NULLS LAST, id DESC
+        ORDER BY fecha_inicio ASC, id ASC
         LIMIT $1 OFFSET $2
         `,
         [pageSize, offset]
@@ -207,7 +189,7 @@ export async function GET (req: NextRequest) {
   }
 }
 
-// POST /api/admin/eventos crear
+// ========= POST crear evento =========
 export async function POST (req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
@@ -217,39 +199,103 @@ export async function POST (req: NextRequest) {
 
     const {
       titulo,
-      descripcion_corta,
-      descripcion_larga,
       categoria,
-      es_destacado,
-      fecha_inicio,
-      fecha_fin,
-      es_todo_el_dia,
-      lugar_id,
-      nombre_lugar,
+      zona,
       direccion,
-      ciudad,
-      provincia,
-      pais,
-      lat,
-      lng,
       es_gratuito,
       precio_desde,
       moneda,
       url_entradas,
-      edad_minima,
       estado,
-      visibilidad,
-      imagen_principal,
-      meta_title,
-      meta_description
+      fecha_inicio,
+      fecha_fin,
+      es_todo_el_dia,
+      es_destacado,
+      resena,
+      imagen_principal
     } = body
 
-    if (!titulo || !fecha_inicio || !direccion || !ciudad || !imagen_principal) {
-      return new NextResponse('Faltan campos obligatorios', {
+    // ===== Validaciones de obligatorios =====
+    if (!titulo) {
+      return new NextResponse('El título es obligatorio', {
         status: 400,
         headers: corsBaseHeaders()
       })
     }
+
+    if (!categoria) {
+      return new NextResponse('La categoría es obligatoria', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
+
+    if (!zona || (Array.isArray(zona) && zona.length === 0)) {
+      return new NextResponse('La zona es obligatoria', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
+
+    if (!direccion) {
+      return new NextResponse('La dirección es obligatoria', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
+
+    if (typeof es_gratuito !== 'boolean') {
+      return new NextResponse('El campo "es_gratuito" es obligatorio', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
+
+    if (!url_entradas) {
+      return new NextResponse('La URL de entradas es obligatoria', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
+
+    if (!estado) {
+      return new NextResponse('El estado es obligatorio', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
+
+    if (!fecha_inicio) {
+      return new NextResponse('La fecha de inicio es obligatoria', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
+
+    // precio_desde solo obligatorio si NO es gratuito
+    let precioDesdeValue: number | null = null
+    if (es_gratuito) {
+      precioDesdeValue = null
+    } else {
+      if (precio_desde == null || precio_desde === '') {
+        return new NextResponse(
+          'El campo "Precio desde" es obligatorio si el evento no es gratuito',
+          {
+            status: 400,
+            headers: corsBaseHeaders()
+          }
+        )
+      }
+      precioDesdeValue = Number(precio_desde)
+    }
+
+    const zonaValue =
+      Array.isArray(zona) && zona.length > 0 ? zona.join(', ') : zona || null
+
+    const monedaValue = (moneda || 'URU') as string
+    const estadoValue = estado || 'PUBLICADO'
+    const esDestacadoValue = !!es_destacado
+    const esTodoElDiaValue = !!es_todo_el_dia
 
     const slug = slugify(titulo)
 
@@ -260,107 +306,74 @@ export async function POST (req: NextRequest) {
       INSERT INTO eventos (
         titulo,
         slug,
-        descripcion_corta,
-        descripcion_larga,
         categoria,
         es_destacado,
         fecha_inicio,
         fecha_fin,
         es_todo_el_dia,
-        lugar_id,
-        nombre_lugar,
+        zona,
         direccion,
-        ciudad,
-        provincia,
-        pais,
-        lat,
-        lng,
         es_gratuito,
         precio_desde,
         moneda,
         url_entradas,
-        edad_minima,
         estado,
-        visibilidad,
-        imagen_principal,
-        meta_title,
-        meta_description
+        resena,
+        imagen_principal
       )
       VALUES (
-        $1,  $2,  $3,  $4,  $5,
-        $6,  $7,  $8,  $9,  $10,
-        $11, $12, $13, $14, $15,
-        $16, $17, $18, $19, $20,
-        $21, $22, $23, $24, $25,
-        $26, $27, $28
+        $1, $2, $3, $4,
+        $5, $6, $7,
+        $8, $9,
+        $10, $11, $12,
+        $13, $14,
+        $15, $16
       )
       RETURNING
         id,
         titulo,
         slug,
-        descripcion_corta,
-        descripcion_larga,
         categoria,
         es_destacado,
         fecha_inicio,
         fecha_fin,
         es_todo_el_dia,
-        lugar_id,
-        nombre_lugar,
+        zona,
         direccion,
-        ciudad,
-        provincia,
-        pais,
-        lat,
-        lng,
         es_gratuito,
         precio_desde,
         moneda,
         url_entradas,
-        edad_minima,
         estado,
         visibilidad,
-        published_at,
+        resena,
         imagen_principal,
-        meta_title,
-        meta_description,
         created_at,
         updated_at
       `,
       [
-        titulo,
-        slug,
-        descripcion_corta || null,
-        descripcion_larga || null,
-        categoria || 'OTROS',
-        !!es_destacado,
-        fecha_inicio,
-        fecha_fin || null,
-        !!es_todo_el_dia,
-        lugar_id || null,
-        nombre_lugar || null,
-        direccion,
-        ciudad,
-        provincia || null,
-        pais || 'Argentina',
-        lat ?? null,
-        lng ?? null,
-        es_gratuito !== false,
-        precio_desde ?? null,
-        moneda || 'ARS',
-        url_entradas || null,
-        edad_minima ?? null,
-        estado || 'DRAFT',
-        visibilidad || 'PUBLICO',
-        imagen_principal,
-        meta_title || null,
-        meta_description || null
+        titulo,               // 1
+        slug,                 // 2
+        categoria,            // 3
+        esDestacadoValue,     // 4
+        fecha_inicio,         // 5
+        fecha_fin || null,    // 6
+        esTodoElDiaValue,     // 7
+        zonaValue,            // 8
+        direccion,            // 9
+        es_gratuito,          // 10
+        precioDesdeValue,     // 11
+        monedaValue,          // 12
+        url_entradas,         // 13
+        estadoValue,          // 14
+        resena || null,       // 15
+        imagen_principal || null // 16
       ]
     )
 
-    const event = insertResult.rows[0] || null
+    const evento = insertResult.rows[0] || null
 
-    return new NextResponse(JSON.stringify(event), {
+    return new NextResponse(JSON.stringify(evento), {
       status: 201,
       headers: {
         ...corsBaseHeaders(),
