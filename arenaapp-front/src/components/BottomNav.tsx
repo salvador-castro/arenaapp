@@ -75,15 +75,16 @@ export default function BottomNav () {
   const adminSubItems: AdminSubItem[] = [
     { href: '/usuarios', label: 'Usuarios', icon: <Users size={16} /> },
     {
-      href: '/restaurantes',
+      href: '/admin-restaurantes',
       label: 'Restaurante',
       icon: <Utensils size={16} />
     },
-    { href: '/bares', label: 'Bares', icon: <Wine size={16} /> },
-    { href: '/hoteles', label: 'Hoteles', icon: <Hotel size={16} /> },
-    { href: '/galeria', label: 'Galería', icon: <Image size={16} /> },
+    { href: '/admin-bares', label: 'Bares', icon: <Wine size={16} /> },
+    { href: '/admin-hoteles', label: 'Hoteles', icon: <Hotel size={16} /> },
+    { href: '/admin-galeria', label: 'Galería', icon: <Image size={16} /> },
     /* { href: '/salidas', label: 'Salidas', icon: <PartyPopper size={16} /> }, */
-    { href: '/shopping', label: 'Shopping', icon: <ShoppingBag size={16} /> }
+    { href: '/admin-shopping', label: 'Shopping', icon: <ShoppingBag size={16} /> }
+    { href: '/admin-eventos', label: 'Eventos', icon: <PartyPopper size={16} /> }
   ]
 
   const items = isLoggedIn
