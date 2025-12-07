@@ -25,12 +25,12 @@ export default function DashboardPage () {
       <main className='flex-1 max-w-3xl mx-auto px-4 pt-4 pb-4 space-y-6'>
         {/* Saludo */}
         <header className='flex flex-col gap-1'>
-          <h1 className='text-xs text-slate-400'>
+          <h1 className='text-lg md:text-xl font-medium text-slate-100'>
             Bienvenido{firstName ? `, ${firstName}` : ''} 👋
           </h1>
-          <h2 className='text-xl font-semibold'>
+          <p className='text-xs text-slate-400'>
             ¿Qué te gustaría explorar hoy?
-          </h2>
+          </p>
         </header>
 
         {/* Explorá por categoría */}
