@@ -1,4 +1,3 @@
-//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\app\(private)\eventos\page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -13,7 +12,7 @@ import {
   MapPin
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
-import UserDropdown from '@/components/UserDropdown'
+import TopNav from '@/components/TopNav'
 
 interface Evento {
   id: number | string
@@ -103,6 +102,7 @@ export default function EventosPage () {
   // compat con distintos formatos de AuthContext
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
+  const isLoggedIn = !isLoading && !!user
 
   const eventoIdParam = searchParams.get('eventoId')
   const eventoId = eventoIdParam ? Number(eventoIdParam) : null
@@ -275,19 +275,18 @@ export default function EventosPage () {
 
   return (
     <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
-      <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
-        <div className='max-w-6xl mx-auto flex items-center justify-between px-4 py-3'>
-          <div>
-            <h1 className='text-lg font-semibold'>Eventos</h1>
-            <p className='text-xs text-slate-400'>
-              Descubrí qué está pasando en la ciudad.
-            </p>
-          </div>
-          <UserDropdown />
-        </div>
-      </header>
+      {/* Navbar reutilizable: logo + UserDropdown */}
+      <TopNav isLoggedIn={isLoggedIn} />
 
       <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
+        {/* Título de la página */}
+        <header className='flex flex-col gap-1 mb-1'>
+          <h1 className='text-lg font-semibold'>Eventos</h1>
+          <p className='text-xs text-slate-400'>
+            Descubrí qué está pasando en la ciudad.
+          </p>
+        </header>
+
         {/* Filtros colapsables */}
         <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
           <button
@@ -412,7 +411,7 @@ export default function EventosPage () {
                       {ev.titulo}
                     </h3>
 
-                    <div className='mt-1 flex items-center gap-1 text-[11px] text-slate-300'>
+                    <div className='mt-1 flex itemsCENTER gap-1 text-[11px] text-slate-300'>
                       <CalendarDays size={12} className='shrink-0' />
                       <span className='line-clamp-2'>
                         {formatEventDateRange(
