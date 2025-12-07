@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
 import { Instagram, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
-import UserDropdown from '@/components/UserDropdown'
+import TopNav from '@/components/TopNav'
 
 interface Restaurant {
   id: number | string
@@ -79,6 +79,7 @@ export default function RestaurantesPage () {
   // 🔐 compat: lee user directo o auth.user
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
+  const isLoggedIn = !isLoading && !!user
 
   const restauranteIdParam = searchParams.get('restauranteId')
   const restauranteId = restauranteIdParam ? Number(restauranteIdParam) : null
@@ -289,19 +290,18 @@ export default function RestaurantesPage () {
 
   return (
     <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
-      <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
-        <div className='max-w-6xl mx-auto flex items-center justify-between px-4 py-3'>
-          <div>
-            <h1 className='text-lg font-semibold'>Restaurantes</h1>
-            <p className='text-xs text-slate-400'>
-              Explorá los lugares recomendados.
-            </p>
-          </div>
-          <UserDropdown />
-        </div>
-      </header>
+      {/* 🔝 Navbar reutilizable: logo + UserDropdown en /restaurantes */}
+      <TopNav isLoggedIn={isLoggedIn} />
 
       <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
+        {/* Título de la página */}
+        <header className='flex flex-col gap-1 mb-1'>
+          <h1 className='text-lg font-semibold'>Restaurantes</h1>
+          <p className='text-xs text-slate-400'>
+            Explorá los lugares recomendados.
+          </p>
+        </header>
+
         {/* Filtros colapsables */}
         <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
           <button
