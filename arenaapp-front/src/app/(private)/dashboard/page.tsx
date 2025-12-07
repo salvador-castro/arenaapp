@@ -50,7 +50,7 @@ export default function DashboardPage () {
               className='relative rounded-xl overflow-hidden border border-emerald-500/50 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
-                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/favoritos.png')"
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/favoritos.png?v=2 ')"
               }}
             >
               {/* Overlay oscuro */}
@@ -75,7 +75,7 @@ export default function DashboardPage () {
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
-                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/restaurantes.png')"
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/restaurantes.png?v=2 ')"
               }}
             >
               <div className='absolute inset-0 bg-slate-950/60' />
@@ -97,7 +97,7 @@ export default function DashboardPage () {
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
-                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/galerias.png')"
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/galerias.png?v=2 ')"
               }}
             >
               <div className='absolute inset-0 bg-slate-950/60' />
@@ -119,7 +119,7 @@ export default function DashboardPage () {
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
-                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/hoteles.png')"
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/hoteles.png?v=2 ')"
               }}
             >
               <div className='absolute inset-0 bg-slate-950/60' />
@@ -141,7 +141,7 @@ export default function DashboardPage () {
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
-                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/shopping.png')"
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/shopping.png?v=2 ')"
               }}
             >
               <div className='absolute inset-0 bg-slate-950/60' />
@@ -163,7 +163,7 @@ export default function DashboardPage () {
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
-                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/eventos.png')"
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/eventos.png?v=2 ')"
               }}
             >
               <div className='absolute inset-0 bg-slate-950/60' />
@@ -185,7 +185,7 @@ export default function DashboardPage () {
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
-                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/bars.png')"
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/bars.png?v=2 ')"
               }}
             >
               <div className='absolute inset-0 bg-slate-950/60' />
