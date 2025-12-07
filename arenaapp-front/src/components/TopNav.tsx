@@ -19,37 +19,37 @@ export default function TopNav ({ isLoggedIn }: TopNavProps) {
   const isHome = pathname === '/'
 
   const handleLogoClick = () => {
-    if (isLoggedIn) {
-      // si está logueado lo mando al dashboard
-      goTo('/dashboard')
-    } else {
-      // si no está logueado lo mando al home público
-      goTo('/')
-    }
+    if (isLoggedIn) goTo('/dashboard')
+    else goTo('/')
   }
 
   return (
     <header className='sticky top-0 z-20 border-b border-slate-800 bg-slate-950/80 backdrop-blur'>
-      <div className='max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3'>
+      <div
+        className={`
+          max-w-3xl mx-auto px-4 py-3 flex items-center
+          ${isHome ? 'justify-center' : 'justify-between'}
+        `}
+      >
+        {/* LOGO */}
         <button
           type='button'
           onClick={handleLogoClick}
-          className='flex items-center gap-2 focus:outline-none'
+          className={`flex items-center gap-2 focus:outline-none
+            ${isHome ? 'mx-auto' : ''}
+          `}
         >
-          <div className='flex items-center gap-2'>
-            <Image
-              src={LOGO_URL}
-              alt='ArenaPress'
-              width={120}
-              height={32}
-              className='h-8 w-auto'
-              priority
-            />
-          </div>
+          <Image
+            src={LOGO_URL}
+            alt='ArenaPress'
+            width={120}
+            height={32}
+            className='h-8 w-auto'
+            priority
+          />
         </button>
 
-        {/* En el home ("/") solo mostramos el logo.
-            En /dashboard, /restaurantes, /bares, /galeria, etc. mostramos también el UserDropdown */}
+        {/* SOLO SE MUESTRA EL DROPDOWN SI NO ES HOME */}
         {!isHome && <UserDropdown />}
       </div>
     </header>
