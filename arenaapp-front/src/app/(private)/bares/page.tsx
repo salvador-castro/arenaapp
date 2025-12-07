@@ -6,7 +6,8 @@ import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
 import { Instagram, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
-import UserDropdown from '@/components/UserDropdown'
+import TopNav from '@/components/TopNav'
+import UserDropdown from '@/components/UserDropdown' // ← ya no se usa en el JSX, podés borrar este import si querés
 
 interface Bar {
   id: number | string
@@ -83,6 +84,7 @@ export default function BaresPage () {
 
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
+  const isLoggedIn = !isLoading && !!user
 
   const barIdParam = searchParams.get('barId')
   const barId = barIdParam ? Number(barIdParam) : null
@@ -287,19 +289,18 @@ export default function BaresPage () {
 
   return (
     <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
-      <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
-        <div className='max-w-6xl mx-auto flex items-center justify-between px-4 py-3'>
-          <div>
-            <h1 className='text-lg font-semibold'>Bares</h1>
-            <p className='text-xs text-slate-400'>
-              Descubrí bares y coctelerías recomendadas.
-            </p>
-          </div>
-          <UserDropdown />
-        </div>
-      </header>
+      {/* 🔝 Navbar reutilizable: logo + UserDropdown en /bares */}
+      <TopNav isLoggedIn={isLoggedIn} />
 
       <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
+        {/* Título de la página */}
+        <header className='flex flex-col gap-1 mb-1'>
+          <h1 className='text-lg font-semibold'>Bares</h1>
+          <p className='text-xs text-slate-400'>
+            Descubrí bares y coctelerías recomendadas.
+          </p>
+        </header>
+
         {/* Filtros colapsables */}
         <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
           <button
