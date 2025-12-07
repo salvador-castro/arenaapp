@@ -3,11 +3,7 @@
 import { useAuthRedirect } from 'src/hooks/useAuthRedirect'
 import { useAuth } from '@/context/AuthContext'
 import BottomNav from '@/components/BottomNav'
-import UserDropdown from '@/components/UserDropdown'
-import Image from 'next/image'
-
-const LOGO_URL =
-  'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/logo/logo.png'
+import TopNav from '@/components/TopNav'
 
 export default function DashboardPage () {
   const { user, isLoading }: any = useAuth()
@@ -20,35 +16,10 @@ export default function DashboardPage () {
     goTo(path)
   }
 
-  const handleLogoClick = () => {
-    goTo('/dashboard')
-  }
-
   return (
     <div className='min-h-screen pb-16 flex flex-col bg-slate-950'>
-      {/* NAVBAR SUPERIOR */}
-      <header className='sticky top-0 z-20 border-b border-slate-800 bg-slate-950/80 backdrop-blur'>
-        <div className='max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3'>
-          <button
-            type='button'
-            onClick={handleLogoClick}
-            className='flex items-center gap-2 focus:outline-none'
-          >
-            <div className='flex items-center gap-2'>
-              <Image
-                src={LOGO_URL}
-                alt='ArenaPress'
-                width={120}
-                height={32}
-                className='h-8 w-auto'
-                priority
-              />
-            </div>
-          </button>
-
-          <UserDropdown />
-        </div>
-      </header>
+      {/* NAVBAR SUPERIOR REUTILIZABLE */}
+      <TopNav isLoggedIn={isLoggedIn} />
 
       {/* CONTENIDO PRINCIPAL */}
       <main className='flex-1 max-w-3xl mx-auto px-4 pt-4 pb-4 space-y-6'>
