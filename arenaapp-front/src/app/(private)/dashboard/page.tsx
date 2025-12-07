@@ -35,7 +35,9 @@ export default function DashboardPage () {
 
         {/* Explorá por categoría */}
         <section className='space-y-3'>
-          <h2 className='text-lg font-semibold'>Explorá por categoría</h2>
+          <h2 className='text-lg font-semibold text-slate-100'>
+            Explorá por categoría
+          </h2>
           <p className='text-xs text-slate-400'>
             Entrá directo a la sección que quieras descubrir.
           </p>
@@ -45,105 +47,157 @@ export default function DashboardPage () {
             <button
               type='button'
               onClick={() => handleGoToSection('/favoritos')}
-              className='rounded-xl border border-emerald-500/40 bg-slate-900/70 px-3 py-4 text-left hover:border-emerald-400 hover:bg-slate-900 transition-colors'
+              className='relative rounded-xl overflow-hidden border border-emerald-500/50 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/favoritos.png')"
+              }}
             >
-              <p className='text-[11px] font-semibold text-emerald-400 mb-1'>
-                Tus listas
-              </p>
-              <p className='text-sm font-semibold'>Favoritos</p>
-              <p className='text-[11px] text-slate-400 mt-1'>
-                Restaurantes, galerías y más que marcaste.
-              </p>
+              {/* Overlay oscuro */}
+              <div className='absolute inset-0 bg-slate-950/60' />
+
+              {/* Contenido */}
+              <div className='relative px-3 py-4 text-left'>
+                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+                  Tus listas
+                </p>
+                <p className='text-sm font-semibold text-white'>Favoritos</p>
+                <p className='text-[11px] text-slate-200 mt-1'>
+                  Restaurantes, galerías y más que marcaste.
+                </p>
+              </div>
             </button>
 
             {/* Restaurantes */}
             <button
               type='button'
               onClick={() => handleGoToSection('/restaurantes')}
-              className='rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-4 text-left hover:border-emerald-500/60 hover:bg-slate-900 transition-colors'
+              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/restaurantes.png')"
+              }}
             >
-              <p className='text-[11px] font-semibold text-emerald-400 mb-1'>
-                Comer
-              </p>
-              <p className='text-sm font-semibold'>Restaurantes</p>
-              <p className='text-[11px] text-slate-400 mt-1'>
-                Cocina local, internacional y más.
-              </p>
+              <div className='absolute inset-0 bg-slate-950/60' />
+              <div className='relative px-3 py-4 text-left'>
+                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+                  Comer
+                </p>
+                <p className='text-sm font-semibold text-white'>Restaurantes</p>
+                <p className='text-[11px] text-slate-200 mt-1'>
+                  Cocina local, internacional y más.
+                </p>
+              </div>
             </button>
 
             {/* Galerías */}
             <button
               type='button'
               onClick={() => handleGoToSection('/galeria')}
-              className='rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-4 text-left hover:border-emerald-500/60 hover:bg-slate-900 transition-colors'
+              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/galerias.png')"
+              }}
             >
-              <p className='text-[11px] font-semibold text-emerald-400 mb-1'>
-                Arte
-              </p>
-              <p className='text-sm font-semibold'>Galerías</p>
-              <p className='text-[11px] text-slate-400 mt-1'>
-                Exhibiciones, muestras y cultura visual.
-              </p>
+              <div className='absolute inset-0 bg-slate-950/60' />
+              <div className='relative px-3 py-4 text-left'>
+                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+                  Arte
+                </p>
+                <p className='text-sm font-semibold text-white'>Galerías</p>
+                <p className='text-[11px] text-slate-200 mt-1'>
+                  Exhibiciones, muestras y cultura visual.
+                </p>
+              </div>
             </button>
 
             {/* Hoteles */}
             <button
               type='button'
               onClick={() => handleGoToSection('/hoteles')}
-              className='rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-4 text-left hover:border-emerald-500/60 hover:bg-slate-900 transition-colors'
+              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/hoteles.png')"
+              }}
             >
-              <p className='text-[11px] font-semibold text-emerald-400 mb-1'>
-                Hospedaje
-              </p>
-              <p className='text-sm font-semibold'>Hoteles</p>
-              <p className='text-[11px] text-slate-400 mt-1'>
-                Descansá en los mejores alojamientos.
-              </p>
+              <div className='absolute inset-0 bg-slate-950/60' />
+              <div className='relative px-3 py-4 text-left'>
+                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+                  Hospedaje
+                </p>
+                <p className='text-sm font-semibold text-white'>Hoteles</p>
+                <p className='text-[11px] text-slate-200 mt-1'>
+                  Descansá en los mejores alojamientos.
+                </p>
+              </div>
             </button>
 
             {/* Shopping */}
             <button
               type='button'
               onClick={() => handleGoToSection('/shopping')}
-              className='rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-4 text-left hover:border-emerald-500/60 hover:bg-slate-900 transition-colors'
+              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/shopping.png')"
+              }}
             >
-              <p className='text-[11px] font-semibold text-emerald-400 mb-1'>
-                Compras
-              </p>
-              <p className='text-sm font-semibold'>Shopping</p>
-              <p className='text-[11px] text-slate-400 mt-1'>
-                Centros comerciales y paseos de compras.
-              </p>
+              <div className='absolute inset-0 bg-slate-950/60' />
+              <div className='relative px-3 py-4 text-left'>
+                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+                  Compras
+                </p>
+                <p className='text-sm font-semibold text-white'>Shopping</p>
+                <p className='text-[11px] text-slate-200 mt-1'>
+                  Centros comerciales y paseos de compras.
+                </p>
+              </div>
             </button>
 
             {/* Eventos */}
             <button
               type='button'
               onClick={() => handleGoToSection('/eventos')}
-              className='rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-4 text-left hover:border-emerald-500/60 hover:bg-slate-900 transition-colors'
+              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/eventos.png')"
+              }}
             >
-              <p className='text-[11px] font-semibold text-emerald-400 mb-1'>
-                Agenda
-              </p>
-              <p className='text-sm font-semibold'>Eventos</p>
-              <p className='text-[11px] text-slate-400 mt-1'>
-                Qué hacer hoy, mañana o el finde.
-              </p>
+              <div className='absolute inset-0 bg-slate-950/60' />
+              <div className='relative px-3 py-4 text-left'>
+                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+                  Agenda
+                </p>
+                <p className='text-sm font-semibold text-white'>Eventos</p>
+                <p className='text-[11px] text-slate-200 mt-1'>
+                  Qué hacer hoy, mañana o el finde.
+                </p>
+              </div>
             </button>
 
             {/* Bares */}
             <button
               type='button'
               onClick={() => handleGoToSection('/bares')}
-              className='rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-4 text-left hover:border-emerald-500/60 hover:bg-slate-900 transition-colors'
+              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/bars.png')"
+              }}
             >
-              <p className='text-[11px] font-semibold text-emerald-400 mb-1'>
-                Noche
-              </p>
-              <p className='text-sm font-semibold'>Bares</p>
-              <p className='text-[11px] text-slate-400 mt-1'>
-                Cocktails, vino y buena música.
-              </p>
+              <div className='absolute inset-0 bg-slate-950/60' />
+              <div className='relative px-3 py-4 text-left'>
+                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+                  Noche
+                </p>
+                <p className='text-sm font-semibold text-white'>Bares</p>
+                <p className='text-[11px] text-slate-200 mt-1'>
+                  Cocktails, vino y buena música.
+                </p>
+              </div>
             </button>
           </div>
         </section>
