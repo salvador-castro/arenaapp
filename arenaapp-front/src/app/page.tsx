@@ -1,4 +1,6 @@
-//C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\app\page.tsx
+'use client'
+
+import TopNav from '@/components/TopNav'
 import HeroCarousel from 'src/components/HeroCarousel'
 import BottomNav from 'src/components/BottomNav'
 import AdBanner from 'src/components/AdBanner'
@@ -6,19 +8,19 @@ import PromoBanner from 'src/components/PromoBanner'
 import RestaurantesDestacados from 'src/components/dashboard/RestaurantesDestacados'
 import BaresDestacados from 'src/components/dashboard/BaresDestacados'
 import EventosDestacados from 'src/components/dashboard/EventosDestacados'
+import { useAuth } from '@/context/AuthContext'
 
 export default function HomePage () {
-  // Más adelante esto va a salir de un contexto / cookie de auth
+  // por ahora esto quedará así como pediste
   const isLoggedIn = false
 
   return (
-    <main className='min-h-screen flex flex-col bg-slate-950 text-slate-50'>
-      <div className='flex-1 pb-32'>
-        <HeroCarousel isLoggedIn={isLoggedIn} />
+    <div className='min-h-screen flex flex-col bg-slate-950 text-slate-50'>
+      {/* 🔥 NAV SUPERIOR → EN HOME SOLO LOGO */}
+      <TopNav isLoggedIn={isLoggedIn} />
 
-        {/* <section className='px-4 pt-6'>
-          <RecommendedSection isLoggedIn={isLoggedIn} />
-        </section> */}
+      <main className='flex-1 pb-32'>
+        <HeroCarousel isLoggedIn={isLoggedIn} />
 
         <section className='px-4 pt-6'>
           <PromoBanner />
@@ -37,9 +39,9 @@ export default function HomePage () {
         </section>
 
         <AdBanner />
-      </div>
+      </main>
 
       <BottomNav />
-    </main>
+    </div>
   )
 }
