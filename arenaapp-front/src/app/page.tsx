@@ -5,10 +5,10 @@ import HeroCarousel from 'src/components/HeroCarousel'
 import BottomNav from 'src/components/BottomNav'
 import AdBanner from 'src/components/AdBanner'
 import PromoBanner from 'src/components/PromoBanner'
-import RestaurantesDestacados from 'src/components/dashboard/RestaurantesDestacados'
-import BaresDestacados from 'src/components/dashboard/BaresDestacados'
-import EventosDestacados from 'src/components/dashboard/EventosDestacados'
-import { useAuth } from '@/context/AuthContext'
+import RestaurantesDestacados from '@/components/destacados/Restaurantes'
+import BaresDestacados from '@/components/destacados/Bares'
+import EventosDestacados from '@/components/destacados/Eventos'
+import GaleriasDestacadas from '@/components/destacados/Galerias'
 
 export default function HomePage () {
   // por ahora esto quedará así como pediste
@@ -36,6 +36,10 @@ export default function HomePage () {
 
         <section className='px-4 pt-6 pb-4'>
           <EventosDestacados isLoggedIn={isLoggedIn} />
+        </section>
+
+        <section className='px-4 pt-6 pb-4'>
+          <GaleriasDestacadas isLoggedIn={isLoggedIn} />
         </section>
 
         <AdBanner />
