@@ -93,7 +93,7 @@ export default function DashboardPage () {
             {/* Galerías */}
             <button
               type='button'
-              onClick={() => handleGoToSection('/galeria')}
+              onClick={() => handleGoToSection('/galerias')}
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
