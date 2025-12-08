@@ -592,7 +592,7 @@ export default function RestaurantesPage () {
                 {selectedRestaurant.resena && (
                   <div className='space-y-1'>
                     <h4 className='text-sm font-semibold'>Reseña</h4>
-                    <p className='text-[12px] text-slate-300 whitespace-pre-line'>
+                    <p className='text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left'>
                       {selectedRestaurant.resena}
                     </p>
                   </div>
