@@ -68,7 +68,7 @@ function normalizeText (value: string | null | undefined): string {
   if (!value) return ''
   return value
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // quita tildes
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
 }
 
@@ -76,7 +76,6 @@ export default function RestaurantesPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // 🔐 compat: lee user directo o auth.user
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
   const isLoggedIn = !isLoading && !!user
@@ -208,7 +207,7 @@ export default function RestaurantesPage () {
     [restaurants]
   )
 
-  // 5) Aplicar filtros (incluyendo búsqueda sin tildes)
+  // 5) Aplicar filtros
   const filteredRestaurants = useMemo(() => {
     let result = [...restaurants]
 
@@ -290,7 +289,6 @@ export default function RestaurantesPage () {
 
   return (
     <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
-      {/* 🔝 Navbar reutilizable: logo + UserDropdown en /restaurantes */}
       <TopNav isLoggedIn={isLoggedIn} />
 
       <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
@@ -302,7 +300,7 @@ export default function RestaurantesPage () {
           </p>
         </header>
 
-        {/* Filtros colapsables */}
+        {/* Filtros */}
         <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
           <button
             type='button'
@@ -527,16 +525,20 @@ export default function RestaurantesPage () {
         {/* MODAL detalle */}
         {isModalOpen && selectedRestaurant && (
           <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'>
-            <div className='relative mt-10 mb-24 w-full max-w-lg max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
+            <div className='relative mt-10 mb-24 w-full max-w-lg max-h[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
+              {/* Botón cerrar arriba a la izquierda */}
               <button
                 type='button'
                 onClick={closeModal}
-                className='sticky top-3 ml-auto mr-3 rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700'
+                className='absolute top-3 left-3 z-20
+                           flex h-8 w-8 items-center justify-center
+                           rounded-full bg-slate-900/80 border border-slate-700
+                           text-sm text-slate-200 hover:bg-slate-800 transition'
               >
                 ✕
               </button>
 
-              <div className='px-4 pb-4 pt-1 sm:p-6 space-y-4'>
+              <div className='px-4 pb-4 pt-8 sm:px-6 sm:pb-6 sm:pt-10 space-y-4'>
                 <div className='flex flex-col sm:flex-row gap-4'>
                   <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
                     <Image
