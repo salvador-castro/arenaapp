@@ -99,7 +99,7 @@ export default function RestaurantesPage () {
   const [tiposFilter, setTiposFilter] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
 
-  // 1) Guardia de auth
+  // Guardia de auth
   useEffect(() => {
     if (isLoading) return
 
@@ -113,7 +113,7 @@ export default function RestaurantesPage () {
     }
   }, [user, isLoading, router, restauranteId])
 
-  // 2) Traer todos los restaurantes PUBLICADOS
+  // Traer restaurantes publicados
   useEffect(() => {
     if (!user) return
 
@@ -143,7 +143,7 @@ export default function RestaurantesPage () {
     fetchRestaurants()
   }, [user])
 
-  // 3) Si venimos con ?restauranteId=, abrir ese modal cuando ya hay data
+  // Abrir modal si viene ?restauranteId=
   useEffect(() => {
     if (!restaurants.length) return
     if (!restauranteId) return
@@ -168,7 +168,7 @@ export default function RestaurantesPage () {
     router.push(`/restaurantes?restauranteId=${place.id}`)
   }
 
-  // 4) Opciones dinámicas para filtros
+  // Opciones dinámicas para filtros
   const zonas = useMemo(
     () =>
       Array.from(
@@ -207,7 +207,7 @@ export default function RestaurantesPage () {
     [restaurants]
   )
 
-  // 5) Aplicar filtros
+  // Aplicar filtros
   const filteredRestaurants = useMemo(() => {
     let result = [...restaurants]
 
@@ -258,7 +258,7 @@ export default function RestaurantesPage () {
     return result
   }, [restaurants, search, zonaFilter, priceFilter, tiposFilter])
 
-  // Resetear a página 1 cuando cambian filtros/búsqueda
+  // Reset de página al cambiar filtros
   useEffect(() => {
     setCurrentPage(1)
   }, [search, zonaFilter, priceFilter, tiposFilter])
@@ -292,7 +292,7 @@ export default function RestaurantesPage () {
       <TopNav isLoggedIn={isLoggedIn} />
 
       <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
-        {/* Título de la página */}
+        {/* Título */}
         <header className='flex flex-col gap-1 mb-1'>
           <h1 className='text-lg font-semibold'>Restaurantes</h1>
           <p className='text-xs text-slate-400'>
@@ -409,7 +409,7 @@ export default function RestaurantesPage () {
           )}
         </section>
 
-        {/* Estado de carga / error */}
+        {/* Estado */}
         {loading && (
           <p className='text-xs text-slate-400'>Cargando restaurantes...</p>
         )}
@@ -524,8 +524,14 @@ export default function RestaurantesPage () {
 
         {/* MODAL detalle */}
         {isModalOpen && selectedRestaurant && (
-          <div className='fixed inset-0 z-[60] flex items-start justify-center bg-black/60 px-4'>
-            <div className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
+          <div
+            className='fixed inset-0 z-[60] flex items-start justify-center bg-black/60 px-4'
+            onClick={closeModal} // click en overlay cierra
+          >
+            <div
+              className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
+              onClick={e => e.stopPropagation()} // evita cerrar si clickeás dentro
+            >
               {/* Botón cerrar arriba a la derecha */}
               <button
                 type='button'
