@@ -11,14 +11,15 @@ import EventosDestacados from '@/components/destacados/Eventos'
 import GaleriasDestacadas from '@/components/destacados/Galerias'
 import HotelesDestacados from '@/components/destacados/Hoteles'
 import ShoppingDestacados from '@/components/destacados/Shopping'
+import { useAuth } from '@/context/AuthContext'
 
 export default function HomePage () {
-  // por ahora esto quedará así como pediste
-  const isLoggedIn = false
+  const { user, isLoading }: any = useAuth()
+  const isLoggedIn = !isLoading && !!user
 
   return (
     <div className='min-h-screen flex flex-col bg-slate-950 text-slate-50'>
-      {/* 🔥 NAV SUPERIOR → EN HOME SOLO LOGO */}
+      {/* NAV SUPERIOR */}
       <TopNav isLoggedIn={isLoggedIn} />
 
       <main className='flex-1 pb-32'>
