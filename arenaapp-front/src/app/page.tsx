@@ -9,6 +9,7 @@ import RestaurantesDestacados from '@/components/destacados/Restaurantes'
 import BaresDestacados from '@/components/destacados/Bares'
 import EventosDestacados from '@/components/destacados/Eventos'
 import GaleriasDestacadas from '@/components/destacados/Galerias'
+import HotelesDestacados from '@/components/destacados/Hoteles'
 
 export default function HomePage () {
   // por ahora esto quedará así como pediste
@@ -40,6 +41,10 @@ export default function HomePage () {
 
         <section className='px-4 pt-6 pb-4'>
           <GaleriasDestacadas isLoggedIn={isLoggedIn} />
+        </section>
+
+        <section className='px-4 pt-6 pb-4'>
+          <HotelesDestacados isLoggedIn={isLoggedIn} />
         </section>
 
         <AdBanner />
