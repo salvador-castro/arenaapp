@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
-import { verifyAuth, getUserIdFromPayload } from '@/lib/auth'
-import type { JwtPayload, AuthPayload } from '@/lib/auth'
+import { verifyAuth } from '@/lib/auth'
+import type { JwtPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+const FAVORITO_TIPO_RESTAURANTE = 'LUGAR' // valor válido de tipo_favorito
 
 function corsBaseHeaders () {
   return {
@@ -18,9 +19,18 @@ export function OPTIONS () {
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization'
     }
   })
+}
+
+// Helper -> saca el userId del payload
+function getUserIdFromAuth (payload: JwtPayload): number {
+  const userId = Number(payload.userId)
+  if (!userId || Number.isNaN(userId)) {
+    throw new Error('UNAUTHORIZED_INVALID_USER')
+  }
+  return userId
 }
 
 /* =========================
@@ -28,8 +38,8 @@ export function OPTIONS () {
 ========================= */
 export async function GET (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req) as JwtPayload | AuthPayload
-    const userId = getUserIdFromPayload(auth)
+    const auth = await verifyAuth(req)
+    const userId = getUserIdFromAuth(auth)
 
     const db = await getDb()
 
@@ -62,12 +72,12 @@ export async function GET (req: NextRequest) {
       FROM public.favoritos f
       JOIN public.restaurantes r ON r.id = f.item_id
       WHERE f.usuario_id = $1
-        AND f.tipo = 'RESTAURANTE'
-        AND r.estado = 'PUBLICADO'
+        AND f.tipo = $2::tipo_favorito
+        AND r.estado = 'PUBLICADO'::estado_publicacion
       ORDER BY f.created_at DESC
     `
 
-    const { rows } = await db.query(query, [userId])
+    const { rows } = await db.query(query, [userId, FAVORITO_TIPO_RESTAURANTE])
 
     return new NextResponse(JSON.stringify(rows), {
       status: 200,
@@ -78,10 +88,12 @@ export async function GET (req: NextRequest) {
     })
   } catch (err: any) {
     console.error('Error en GET /api/admin/favoritos/restaurantes', err?.message ?? err)
-    const status = err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+    const status =
+      err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+
     return new NextResponse(
-      JSON.stringify({ error: err?.message ?? 'Error interno o no autenticado' }),
-      { status, headers: { ...corsBaseHeaders(), 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: err?.message || 'Error interno o no autenticado' }),
+      { status, headers: { ...corsBaseHeaders() } }
     )
   }
 }
@@ -91,8 +103,8 @@ export async function GET (req: NextRequest) {
 ========================= */
 export async function POST (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req) as JwtPayload | AuthPayload
-    const userId = getUserIdFromPayload(auth)
+    const auth = await verifyAuth(req)
+    const userId = getUserIdFromAuth(auth)
 
     const body = await req.json().catch(() => null)
     const restauranteId = Number(body?.restauranteId)
@@ -100,7 +112,7 @@ export async function POST (req: NextRequest) {
     if (!restauranteId || Number.isNaN(restauranteId)) {
       return new NextResponse(
         JSON.stringify({ error: 'restauranteId inválido' }),
-        { status: 400, headers: { ...corsBaseHeaders(), 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsBaseHeaders() } }
       )
     }
 
@@ -108,12 +120,16 @@ export async function POST (req: NextRequest) {
 
     const query = `
       INSERT INTO public.favoritos (usuario_id, tipo, item_id)
-      VALUES ($1, 'RESTAURANTE', $2)
+      VALUES ($1, $2::tipo_favorito, $3)
       ON CONFLICT (usuario_id, tipo, item_id)
       DO NOTHING
       RETURNING id, created_at
     `
-    const { rows } = await db.query(query, [userId, restauranteId])
+    const { rows } = await db.query(query, [
+      userId,
+      FAVORITO_TIPO_RESTAURANTE,
+      restauranteId
+    ])
 
     return new NextResponse(
       JSON.stringify({
@@ -130,10 +146,12 @@ export async function POST (req: NextRequest) {
     )
   } catch (err: any) {
     console.error('Error en POST /api/admin/favoritos/restaurantes', err?.message ?? err)
-    const status = err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+    const status =
+      err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+
     return new NextResponse(
-      JSON.stringify({ error: err?.message ?? 'Error interno o no autenticado' }),
-      { status, headers: { ...corsBaseHeaders(), 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: err?.message || 'Error interno o no autenticado' }),
+      { status, headers: { ...corsBaseHeaders() } }
     )
   }
 }
@@ -143,8 +161,8 @@ export async function POST (req: NextRequest) {
 ========================= */
 export async function DELETE (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req) as JwtPayload | AuthPayload
-    const userId = getUserIdFromPayload(auth)
+    const auth = await verifyAuth(req)
+    const userId = getUserIdFromAuth(auth)
 
     const body = await req.json().catch(() => null)
     const restauranteId = Number(body?.restauranteId)
@@ -152,7 +170,7 @@ export async function DELETE (req: NextRequest) {
     if (!restauranteId || Number.isNaN(restauranteId)) {
       return new NextResponse(
         JSON.stringify({ error: 'restauranteId inválido' }),
-        { status: 400, headers: { ...corsBaseHeaders(), 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsBaseHeaders() } }
       )
     }
 
@@ -160,10 +178,10 @@ export async function DELETE (req: NextRequest) {
     const query = `
       DELETE FROM public.favoritos
       WHERE usuario_id = $1
-        AND tipo = 'RESTAURANTE'
-        AND item_id = $2
+        AND tipo = $2::tipo_favorito
+        AND item_id = $3
     `
-    await db.query(query, [userId, restauranteId])
+    await db.query(query, [userId, FAVORITO_TIPO_RESTAURANTE, restauranteId])
 
     return new NextResponse(
       JSON.stringify({ ok: true }),
@@ -177,10 +195,12 @@ export async function DELETE (req: NextRequest) {
     )
   } catch (err: any) {
     console.error('Error en DELETE /api/admin/favoritos/restaurantes', err?.message ?? err)
-    const status = err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+    const status =
+      err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+
     return new NextResponse(
-      JSON.stringify({ error: err?.message ?? 'Error interno o no autenticado' }),
-      { status, headers: { ...corsBaseHeaders(), 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: err?.message || 'Error interno o no autenticado' }),
+      { status, headers: { ...corsBaseHeaders() } }
     )
   }
 }
