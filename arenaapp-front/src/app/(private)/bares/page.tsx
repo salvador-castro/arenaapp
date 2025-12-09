@@ -42,6 +42,7 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/bares/public`
+const FAVORITOS_BARES_ENDPOINT = `${API_BASE}/api/admin/favoritos/bares`
 const PAGE_SIZE = 12
 
 function renderPriceRange (rango: number | null | undefined): string {
@@ -94,24 +95,67 @@ export default function BaresPage () {
   const [selectedBar, setSelectedBar] = useState<Bar | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // ⭐ favoritos (estado local por ahora)
-  const [favoriteIds, setFavoriteIds] = useState<Set<number | string>>(
-    () => new Set()
-  )
+  // ⭐ favoritos (estado local)
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(() => new Set())
 
-  const toggleFavorite = (id: number | string) => {
+  const toggleFavorite = async (id: number | string) => {
+    if (!user) return
+
+    const numericId = Number(id)
+    if (!numericId || Number.isNaN(numericId)) return
+
+    const wasFavorite = favoriteIds.has(numericId)
+    const method = wasFavorite ? 'DELETE' : 'POST'
+
+    // 🧠 Optimistic update
     setFavoriteIds(prev => {
       const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
+      if (wasFavorite) {
+        next.delete(numericId)
       } else {
-        next.add(id)
+        next.add(numericId)
       }
       return next
     })
 
-    // 🔜 acá después conectamos con la API real de favoritos
-    // fetch('/api/favoritos', { method: 'POST', body: JSON.stringify({ tipo: 'bar', id }) })
+    try {
+      const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
+        method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ barId: numericId })
+      })
+
+      if (!res.ok) {
+        console.error('Error al actualizar favorito de bar', res.status)
+        // si falla, revertimos
+        setFavoriteIds(prev => {
+          const next = new Set(prev)
+          if (wasFavorite) {
+            // debería seguir siendo favorito
+            next.add(numericId)
+          } else {
+            // debería dejar de ser favorito
+            next.delete(numericId)
+          }
+          return next
+        })
+      }
+    } catch (err) {
+      console.error('Error de red al actualizar favorito de bar', err)
+      // revertir si hubo error de red
+      setFavoriteIds(prev => {
+        const next = new Set(prev)
+        if (wasFavorite) {
+          next.add(numericId)
+        } else {
+          next.delete(numericId)
+        }
+        return next
+      })
+    }
   }
 
   // Filtros
@@ -137,30 +181,31 @@ export default function BaresPage () {
   useEffect(() => {
     if (!user) return
 
-    const fetchBars = async () => {
+    const fetchFavoritos = async () => {
       try {
-        setLoading(true)
-        setError(null)
-
-        const res = await fetch(PUBLIC_ENDPOINT, {
-          method: 'GET'
+        const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
+          method: 'GET',
+          credentials: 'include'
         })
 
         if (!res.ok) {
-          throw new Error(`Error HTTP ${res.status}`)
+          console.error('Error HTTP favoritos bares', res.status)
+          return
         }
 
-        const data: Bar[] = await res.json()
-        setBars(data)
-      } catch (err: any) {
-        console.error('Error cargando bares públicos', err)
-        setError(err.message ?? 'Error al cargar bares')
-      } finally {
-        setLoading(false)
+        const data = await res.json()
+
+        // la query devuelve: favorito_id, created_at, b.*
+        // usamos el id del bar => row.id
+        const ids = (data as any[]).map(row => Number(row.id)).filter(Boolean)
+
+        setFavoriteIds(new Set(ids))
+      } catch (err) {
+        console.error('Error cargando favoritos de bares', err)
       }
     }
 
-    fetchBars()
+    fetchFavoritos()
   }, [user])
 
   // 3) Si venimos con ?barId=, abrir ese modal cuando ya hay data
@@ -467,17 +512,14 @@ export default function BaresPage () {
                         e.stopPropagation()
                         toggleFavorite(place.id)
                       }}
-                      className='absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 backdrop-blur border border-slate-700 text-slate-100 hover:bg-black/80 transition'
-                      aria-label={
-                        favoriteIds.has(place.id)
-                          ? 'Quitar de favoritos'
-                          : 'Agregar a favoritos'
-                      }
+                      className='absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full
+             bg-black/60 backdrop-blur border border-slate-700
+             text-slate-100 hover:bg-black/80 transition'
                     >
                       <Heart
                         size={16}
                         className={
-                          favoriteIds.has(place.id)
+                          favoriteIds.has(Number(place.id))
                             ? 'fill-rose-500 text-rose-500'
                             : 'text-slate-100'
                         }
@@ -599,7 +641,7 @@ export default function BaresPage () {
                       }}
                       className='absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 backdrop-blur border border-slate-700 text-slate-100 hover:bg-black/80 transition'
                       aria-label={
-                        favoriteIds.has(selectedBar.id)
+                        favoriteIds.has(Number(selectedBar.id))
                           ? 'Quitar de favoritos'
                           : 'Agregar a favoritos'
                       }
@@ -607,7 +649,7 @@ export default function BaresPage () {
                       <Heart
                         size={16}
                         className={
-                          favoriteIds.has(selectedBar.id)
+                          favoriteIds.has(Number(selectedBar.id))
                             ? 'fill-rose-500 text-rose-500'
                             : 'text-slate-100'
                         }
