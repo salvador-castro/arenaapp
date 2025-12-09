@@ -583,17 +583,27 @@ export default function EventosPage () {
 
         {/* MODAL detalle */}
         {isModalOpen && selectedEvento && (
-          <div className='fixed inset-0 z-50 flex items-start justifyCenter bg-black/60 px-4'>
-            <div className='relative mt-10 mb-24 w-full max-w-lg max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
+          <div
+            className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'
+            onClick={closeModal} // click en el overlay cierra
+          >
+            <div
+              className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
+              onClick={e => e.stopPropagation()} // evita cerrar si clickeás dentro
+            >
+              {/* Botón cerrar arriba a la derecha, sin superponerse con la imagen */}
               <button
                 type='button'
                 onClick={closeModal}
-                className='sticky top-3 ml-auto mr-3 rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700'
+                className='absolute top-3 right-3 z-20
+                           flex h-8 w-8 items-center justify-center
+                           rounded-full bg-slate-900/80 border border-slate-700
+                           text-sm text-slate-200 hover:bg-slate-800 transition'
               >
                 ✕
               </button>
 
-              <div className='px-4 pb-4 pt-1 sm:p-6 space-y-4'>
+              <div className='px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4'>
                 <div className='flex flex-col sm:flex-row gap-4'>
                   <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
                     <Image
