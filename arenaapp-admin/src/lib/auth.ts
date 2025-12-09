@@ -16,9 +16,11 @@ export type AuthPayload = JWTPayload & {
   rol?: 'ADMIN' | 'USER'
 }
 
-// 👇 función común para sacar el userId del payload
+/**
+ * Obtiene el userId del payload JWT.
+ * Soporta tanto `sub` como `userId`.
+ */
 export function getUserIdFromPayload (payload: JwtPayload | AuthPayload | any): number {
-  // soporta tanto sub como userId
   const raw = (payload as any)?.userId ?? (payload as any)?.sub
   const userId = Number(raw)
 
@@ -35,10 +37,14 @@ export async function verifyAuth (req: NextRequest) {
   let token: string | undefined
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.substring('Bearer '.length)
+    const candidate = authHeader.substring('Bearer '.length).trim()
+    // evitamos "undefined", "null" o vacío
+    if (candidate && candidate !== 'undefined' && candidate !== 'null') {
+      token = candidate
+    }
   }
 
-  // 2) Si no hay header, intentar cookie "token"
+  // 2) Si no hay header válido, intentar cookie "token"
   if (!token) {
     token = req.cookies.get('token')?.value
   }
