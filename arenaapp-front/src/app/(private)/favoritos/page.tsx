@@ -8,17 +8,17 @@ import Image from 'next/image'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
-interface FavoriteRestaurant {
+type FavoriteTipo = 'RESTAURANTE' | 'BAR'
+
+interface FavoriteItem {
   favorito_id: number
-  restaurante_id: number
+  item_id: number
+  tipo: FavoriteTipo
   nombre: string
   tipo_comida: string | null
   slug: string
   descripcion_corta: string | null
-  descripcion_larga: string | null
   direccion: string | null
-  url_maps: string | null
-  horario_text: string | null
   ciudad: string | null
   provincia: string | null
   zona: string | null
@@ -26,12 +26,7 @@ interface FavoriteRestaurant {
   sitio_web: string | null
   rango_precios: number | null
   estrellas: number | null
-  es_destacado: boolean
-  url_reservas: string | null
-  url_reserva: string | null
-  url_instagram: string | null
   url_imagen: string | null
-  resena: string | null
 }
 
 const API_BASE = (
@@ -39,26 +34,27 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
+const FAVORITOS_BARES_ENDPOINT = `${API_BASE}/api/admin/favoritos/bares`
 
-function renderPriceRange(rango: number | null | undefined): string {
+function renderPriceRange (rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
   const value = Math.min(Math.max(rango, 1), 5)
   return '$'.repeat(value)
 }
 
-function renderStars(estrellas: number | null | undefined): string {
+function renderStars (estrellas: number | null | undefined): string {
   if (!estrellas || estrellas < 1) return '-'
   const value = Math.min(Math.max(estrellas, 1), 5)
   return '★'.repeat(value)
 }
 
-export default function FavoritosPage() {
+export default function FavoritosPage () {
   const router = useRouter()
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
   const isLoggedIn = !isLoading && !!user
 
-  const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([])
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [removingId, setRemovingId] = useState<number | null>(null)
@@ -72,7 +68,7 @@ export default function FavoritosPage() {
     }
   }, [user, isLoading, router])
 
-  // Cargar favoritos
+  // Cargar favoritos (restaurantes + bares)
   useEffect(() => {
     if (!user) return
 
@@ -86,19 +82,76 @@ export default function FavoritosPage() {
           headers['Authorization'] = `Bearer ${auth.token}`
         }
 
-        const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
-          method: 'GET',
-          headers,
-          credentials: 'include'
-        })
+        const [resRest, resBares] = await Promise.all([
+          fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
+            method: 'GET',
+            headers,
+            credentials: 'include'
+          }),
+          fetch(FAVORITOS_BARES_ENDPOINT, {
+            method: 'GET',
+            credentials: 'include'
+          })
+        ])
 
-
-        if (!res.ok) {
-          throw new Error(`Error HTTP ${res.status}`)
+        if (!resRest.ok) {
+          throw new Error(`Error HTTP favoritos restaurantes ${resRest.status}`)
+        }
+        if (!resBares.ok) {
+          throw new Error(`Error HTTP favoritos bares ${resBares.status}`)
         }
 
-        const data: FavoriteRestaurant[] = await res.json()
-        setFavorites(data)
+        const dataRest: any[] = await resRest.json()
+        const dataBares: any[] = await resBares.json()
+
+        const mappedRest: FavoriteItem[] = dataRest
+          .map(row => ({
+            favorito_id: Number(row.favorito_id),
+            item_id: Number(row.restaurante_id),
+            tipo: 'RESTAURANTE' as const,
+            nombre: row.nombre,
+            tipo_comida: row.tipo_comida,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: row.rango_precios,
+            estrellas: row.estrellas,
+            url_imagen: row.url_imagen
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
+        const mappedBares: FavoriteItem[] = dataBares
+          .map(row => ({
+            favorito_id: Number(row.favorito_id),
+            item_id: Number(row.bar_id ?? row.id),
+            tipo: 'BAR' as const,
+            nombre: row.nombre,
+            tipo_comida: row.tipo_comida,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: row.rango_precios,
+            estrellas: row.estrellas,
+            url_imagen: row.url_imagen ?? row.imagen_principal
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
+        // combinados, ordenados por favorito_id desc (aprox por fecha)
+        const combined = [...mappedRest, ...mappedBares].sort(
+          (a, b) => b.favorito_id - a.favorito_id
+        )
+
+        setFavorites(combined)
       } catch (err: any) {
         console.error('Error cargando favoritos', err)
         setError(err.message ?? 'Error al cargar favoritos')
@@ -110,30 +163,52 @@ export default function FavoritosPage() {
     fetchFavorites()
   }, [user, auth?.token])
 
-  const handleRemoveFavorite = async (restauranteId: number) => {
-    setRemovingId(restauranteId)
+  const handleRemoveFavorite = async (item: FavoriteItem) => {
+    const { item_id, tipo } = item
+    setRemovingId(item_id)
+
     try {
-            const headers: HeadersInit = {
-        'Content-Type': 'application/json'
-      }
-      if (auth?.token) {
-        headers['Authorization'] = `Bearer ${auth.token}`
-      }
+      if (tipo === 'RESTAURANTE') {
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json'
+        }
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
 
-      const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
-        method: 'DELETE',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({ restauranteId })
-      })
+        const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
+          method: 'DELETE',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ restauranteId: item_id })
+        })
 
-      if (!res.ok) {
-        console.error('Error al quitar favorito', await res.text())
-        return
+        if (!res.ok) {
+          console.error(
+            'Error al quitar favorito restaurante',
+            await res.text()
+          )
+          return
+        }
+      } else {
+        // BAR
+        const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ barId: item_id })
+        })
+
+        if (!res.ok) {
+          console.error('Error al quitar favorito bar', await res.text())
+          return
+        }
       }
 
       setFavorites(prev =>
-        prev.filter(f => f.restaurante_id !== restauranteId)
+        prev.filter(f => f.item_id !== item_id || f.tipo !== tipo)
       )
     } catch (err) {
       console.error('Error al quitar favorito', err)
@@ -142,8 +217,12 @@ export default function FavoritosPage() {
     }
   }
 
-  const handleGoToRestaurant = (restauranteId: number) => {
-    router.push(`/restaurantes?restauranteId=${restauranteId}`)
+  const handleGoToItem = (item: FavoriteItem) => {
+    if (item.tipo === 'RESTAURANTE') {
+      router.push(`/restaurantes?restauranteId=${item.item_id}`)
+    } else {
+      router.push(`/bares?barId=${item.item_id}`)
+    }
   }
 
   if (isLoading || (!user && !error)) {
@@ -162,7 +241,7 @@ export default function FavoritosPage() {
         <header className='flex flex-col gap-1 mb-1'>
           <h1 className='text-lg font-semibold'>Tus favoritos</h1>
           <p className='text-xs text-slate-400'>
-            Restaurantes que guardaste para volver a ver.
+            Lugares que guardaste para volver a ver.
           </p>
         </header>
 
@@ -174,7 +253,7 @@ export default function FavoritosPage() {
 
         {!loading && !error && favorites.length === 0 && (
           <p className='text-xs text-slate-400'>
-            Todavía no guardaste restaurantes como favoritos.
+            Todavía no guardaste lugares como favoritos.
           </p>
         )}
 
@@ -182,12 +261,12 @@ export default function FavoritosPage() {
           <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
             {favorites.map(place => (
               <div
-                key={place.favorito_id}
+                key={`${place.tipo}-${place.favorito_id}`}
                 className='rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
               >
                 <div
                   className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer'
-                  onClick={() => handleGoToRestaurant(place.restaurante_id)}
+                  onClick={() => handleGoToItem(place)}
                 >
                   <Image
                     alt={place.nombre}
@@ -202,9 +281,15 @@ export default function FavoritosPage() {
                 </div>
 
                 <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
-                  <p className='text-[10px] uppercase font-semibold text-emerald-400'>
-                    {place.zona || 'Zona no especificada'}
-                  </p>
+                  <div className='flex items-center justify-between'>
+                    <p className='text-[10px] uppercase font-semibold text-emerald-400'>
+                      {place.zona || 'Zona no especificada'}
+                    </p>
+                    <span className='text-[9px] uppercase tracking-wide text-slate-500 border border-slate-700 rounded-full px-2 py-[2px]'>
+                      {place.tipo === 'RESTAURANTE' ? 'Restaurante' : 'Bar'}
+                    </span>
+                  </div>
+
                   <h3 className='text-sm font-semibold line-clamp-1'>
                     {place.nombre}
                   </h3>
@@ -239,9 +324,7 @@ export default function FavoritosPage() {
                   <div className='mt-2 flex justify-between gap-2'>
                     <button
                       type='button'
-                      onClick={() =>
-                        handleGoToRestaurant(place.restaurante_id)
-                      }
+                      onClick={() => handleGoToItem(place)}
                       className='rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors'
                     >
                       Ver detalle
@@ -249,15 +332,11 @@ export default function FavoritosPage() {
 
                     <button
                       type='button'
-                      onClick={() =>
-                        handleRemoveFavorite(place.restaurante_id)
-                      }
-                      disabled={removingId === place.restaurante_id}
+                      onClick={() => handleRemoveFavorite(place)}
+                      disabled={removingId === place.item_id}
                       className='rounded-full border border-slate-700 px-3 py-1 text-[11px] text-slate-300 hover:border-red-400 hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                     >
-                      {removingId === place.restaurante_id
-                        ? 'Quitando...'
-                        : 'Quitar'}
+                      {removingId === place.item_id ? 'Quitando...' : 'Quitar'}
                     </button>
                   </div>
                 </div>

@@ -1,10 +1,11 @@
+// C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-front\src\app\(private)\bares\page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
-import { Instagram, SlidersHorizontal, ChevronDown, Heart } from 'lucide-react'
+import { Instagram, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
@@ -95,67 +96,6 @@ export default function BaresPage () {
   const [selectedBar, setSelectedBar] = useState<Bar | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // ⭐ favoritos (estado local con IDs numéricos)
-  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(() => new Set())
-
-  const toggleFavorite = async (id: number | string) => {
-    if (!user) return
-
-    const numericId = Number(id)
-    if (!numericId || Number.isNaN(numericId)) return
-
-    const wasFavorite = favoriteIds.has(numericId)
-    const method = wasFavorite ? 'DELETE' : 'POST'
-
-    // 🧠 Optimistic update
-    setFavoriteIds(prev => {
-      const next = new Set(prev)
-      if (wasFavorite) {
-        next.delete(numericId)
-      } else {
-        next.add(numericId)
-      }
-      return next
-    })
-
-    try {
-      const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
-        method,
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ barId: numericId })
-      })
-
-      if (!res.ok) {
-        console.error('Error al actualizar favorito de bar', res.status)
-        // revertir si falla
-        setFavoriteIds(prev => {
-          const next = new Set(prev)
-          if (wasFavorite) {
-            next.add(numericId)
-          } else {
-            next.delete(numericId)
-          }
-          return next
-        })
-      }
-    } catch (err) {
-      console.error('Error de red al actualizar favorito de bar', err)
-      // revertir si hubo error de red
-      setFavoriteIds(prev => {
-        const next = new Set(prev)
-        if (wasFavorite) {
-          next.add(numericId)
-        } else {
-          next.delete(numericId)
-        }
-        return next
-      })
-    }
-  }
-
   // Filtros
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -163,6 +103,10 @@ export default function BaresPage () {
   const [priceFilter, setPriceFilter] = useState('')
   const [tiposFilter, setTiposFilter] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+
+  // Favoritos de Bares
+  const [favoriteBarIds, setFavoriteBarIds] = useState<Set<number>>(new Set())
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
 
   // 1) Guardia de auth
   useEffect(() => {
@@ -186,8 +130,6 @@ export default function BaresPage () {
 
         const res = await fetch(PUBLIC_ENDPOINT, {
           method: 'GET'
-          // si tu API requiere sesión por cookie, podés agregar:
-          // credentials: 'include'
         })
 
         if (!res.ok) {
@@ -223,15 +165,14 @@ export default function BaresPage () {
           return
         }
 
-        const data = await res.json()
+        const data: any[] = await res.json()
 
-        // la query devuelve: favorito_id, created_at, b.*
-        // usamos el id del bar => row.id
-        const ids = (data as any[])
-          .map(row => Number(row.id))
-          .filter(n => !!n && !Number.isNaN(n))
+        // la query devuelve: favorito_id, bar_id, b.*
+        const ids = data
+          .map(row => Number(row.bar_id ?? row.id ?? row.item_id))
+          .filter(id => !Number.isNaN(id))
 
-        setFavoriteIds(new Set(ids))
+        setFavoriteBarIds(new Set(ids))
       } catch (err) {
         console.error('Error cargando favoritos de bares', err)
       }
@@ -240,7 +181,7 @@ export default function BaresPage () {
     fetchFavoritos()
   }, [user])
 
-  // 4) Si venimos con ?barId=, abrir ese modal cuando ya hay data
+  // 4) Abrir modal si viene ?barId=
   useEffect(() => {
     if (!bars.length) return
     if (!barId) return
@@ -253,7 +194,61 @@ export default function BaresPage () {
     }
   }, [bars, barId])
 
-  // Opciones dinámicas para filtros
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedBar(null)
+    router.push('/bares')
+  }
+
+  const openModalFromCard = (place: Bar) => {
+    setSelectedBar(place)
+    setIsModalOpen(true)
+    router.push(`/bares?barId=${place.id}`)
+  }
+
+  // 5) Toggle favorito de Bar (mismo estilo que restaurantes)
+  const handleToggleFavoriteBar = async (bar: Bar) => {
+    if (!bar?.id) return
+
+    const barIdNumeric = Number(bar.id)
+    if (!barIdNumeric || Number.isNaN(barIdNumeric)) return
+
+    setFavoriteLoading(true)
+
+    try {
+      const isFavorite = favoriteBarIds.has(barIdNumeric)
+
+      const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
+        method: isFavorite ? 'DELETE' : 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ barId: barIdNumeric })
+      })
+
+      if (!res.ok) {
+        console.error('Error al actualizar favorito de bar', await res.text())
+        return
+      }
+
+      setFavoriteBarIds(prev => {
+        const next = new Set(prev)
+        if (isFavorite) {
+          next.delete(barIdNumeric)
+        } else {
+          next.add(barIdNumeric)
+        }
+        return next
+      })
+    } catch (err) {
+      console.error('Error al actualizar favorito de bar', err)
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
+
+  // 6) Opciones dinámicas para filtros
   const zonas = useMemo(
     () =>
       Array.from(
@@ -292,7 +287,7 @@ export default function BaresPage () {
     [bars]
   )
 
-  // 5) Aplicar filtros y orden (destacados primero)
+  // 7) Aplicar filtros + orden
   const filteredBars = useMemo(() => {
     let result = [...bars]
 
@@ -329,7 +324,7 @@ export default function BaresPage () {
       )
     }
 
-    // Orden: destacados primero, luego por estrellas y nombre
+    // Destacados primero, luego por estrellas y nombre
     result.sort((a, b) => {
       if (a.es_destacado && !b.es_destacado) return -1
       if (!a.es_destacado && b.es_destacado) return 1
@@ -344,7 +339,7 @@ export default function BaresPage () {
     return result
   }, [bars, search, zonaFilter, priceFilter, tiposFilter])
 
-  // Resetear página al cambiar filtros
+  // Reset página al cambiar filtros
   useEffect(() => {
     setCurrentPage(1)
   }, [search, zonaFilter, priceFilter, tiposFilter])
@@ -362,18 +357,6 @@ export default function BaresPage () {
     )
   }
 
-  const closeModal = () => {
-    setIsModalOpen(false)
-    setSelectedBar(null)
-    router.push('/bares')
-  }
-
-  const openModalFromCard = (place: Bar) => {
-    setSelectedBar(place)
-    setIsModalOpen(true)
-    router.push(`/bares?barId=${place.id}`)
-  }
-
   if (isLoading || (!user && !error)) {
     return (
       <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
@@ -387,7 +370,7 @@ export default function BaresPage () {
       <TopNav isLoggedIn={isLoggedIn} />
 
       <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
-        {/* Título de la página */}
+        {/* Título */}
         <header className='flex flex-col gap-1 mb-1'>
           <h1 className='text-lg font-semibold'>Bares</h1>
           <p className='text-xs text-slate-400'>
@@ -395,7 +378,7 @@ export default function BaresPage () {
           </p>
         </header>
 
-        {/* Filtros colapsables */}
+        {/* Filtros */}
         <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
           <button
             type='button'
@@ -504,8 +487,9 @@ export default function BaresPage () {
           )}
         </section>
 
-        {/* Estado de carga / error */}
+        {/* Estado */}
         {loading && <p className='text-xs text-slate-400'>Cargando bares...</p>}
+
         {error && <p className='text-xs text-red-400'>{error}</p>}
 
         {/* Listado */}
@@ -523,7 +507,10 @@ export default function BaresPage () {
                   key={place.id}
                   className='rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
                 >
-                  <div className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800'>
+                  <div
+                    className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer'
+                    onClick={() => openModalFromCard(place)}
+                  >
                     <Image
                       alt={place.nombre}
                       src={
@@ -535,27 +522,6 @@ export default function BaresPage () {
                       className='object-cover'
                       sizes='(max-width: 768px) 100vw, 25vw'
                     />
-
-                    {/* ❤️ Botón favoritos en la card */}
-                    <button
-                      type='button'
-                      onClick={e => {
-                        e.stopPropagation()
-                        toggleFavorite(place.id)
-                      }}
-                      className='absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full
-             bg-black/60 backdrop-blur border border-slate-700
-             text-slate-100 hover:bg-black/80 transition'
-                    >
-                      <Heart
-                        size={16}
-                        className={
-                          favoriteIds.has(Number(place.id))
-                            ? 'fill-rose-500 text-rose-500'
-                            : 'text-slate-100'
-                        }
-                      />
-                    </button>
                   </div>
 
                   <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
@@ -582,7 +548,7 @@ export default function BaresPage () {
                     </div>
 
                     {place.tipo_comida && (
-                      <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                      <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-0.5 text-[10px] text-slate-300'>
                         {place.tipo_comida}
                       </span>
                     )}
@@ -638,17 +604,24 @@ export default function BaresPage () {
 
         {/* MODAL detalle */}
         {isModalOpen && selectedBar && (
-          <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'>
-            <div className='relative mt-10 mb-24 w-full max-w-lg max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
+          <div
+            className='fixed inset-0 z-60 flex items-start justify-center bg-black/60 px-4'
+            onClick={closeModal}
+          >
+            <div
+              className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Botón cerrar */}
               <button
                 type='button'
                 onClick={closeModal}
-                className='sticky top-3 ml-auto mr-3 rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700'
+                className='absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 border border-slate-700 text-sm text-slate-200 hover:bg-slate-800 transition'
               >
                 ✕
               </button>
 
-              <div className='px-4 pb-4 pt-1 sm:p-6 space-y-4'>
+              <div className='px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4'>
                 <div className='flex flex-col sm:flex-row gap-4'>
                   <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
                     <Image
@@ -662,30 +635,6 @@ export default function BaresPage () {
                       className='object-cover'
                       sizes='(max-width: 640px) 100vw, 160px'
                     />
-
-                    {/* ❤️ favoritos también en el modal */}
-                    <button
-                      type='button'
-                      onClick={e => {
-                        e.stopPropagation()
-                        toggleFavorite(selectedBar.id)
-                      }}
-                      className='absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 backdrop-blur border border-slate-700 text-slate-100 hover:bg-black/80 transition'
-                      aria-label={
-                        favoriteIds.has(Number(selectedBar.id))
-                          ? 'Quitar de favoritos'
-                          : 'Agregar a favoritos'
-                      }
-                    >
-                      <Heart
-                        size={16}
-                        className={
-                          favoriteIds.has(Number(selectedBar.id))
-                            ? 'fill-rose-500 text-rose-500'
-                            : 'text-slate-100'
-                        }
-                      />
-                    </button>
                   </div>
 
                   <div className='flex-1 space-y-1'>
@@ -703,22 +652,22 @@ export default function BaresPage () {
                         {renderPriceRange(selectedBar.rango_precios)}
                       </span>
                       {selectedBar.tipo_comida && (
-                        <span className='rounded-full border border-slate-700 px-2 py-[2px] text-[11px] text-slate-300'>
+                        <span className='rounded-full border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300'>
                           {selectedBar.tipo_comida}
                         </span>
                       )}
                       {selectedBar.tiene_terraza && (
-                        <span className='rounded-full border border-emerald-500/50 px-2 py-[2px] text-[10px] text-emerald-300'>
+                        <span className='rounded-full border border-emerald-500/50 px-2 py-0.5 text-[10px] text-emerald-300'>
                           Terraza
                         </span>
                       )}
                       {selectedBar.tiene_musica_vivo && (
-                        <span className='rounded-full border border-emerald-500/50 px-2 py-[2px] text-[10px] text-emerald-300'>
+                        <span className='rounded-full border border-emerald-500/50 px-2 py-0.5 text-[10px] text-emerald-300'>
                           Música en vivo
                         </span>
                       )}
                       {selectedBar.tiene_happy_hour && (
-                        <span className='rounded-full border border-emerald-500/50 px-2 py-[2px] text-[10px] text-emerald-300'>
+                        <span className='rounded-full border border-emerald-500/50 px-2 py-0.5 text-[10px] text-emerald-300'>
                           Happy hour
                         </span>
                       )}
@@ -743,7 +692,7 @@ export default function BaresPage () {
                 {selectedBar.resena && (
                   <div className='space-y-1'>
                     <h4 className='text-sm font-semibold'>Reseña</h4>
-                    <p className='text-[12px] text-slate-300 whitespace-pre-line'>
+                    <p className='text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left'>
                       {selectedBar.resena}
                     </p>
                   </div>
@@ -815,7 +764,8 @@ export default function BaresPage () {
                   </div>
                 </div>
 
-                <div className='flex justify-end pt-2'>
+                {/* Botones cierre + favorito */}
+                <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
                   <button
                     type='button'
                     onClick={closeModal}
@@ -823,6 +773,31 @@ export default function BaresPage () {
                   >
                     Cerrar
                   </button>
+
+                  {(() => {
+                    const isFavorite = favoriteBarIds.has(
+                      Number(selectedBar.id)
+                    )
+
+                    return (
+                      <button
+                        type='button'
+                        disabled={favoriteLoading}
+                        onClick={() => handleToggleFavoriteBar(selectedBar)}
+                        className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
+                          ${
+                            isFavorite
+                              ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
+                              : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
+                          }
+                        `}
+                      >
+                        {isFavorite
+                          ? 'Quitar de favoritos'
+                          : 'Guardar como favorito'}
+                      </button>
+                    )
+                  })()}
                 </div>
               </div>
             </div>
