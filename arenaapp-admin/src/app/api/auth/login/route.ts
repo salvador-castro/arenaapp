@@ -11,7 +11,7 @@ if (!rawSecret) {
   throw new Error('JWT_SECRET no está definido en las variables de entorno')
 }
 const JWT_SECRET = rawSecret
-const SESSION_MINUTES = parseInt(process.env.SESSION_MINUTES ?? '1', 10)
+const SESSION_MINUTES = parseInt(process.env.SESSION_MINUTES ?? '60', 10)
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
 const IS_PROD = process.env.NODE_ENV === 'production'
