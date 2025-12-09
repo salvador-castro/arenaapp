@@ -584,8 +584,8 @@ export default function EventosPage () {
         {/* MODAL detalle */}
         {isModalOpen && selectedEvento && (
           <div
-            className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'
-            onClick={closeModal} // click en el overlay cierra
+            className='fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4'
+            onClick={closeModal}
           >
             <div
               className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
