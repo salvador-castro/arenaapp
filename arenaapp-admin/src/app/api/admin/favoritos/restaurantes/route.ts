@@ -26,12 +26,16 @@ export function OPTIONS () {
 
 // Helper -> saca el userId del payload
 function getUserIdFromAuth (payload: JwtPayload): number {
-  const userId = Number(payload.userId)
+  // ahora el id viene en `sub` porque verifyAuth lo normaliza ahí
+  const userId = Number(payload.sub)
+
   if (!userId || Number.isNaN(userId)) {
     throw new Error('UNAUTHORIZED_INVALID_USER')
   }
+
   return userId
 }
+
 
 /* =========================
    GET → listar favoritos

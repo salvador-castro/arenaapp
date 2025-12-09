@@ -1,25 +1,42 @@
+// src/lib/auth.ts
 import { NextRequest } from 'next/server'
-import { jwtVerify } from 'jose'
+import { JWTPayload, jwtVerify } from 'jose'
 
 const rawSecret = process.env.JWT_SECRET
 if (!rawSecret) {
   throw new Error('JWT_SECRET no está definido en las variables de entorno')
 }
+
+// jose espera un Uint8Array como secret
 const JWT_SECRET = new TextEncoder().encode(rawSecret)
 
 export type JwtPayload = {
-  userId: number
+  sub: string          // id del usuario en string
+  email: string        // opcional en la práctica, pero lo dejamos en el type
   rol: 'ADMIN' | 'USER'
   exp: number
   iat: number
 }
 
+// Payload “crudo” que viene del token (lo usamos para castear)
+export type AuthPayload = JWTPayload & {
+  sub?: string
+  email?: string
+  rol?: 'ADMIN' | 'USER'
+  userId?: number | string    // por compatibilidad con tu login actual
+}
+
+/**
+ * Verifica el JWT a partir de:
+ *  - Authorization: Bearer xxx
+ *  - o cookie httpOnly "token"
+ */
 export async function verifyAuth (req: NextRequest): Promise<JwtPayload> {
-  // 1) Intentar leer Authorization: Bearer xxx
+  // 1) Intentar Authorization: Bearer xxx
   const authHeader = req.headers.get('authorization')
   let token: string | undefined
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader?.startsWith('Bearer ')) {
     token = authHeader.substring('Bearer '.length)
   }
 
@@ -33,24 +50,36 @@ export async function verifyAuth (req: NextRequest): Promise<JwtPayload> {
   }
 
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET)
+    const { payload } = await jwtVerify(token, JWT_SECRET) as { payload: AuthPayload }
 
-    const userId = Number((payload as any).userId)
-    const rol = (payload as any).rol as 'ADMIN' | 'USER'
-    const exp = (payload as any).exp as number
-    const iat = (payload as any).iat as number
+    // 👉 compatibilidad: si el token trae userId (como hace tu login actual),
+    // lo usamos para construir sub
+    const sub =
+      payload.sub ??
+      (payload.userId != null ? String(payload.userId) : undefined)
 
-    if (!userId || Number.isNaN(userId)) {
-      throw new Error('UNAUTHORIZED_INVALID_USER')
+    if (!sub) {
+      throw new Error('UNAUTHORIZED_INVALID_TOKEN')
     }
 
+    const rol = payload.rol
     if (rol !== 'ADMIN' && rol !== 'USER') {
-      throw new Error('UNAUTHORIZED_INVALID_ROLE')
+      throw new Error('UNAUTHORIZED_INVALID_TOKEN')
     }
 
-    return { userId, rol, exp, iat }
+    if (!payload.exp || !payload.iat) {
+      throw new Error('UNAUTHORIZED_INVALID_TOKEN')
+    }
+
+    return {
+      sub,
+      email: payload.email ?? '',
+      rol,
+      exp: payload.exp,
+      iat: payload.iat
+    }
   } catch (err) {
-    console.error('verifyAuth error:', err)
+    console.error('verifyAuth: error verificando token', err)
     throw new Error('UNAUTHORIZED_INVALID_TOKEN')
   }
 }
