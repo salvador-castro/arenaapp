@@ -16,7 +16,20 @@ export type AuthPayload = JWTPayload & {
   rol?: 'ADMIN' | 'USER'
 }
 
-export async function verifyAuth(req: NextRequest) {
+// 👇 función común para sacar el userId del payload
+export function getUserIdFromPayload (payload: JwtPayload | AuthPayload | any): number {
+  // soporta tanto sub como userId
+  const raw = (payload as any)?.userId ?? (payload as any)?.sub
+  const userId = Number(raw)
+
+  if (!userId || Number.isNaN(userId)) {
+    throw new Error('UNAUTHORIZED_INVALID_USER')
+  }
+
+  return userId
+}
+
+export async function verifyAuth (req: NextRequest) {
   // 1) Intentar leer Authorization: Bearer xxx
   const authHeader = req.headers.get('authorization')
   let token: string | undefined
@@ -39,7 +52,7 @@ export async function verifyAuth(req: NextRequest) {
   return payload
 }
 
-export function requireAdmin(payload: JwtPayload) {
+export function requireAdmin (payload: JwtPayload | AuthPayload) {
   if (payload.rol !== 'ADMIN') {
     throw new Error('FORBIDDEN_NOT_ADMIN')
   }

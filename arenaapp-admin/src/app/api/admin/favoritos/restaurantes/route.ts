@@ -1,19 +1,19 @@
 // C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-admin\src\app\api\admin\favoritos\restaurantes\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
-import { verifyAuth } from '@/lib/auth'
-import type { JwtPayload } from '@/lib/auth'
+import { verifyAuth, getUserIdFromPayload } from '@/lib/auth'
+import type { JwtPayload, AuthPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
     'Access-Control-Allow-Credentials': 'true'
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
@@ -25,22 +25,13 @@ export function OPTIONS () {
 }
 
 
-// Helper para obtener userId seguro desde el token
-function getUserIdFromAuth(payload: JwtPayload) {
-  const userId = Number(payload.sub)
-  if (!userId || Number.isNaN(userId)) {
-    throw new Error('UNAUTHORIZED_INVALID_USER')
-  }
-  return userId
-}
-
 /* =========================
    GET → listar favoritos
 ========================= */
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const auth = await verifyAuth(req) as JwtPayload
-    const userId = getUserIdFromAuth(auth)
+    const userId = getUserIdFromPayload(auth)
 
     const db = await getDb()
 
@@ -100,10 +91,11 @@ export async function GET (req: NextRequest) {
 /* =========================
    POST → guardar favorito
 ========================= */
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAuth(req) as JwtPayload
-    const userId = getUserIdFromAuth(auth)
+    const userId = getUserIdFromPayload(auth)
+
 
     const body = await req.json().catch(() => null)
     const restauranteId = Number(body?.restauranteId)
@@ -152,10 +144,10 @@ export async function POST (req: NextRequest) {
 /* =========================
    DELETE → quitar favorito
 ========================= */
-export async function DELETE (req: NextRequest) {
+export async function DELETE(req: NextRequest) {
   try {
     const auth = await verifyAuth(req) as JwtPayload
-    const userId = getUserIdFromAuth(auth)
+    const userId = getUserIdFromPayload(auth)
 
     const body = await req.json().catch(() => null)
     const restauranteId = Number(body?.restauranteId)
