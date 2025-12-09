@@ -95,7 +95,7 @@ export default function BaresPage () {
   const [selectedBar, setSelectedBar] = useState<Bar | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // ⭐ favoritos (estado local)
+  // ⭐ favoritos (estado local con IDs numéricos)
   const [favoriteIds, setFavoriteIds] = useState<Set<number>>(() => new Set())
 
   const toggleFavorite = async (id: number | string) => {
@@ -130,14 +130,12 @@ export default function BaresPage () {
 
       if (!res.ok) {
         console.error('Error al actualizar favorito de bar', res.status)
-        // si falla, revertimos
+        // revertir si falla
         setFavoriteIds(prev => {
           const next = new Set(prev)
           if (wasFavorite) {
-            // debería seguir siendo favorito
             next.add(numericId)
           } else {
-            // debería dejar de ser favorito
             next.delete(numericId)
           }
           return next
@@ -181,6 +179,38 @@ export default function BaresPage () {
   useEffect(() => {
     if (!user) return
 
+    const fetchBars = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const res = await fetch(PUBLIC_ENDPOINT, {
+          method: 'GET'
+          // si tu API requiere sesión por cookie, podés agregar:
+          // credentials: 'include'
+        })
+
+        if (!res.ok) {
+          throw new Error(`Error HTTP ${res.status}`)
+        }
+
+        const data: Bar[] = await res.json()
+        setBars(data)
+      } catch (err: any) {
+        console.error('Error cargando bares públicos', err)
+        setError(err.message ?? 'Error al cargar bares')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBars()
+  }, [user])
+
+  // 3) Traer favoritos de bares del usuario
+  useEffect(() => {
+    if (!user) return
+
     const fetchFavoritos = async () => {
       try {
         const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
@@ -197,7 +227,9 @@ export default function BaresPage () {
 
         // la query devuelve: favorito_id, created_at, b.*
         // usamos el id del bar => row.id
-        const ids = (data as any[]).map(row => Number(row.id)).filter(Boolean)
+        const ids = (data as any[])
+          .map(row => Number(row.id))
+          .filter(n => !!n && !Number.isNaN(n))
 
         setFavoriteIds(new Set(ids))
       } catch (err) {
@@ -208,7 +240,7 @@ export default function BaresPage () {
     fetchFavoritos()
   }, [user])
 
-  // 3) Si venimos con ?barId=, abrir ese modal cuando ya hay data
+  // 4) Si venimos con ?barId=, abrir ese modal cuando ya hay data
   useEffect(() => {
     if (!bars.length) return
     if (!barId) return
@@ -221,19 +253,7 @@ export default function BaresPage () {
     }
   }, [bars, barId])
 
-  const closeModal = () => {
-    setIsModalOpen(false)
-    setSelectedBar(null)
-    router.push('/bares')
-  }
-
-  const openModalFromCard = (place: Bar) => {
-    setSelectedBar(place)
-    setIsModalOpen(true)
-    router.push(`/bares?barId=${place.id}`)
-  }
-
-  // 4) Opciones dinámicas para filtros
+  // Opciones dinámicas para filtros
   const zonas = useMemo(
     () =>
       Array.from(
@@ -340,6 +360,18 @@ export default function BaresPage () {
     setTiposFilter(prev =>
       prev.includes(tipo) ? prev.filter(t => t !== tipo) : [...prev, tipo]
     )
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedBar(null)
+    router.push('/bares')
+  }
+
+  const openModalFromCard = (place: Bar) => {
+    setSelectedBar(place)
+    setIsModalOpen(true)
+    router.push(`/bares?barId=${place.id}`)
   }
 
   if (isLoading || (!user && !error)) {
@@ -474,7 +506,6 @@ export default function BaresPage () {
 
         {/* Estado de carga / error */}
         {loading && <p className='text-xs text-slate-400'>Cargando bares...</p>}
-
         {error && <p className='text-xs text-red-400'>{error}</p>}
 
         {/* Listado */}
