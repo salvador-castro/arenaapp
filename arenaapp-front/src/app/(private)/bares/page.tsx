@@ -4,10 +4,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
-import { Instagram, SlidersHorizontal, ChevronDown } from 'lucide-react'
+import { Instagram, SlidersHorizontal, ChevronDown, Heart } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
-import UserDropdown from '@/components/UserDropdown' // ← ya no se usa en el JSX, podés borrar este import si querés
 
 interface Bar {
   id: number | string
@@ -42,7 +41,6 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
-// ⬇️ ajustá este endpoint si tu API usa otro path
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/bares/public`
 const PAGE_SIZE = 12
 
@@ -95,6 +93,26 @@ export default function BaresPage () {
 
   const [selectedBar, setSelectedBar] = useState<Bar | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // ⭐ favoritos (estado local por ahora)
+  const [favoriteIds, setFavoriteIds] = useState<Set<number | string>>(
+    () => new Set()
+  )
+
+  const toggleFavorite = (id: number | string) => {
+    setFavoriteIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+
+    // 🔜 acá después conectamos con la API real de favoritos
+    // fetch('/api/favoritos', { method: 'POST', body: JSON.stringify({ tipo: 'bar', id }) })
+  }
 
   // Filtros
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -289,7 +307,6 @@ export default function BaresPage () {
 
   return (
     <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
-      {/* 🔝 Navbar reutilizable: logo + UserDropdown en /bares */}
       <TopNav isLoggedIn={isLoggedIn} />
 
       <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
@@ -442,6 +459,30 @@ export default function BaresPage () {
                       className='object-cover'
                       sizes='(max-width: 768px) 100vw, 25vw'
                     />
+
+                    {/* ❤️ Botón favoritos en la card */}
+                    <button
+                      type='button'
+                      onClick={e => {
+                        e.stopPropagation()
+                        toggleFavorite(place.id)
+                      }}
+                      className='absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 backdrop-blur border border-slate-700 text-slate-100 hover:bg-black/80 transition'
+                      aria-label={
+                        favoriteIds.has(place.id)
+                          ? 'Quitar de favoritos'
+                          : 'Agregar a favoritos'
+                      }
+                    >
+                      <Heart
+                        size={16}
+                        className={
+                          favoriteIds.has(place.id)
+                            ? 'fill-rose-500 text-rose-500'
+                            : 'text-slate-100'
+                        }
+                      />
+                    </button>
                   </div>
 
                   <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
@@ -548,6 +589,30 @@ export default function BaresPage () {
                       className='object-cover'
                       sizes='(max-width: 640px) 100vw, 160px'
                     />
+
+                    {/* ❤️ favoritos también en el modal */}
+                    <button
+                      type='button'
+                      onClick={e => {
+                        e.stopPropagation()
+                        toggleFavorite(selectedBar.id)
+                      }}
+                      className='absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 backdrop-blur border border-slate-700 text-slate-100 hover:bg-black/80 transition'
+                      aria-label={
+                        favoriteIds.has(selectedBar.id)
+                          ? 'Quitar de favoritos'
+                          : 'Agregar a favoritos'
+                      }
+                    >
+                      <Heart
+                        size={16}
+                        className={
+                          favoriteIds.has(selectedBar.id)
+                            ? 'fill-rose-500 text-rose-500'
+                            : 'text-slate-100'
+                        }
+                      />
+                    </button>
                   </div>
 
                   <div className='flex-1 space-y-1'>

@@ -1,3 +1,4 @@
+// /Users/salvacastro/Desktop/arenaapp/arenaapp-front/src/app/(private)/galerias/page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -480,12 +481,21 @@ export default function GaleriasPage () {
 
         {/* MODAL detalle */}
         {isModalOpen && selectedGaleria && (
-          <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'>
-            <div className='relative mt-10 mb-24 w-full max-w-lg max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
+          <div
+            className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'
+            onClick={closeModal}
+          >
+            <div
+              className='relative mt-10 mb-24 w-full max-w-lg max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
+              onClick={e => e.stopPropagation()}
+            >
               <button
                 type='button'
                 onClick={closeModal}
-                className='sticky top-3 ml-auto mr-3 rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700'
+                className='absolute top-3 right-3 z-20
+                   flex h-8 w-8 items-center justify-center
+                   rounded-full bg-slate-900/80 border border-slate-700
+                   text-sm text-slate-200 hover:bg-slate-800 transition'
               >
                 ✕
               </button>

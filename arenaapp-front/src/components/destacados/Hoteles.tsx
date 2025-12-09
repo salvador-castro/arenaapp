@@ -1,3 +1,4 @@
+///Users/salvacastro/Desktop/arenaapp/arenaapp-front/src/components/destacados/Hoteles.tsx
 'use client'
 
 import { useEffect, useState } from 'react'

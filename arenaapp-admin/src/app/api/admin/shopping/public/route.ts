@@ -1,3 +1,4 @@
+///Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/app/api/admin/shopping/public/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 

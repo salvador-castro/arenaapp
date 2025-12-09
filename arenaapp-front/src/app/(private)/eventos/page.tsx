@@ -1,3 +1,4 @@
+///Users/salvacastro/Desktop/arenaapp/arenaapp-front/src/app/(private)/eventos/page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
