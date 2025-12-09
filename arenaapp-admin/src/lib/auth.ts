@@ -17,7 +17,19 @@ export type AuthPayload = JWTPayload & {
 }
 
 export async function verifyAuth(req: NextRequest) {
-  const token = req.cookies.get('token')?.value
+  // 1) Intentar leer Authorization: Bearer xxx
+  const authHeader = req.headers.get('authorization')
+  let token: string | undefined
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring('Bearer '.length)
+  }
+
+  // 2) Si no hay header, intentar cookie "token"
+  if (!token) {
+    token = req.cookies.get('token')?.value
+  }
+
   if (!token) {
     throw new Error('UNAUTHORIZED_NO_TOKEN')
   }

@@ -40,19 +40,19 @@ const API_BASE = (
 
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
 
-function renderPriceRange (rango: number | null | undefined): string {
+function renderPriceRange(rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
   const value = Math.min(Math.max(rango, 1), 5)
   return '$'.repeat(value)
 }
 
-function renderStars (estrellas: number | null | undefined): string {
+function renderStars(estrellas: number | null | undefined): string {
   if (!estrellas || estrellas < 1) return '-'
   const value = Math.min(Math.max(estrellas, 1), 5)
   return '★'.repeat(value)
 }
 
-export default function FavoritosPage () {
+export default function FavoritosPage() {
   const router = useRouter()
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
@@ -81,10 +81,17 @@ export default function FavoritosPage () {
         setLoading(true)
         setError(null)
 
+        const headers: HeadersInit = {}
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
+
         const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
           method: 'GET',
+          headers,
           credentials: 'include'
         })
+
 
         if (!res.ok) {
           throw new Error(`Error HTTP ${res.status}`)
@@ -106,11 +113,16 @@ export default function FavoritosPage () {
   const handleRemoveFavorite = async (restauranteId: number) => {
     setRemovingId(restauranteId)
     try {
+            const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (auth?.token) {
+        headers['Authorization'] = `Bearer ${auth.token}`
+      }
+
       const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         credentials: 'include',
         body: JSON.stringify({ restauranteId })
       })
