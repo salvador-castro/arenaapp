@@ -1,3 +1,4 @@
+//C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-front\src\app\(private)\restaurantes\page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -38,21 +39,22 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/restaurantes/public`
+const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
 const PAGE_SIZE = 12
 
-function renderPriceRange (rango: number | null | undefined): string {
+function renderPriceRange(rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
   const value = Math.min(Math.max(rango, 1), 5)
   return '$'.repeat(value)
 }
 
-function renderStars (estrellas: number | null | undefined): string {
+function renderStars(estrellas: number | null | undefined): string {
   if (!estrellas || estrellas < 1) return '-'
   const value = Math.min(Math.max(estrellas, 1), 5)
   return '★'.repeat(value)
 }
 
-function getInstagramHandle (url: string | null): string {
+function getInstagramHandle(url: string | null): string {
   if (!url) return 'Instagram'
   try {
     const u = new URL(url)
@@ -64,7 +66,7 @@ function getInstagramHandle (url: string | null): string {
   }
 }
 
-function normalizeText (value: string | null | undefined): string {
+function normalizeText(value: string | null | undefined): string {
   if (!value) return ''
   return value
     .normalize('NFD')
@@ -72,7 +74,7 @@ function normalizeText (value: string | null | undefined): string {
     .toLowerCase()
 }
 
-export default function RestaurantesPage () {
+export default function RestaurantesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -98,6 +100,11 @@ export default function RestaurantesPage () {
   const [priceFilter, setPriceFilter] = useState('')
   const [tiposFilter, setTiposFilter] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [favoriteRestaurantIds, setFavoriteRestaurantIds] = useState<
+    Set<number>
+  >(new Set())
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
+
 
   // Guardia de auth
   useEffect(() => {
@@ -142,6 +149,37 @@ export default function RestaurantesPage () {
 
     fetchRestaurants()
   }, [user])
+
+  // Traer restaurantes favoritos del usuario
+  useEffect(() => {
+    if (!user) return
+
+    const fetchFavorites = async () => {
+      try {
+        const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
+          method: 'GET',
+          credentials: 'include'
+        })
+
+        if (!res.ok) {
+          console.error('Error cargando favoritos', await res.text())
+          return
+        }
+
+        const data: any[] = await res.json()
+        const ids = data
+          .map(row => Number(row.restaurante_id))
+          .filter(id => !Number.isNaN(id))
+
+        setFavoriteRestaurantIds(new Set(ids))
+      } catch (err) {
+        console.error('Error cargando favoritos', err)
+      }
+    }
+
+    fetchFavorites()
+  }, [user])
+
 
   // Abrir modal si viene ?restauranteId=
   useEffect(() => {
@@ -279,6 +317,48 @@ export default function RestaurantesPage () {
     )
   }
 
+  const handleToggleFavorite = async (restaurant: Restaurant) => {
+    if (!restaurant?.id) return
+
+    const restauranteId = Number(restaurant.id)
+    if (!restauranteId || Number.isNaN(restauranteId)) return
+
+    setFavoriteLoading(true)
+
+    try {
+      const isFavorite = favoriteRestaurantIds.has(restauranteId)
+
+      const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
+        method: isFavorite ? 'DELETE' : 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ restauranteId })
+      })
+
+      if (!res.ok) {
+        console.error('Error al actualizar favorito', await res.text())
+        return
+      }
+
+      setFavoriteRestaurantIds(prev => {
+        const next = new Set(prev)
+        if (isFavorite) {
+          next.delete(restauranteId)
+        } else {
+          next.add(restauranteId)
+        }
+        return next
+      })
+    } catch (err) {
+      console.error('Error al actualizar favorito', err)
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
+
+
   if (isLoading || (!user && !error)) {
     return (
       <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
@@ -315,9 +395,8 @@ export default function RestaurantesPage () {
               {filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
               <ChevronDown
                 size={14}
-                className={`transition-transform ${
-                  filtersOpen ? 'rotate-180' : ''
-                }`}
+                className={`transition-transform ${filtersOpen ? 'rotate-180' : ''
+                  }`}
               />
             </span>
           </button>
@@ -392,11 +471,10 @@ export default function RestaurantesPage () {
                           key={tipo}
                           type='button'
                           onClick={() => toggleTipoComida(tipo)}
-                          className={`rounded-full border px-3 py-1 text-[11px] ${
-                            active
-                              ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
-                              : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-400/60'
-                          }`}
+                          className={`rounded-full border px-3 py-1 text-[11px] ${active
+                            ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
+                            : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-400/60'
+                            }`}
                         >
                           {tipo}
                         </button>
@@ -468,7 +546,7 @@ export default function RestaurantesPage () {
                     </div>
 
                     {place.tipo_comida && (
-                      <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                      <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-0.5 text-[10px] text-slate-300'>
                         {place.tipo_comida}
                       </span>
                     )}
@@ -525,7 +603,7 @@ export default function RestaurantesPage () {
         {/* MODAL detalle */}
         {isModalOpen && selectedRestaurant && (
           <div
-            className='fixed inset-0 z-[60] flex items-start justify-center bg-black/60 px-4'
+            className='fixed inset-0 z-60 flex items-start justify-center bg-black/60 px-4'
             onClick={closeModal} // click en overlay cierra
           >
             <div
@@ -574,7 +652,7 @@ export default function RestaurantesPage () {
                         {renderPriceRange(selectedRestaurant.rango_precios)}
                       </span>
                       {selectedRestaurant.tipo_comida && (
-                        <span className='rounded-full border border-slate-700 px-2 py-[2px] text-[11px] text-slate-300'>
+                        <span className='rounded-full border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300'>
                           {selectedRestaurant.tipo_comida}
                         </span>
                       )}
@@ -658,7 +736,7 @@ export default function RestaurantesPage () {
                       Reservas
                     </p>
                     {selectedRestaurant.url_reservas ||
-                    selectedRestaurant.url_reserva ? (
+                      selectedRestaurant.url_reserva ? (
                       <a
                         href={
                           selectedRestaurant.url_reservas ||
@@ -677,15 +755,40 @@ export default function RestaurantesPage () {
                   </div>
                 </div>
 
-                <div className='flex justify-end pt-2'>
-                  <button
-                    type='button'
-                    onClick={closeModal}
-                    className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
-                  >
-                    Cerrar
-                  </button>
-                </div>
+                {selectedRestaurant && (
+                  <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
+                    <button
+                      type='button'
+                      onClick={closeModal}
+                      className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                    >
+                      Cerrar
+                    </button>
+
+                    {(() => {
+                      const isFavorite = favoriteRestaurantIds.has(
+                        Number(selectedRestaurant.id)
+                      )
+
+                      return (
+                        <button
+                          type='button'
+                          disabled={favoriteLoading}
+                          onClick={() => handleToggleFavorite(selectedRestaurant)}
+                          className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
+                            ${isFavorite
+                              ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
+                              : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
+                            }
+                          `}
+                        >
+                          {isFavorite ? 'Quitar de favoritos' : 'Guardar como favorito'}
+                        </button>
+                      )
+                    })()}
+                  </div>
+                )}
+
               </div>
             </div>
           </div>
