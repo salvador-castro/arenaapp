@@ -108,7 +108,7 @@ export default function FavoritosPage() {
     }
 
     fetchFavorites()
-  }, [user])
+  }, [user, auth?.token])
 
   const handleRemoveFavorite = async (restauranteId: number) => {
     setRemovingId(restauranteId)

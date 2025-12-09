@@ -19,10 +19,11 @@ export function OPTIONS () {
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
   })
 }
+
 
 // Helper para obtener userId seguro desde el token
 function getUserIdFromAuth(payload: JwtPayload) {
