@@ -1,4 +1,3 @@
-///Users/salvacastro/Desktop/arenaapp/arenaapp-front/src/app/(private)/eventos/page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -39,6 +38,7 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/eventos/public`
+const FAVORITOS_EVENTOS_ENDPOINT = `${API_BASE}/api/admin/favoritos/eventos`
 const PAGE_SIZE = 12
 
 function normalizeText (value: string | null | undefined): string {
@@ -100,7 +100,6 @@ export default function EventosPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // compat con distintos formatos de AuthContext
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
   const isLoggedIn = !isLoading && !!user
@@ -121,6 +120,12 @@ export default function EventosPage () {
   const [zonaFilter, setZonaFilter] = useState('')
   const [categoriaFilter, setCategoriaFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+
+  // favoritos
+  const [favoriteEventIds, setFavoriteEventIds] = useState<Set<number>>(
+    new Set()
+  )
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
 
   // 1) Guardia de auth
   useEffect(() => {
@@ -157,7 +162,7 @@ export default function EventosPage () {
         setEventos(data)
       } catch (err: any) {
         console.error('Error cargando eventos públicos', err)
-        setError(err.message ?? 'Error al cargar eventos')
+        setError(err?.message ?? 'Error al cargar eventos')
       } finally {
         setLoading(false)
       }
@@ -166,7 +171,43 @@ export default function EventosPage () {
     fetchEventos()
   }, [user])
 
-  // 3) Si venimos con ?eventoId=, abrir ese modal cuando ya hay data
+  // 3) Traer favoritos de eventos del usuario
+  useEffect(() => {
+    if (!user) return
+
+    const fetchFavorites = async () => {
+      try {
+        const headers: HeadersInit = {}
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
+
+        const res = await fetch(FAVORITOS_EVENTOS_ENDPOINT, {
+          method: 'GET',
+          headers,
+          credentials: 'include'
+        })
+
+        if (!res.ok) {
+          console.error('Error cargando favoritos de eventos', await res.text())
+          return
+        }
+
+        const data: any[] = await res.json()
+        const ids = data
+          .map(row => Number(row.evento_id))
+          .filter(id => !Number.isNaN(id))
+
+        setFavoriteEventIds(new Set(ids))
+      } catch (err) {
+        console.error('Error cargando favoritos de eventos', err)
+      }
+    }
+
+    fetchFavorites()
+  }, [user, auth?.token])
+
+  // 4) Si venimos con ?eventoId=, abrir ese modal cuando ya hay data
   useEffect(() => {
     if (!eventos.length) return
     if (!eventoId) return
@@ -190,7 +231,7 @@ export default function EventosPage () {
     router.push(`/eventos?eventoId=${evento.id}`)
   }
 
-  // 4) Opciones dinámicas
+  // 5) Opciones dinámicas
   const zonas = useMemo(
     () =>
       Array.from(
@@ -215,7 +256,7 @@ export default function EventosPage () {
     [eventos]
   )
 
-  // 5) Aplicar filtros
+  // 6) Aplicar filtros
   const filteredEventos = useMemo(() => {
     let result = [...eventos]
 
@@ -265,6 +306,55 @@ export default function EventosPage () {
     const start = (currentPage - 1) * PAGE_SIZE
     return filteredEventos.slice(start, start + PAGE_SIZE)
   }, [filteredEventos, currentPage])
+
+  const handleToggleFavorite = async (evento: Evento) => {
+    if (!evento?.id) return
+
+    const eventoId = Number(evento.id)
+    if (!eventoId || Number.isNaN(eventoId)) return
+
+    setFavoriteLoading(true)
+
+    try {
+      const isFavorite = favoriteEventIds.has(eventoId)
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (auth?.token) {
+        headers['Authorization'] = `Bearer ${auth.token}`
+      }
+
+      const res = await fetch(FAVORITOS_EVENTOS_ENDPOINT, {
+        method: isFavorite ? 'DELETE' : 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ eventoId })
+      })
+
+      if (!res.ok) {
+        console.error(
+          'Error al actualizar favorito de evento',
+          await res.text()
+        )
+        return
+      }
+
+      setFavoriteEventIds(prev => {
+        const next = new Set(prev)
+        if (isFavorite) {
+          next.delete(eventoId)
+        } else {
+          next.add(eventoId)
+        }
+        return next
+      })
+    } catch (err) {
+      console.error('Error al actualizar favorito de evento', err)
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
 
   if (isLoading || (!user && !error)) {
     return (
@@ -412,7 +502,7 @@ export default function EventosPage () {
                       {ev.titulo}
                     </h3>
 
-                    <div className='mt-1 flex itemsCENTER gap-1 text-[11px] text-slate-300'>
+                    <div className='mt-1 flex items-center gap-1 text-[11px] text-slate-300'>
                       <CalendarDays size={12} className='shrink-0' />
                       <span className='line-clamp-2'>
                         {formatEventDateRange(
@@ -493,7 +583,7 @@ export default function EventosPage () {
 
         {/* MODAL detalle */}
         {isModalOpen && selectedEvento && (
-          <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'>
+          <div className='fixed inset-0 z-50 flex items-start justifyCenter bg-black/60 px-4'>
             <div className='relative mt-10 mb-24 w-full max-w-lg max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
               <button
                 type='button'
@@ -599,15 +689,42 @@ export default function EventosPage () {
                   </div>
                 </div>
 
-                <div className='flex justify-end pt-2'>
-                  <button
-                    type='button'
-                    onClick={closeModal}
-                    className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
-                  >
-                    Cerrar
-                  </button>
-                </div>
+                {selectedEvento && (
+                  <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
+                    <button
+                      type='button'
+                      onClick={closeModal}
+                      className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                    >
+                      Cerrar
+                    </button>
+
+                    {(() => {
+                      const isFavorite = favoriteEventIds.has(
+                        Number(selectedEvento.id)
+                      )
+
+                      return (
+                        <button
+                          type='button'
+                          disabled={favoriteLoading}
+                          onClick={() => handleToggleFavorite(selectedEvento)}
+                          className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
+                            ${
+                              isFavorite
+                                ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
+                                : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
+                            }
+                          `}
+                        >
+                          {isFavorite
+                            ? 'Quitar de favoritos'
+                            : 'Guardar como favorito'}
+                        </button>
+                      )
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           </div>

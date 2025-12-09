@@ -1,4 +1,3 @@
-// C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-front\src\app\(private)\favoritos\page.tsx
 'use client'
 
 import React, { useEffect, useState } from 'react'
@@ -8,7 +7,7 @@ import Image from 'next/image'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
-type FavoriteTipo = 'RESTAURANTE' | 'BAR'
+type FavoriteTipo = 'RESTAURANTE' | 'BAR' | 'EVENTO'
 
 interface FavoriteItem {
   favorito_id: number
@@ -35,6 +34,7 @@ const API_BASE = (
 
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
 const FAVORITOS_BARES_ENDPOINT = `${API_BASE}/api/admin/favoritos/bares`
+const FAVORITOS_EVENTOS_ENDPOINT = `${API_BASE}/api/admin/favoritos/eventos`
 
 function renderPriceRange (rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
@@ -68,7 +68,7 @@ export default function FavoritosPage () {
     }
   }, [user, isLoading, router])
 
-  // Cargar favoritos (restaurantes + bares)
+  // Cargar favoritos (restaurantes + bares + eventos)
   useEffect(() => {
     if (!user) return
 
@@ -82,7 +82,7 @@ export default function FavoritosPage () {
           headers['Authorization'] = `Bearer ${auth.token}`
         }
 
-        const [resRest, resBares] = await Promise.all([
+        const [resRest, resBares, resEventos] = await Promise.all([
           fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
             method: 'GET',
             headers,
@@ -90,6 +90,11 @@ export default function FavoritosPage () {
           }),
           fetch(FAVORITOS_BARES_ENDPOINT, {
             method: 'GET',
+            credentials: 'include'
+          }),
+          fetch(FAVORITOS_EVENTOS_ENDPOINT, {
+            method: 'GET',
+            headers,
             credentials: 'include'
           })
         ])
@@ -100,9 +105,13 @@ export default function FavoritosPage () {
         if (!resBares.ok) {
           throw new Error(`Error HTTP favoritos bares ${resBares.status}`)
         }
+        if (!resEventos.ok) {
+          throw new Error(`Error HTTP favoritos eventos ${resEventos.status}`)
+        }
 
         const dataRest: any[] = await resRest.json()
         const dataBares: any[] = await resBares.json()
+        const dataEventos: any[] = await resEventos.json()
 
         const mappedRest: FavoriteItem[] = dataRest
           .map(row => ({
@@ -146,8 +155,31 @@ export default function FavoritosPage () {
           }))
           .filter(f => !Number.isNaN(f.item_id))
 
+        const mappedEventos: FavoriteItem[] = dataEventos
+          .map(row => ({
+            favorito_id: Number(row.favorito_id),
+            item_id: Number(row.evento_id),
+            tipo: 'EVENTO' as const,
+            nombre: row.titulo,
+            // uso categoria como "tipo_comida" para reusar el badge
+            tipo_comida: row.categoria ?? null,
+            slug: row.slug,
+            descripcion_corta: row.resena ?? null,
+            direccion: row.direccion,
+            ciudad: null,
+            provincia: null,
+            zona: row.zona,
+            pais: null,
+            sitio_web: row.url_entradas,
+            // para eventos no usamos el rango de precios tipo $$$, lo dejo null
+            rango_precios: null,
+            estrellas: null,
+            url_imagen: row.imagen_principal
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
         // combinados, ordenados por favorito_id desc (aprox por fecha)
-        const combined = [...mappedRest, ...mappedBares].sort(
+        const combined = [...mappedRest, ...mappedBares, ...mappedEventos].sort(
           (a, b) => b.favorito_id - a.favorito_id
         )
 
@@ -190,8 +222,7 @@ export default function FavoritosPage () {
           )
           return
         }
-      } else {
-        // BAR
+      } else if (tipo === 'BAR') {
         const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
           method: 'DELETE',
           credentials: 'include',
@@ -203,6 +234,26 @@ export default function FavoritosPage () {
 
         if (!res.ok) {
           console.error('Error al quitar favorito bar', await res.text())
+          return
+        }
+      } else {
+        // EVENTO
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json'
+        }
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
+
+        const res = await fetch(FAVORITOS_EVENTOS_ENDPOINT, {
+          method: 'DELETE',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ eventoId: item_id })
+        })
+
+        if (!res.ok) {
+          console.error('Error al quitar favorito evento', await res.text())
           return
         }
       }
@@ -220,8 +271,10 @@ export default function FavoritosPage () {
   const handleGoToItem = (item: FavoriteItem) => {
     if (item.tipo === 'RESTAURANTE') {
       router.push(`/restaurantes?restauranteId=${item.item_id}`)
-    } else {
+    } else if (item.tipo === 'BAR') {
       router.push(`/bares?barId=${item.item_id}`)
+    } else {
+      router.push(`/eventos?eventoId=${item.item_id}`)
     }
   }
 
@@ -286,7 +339,11 @@ export default function FavoritosPage () {
                       {place.zona || 'Zona no especificada'}
                     </p>
                     <span className='text-[9px] uppercase tracking-wide text-slate-500 border border-slate-700 rounded-full px-2 py-[2px]'>
-                      {place.tipo === 'RESTAURANTE' ? 'Restaurante' : 'Bar'}
+                      {place.tipo === 'RESTAURANTE'
+                        ? 'Restaurante'
+                        : place.tipo === 'BAR'
+                        ? 'Bar'
+                        : 'Evento'}
                     </span>
                   </div>
 
@@ -300,6 +357,7 @@ export default function FavoritosPage () {
                     </p>
                   )}
 
+                  {/* Para eventos estrellas/rango quedarán en "-" y no rompen el layout */}
                   <div className='flex items-center gap-2 mt-1'>
                     <span className='text-amber-400'>
                       {renderStars(place.estrellas)}

@@ -1,11 +1,12 @@
-// /Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/app/api/admin/favoritos/restaurantes/route.ts
+// /Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/app/api/admin/favoritos/eventos/route.ts
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth } from '@/lib/auth'
 import type { JwtPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
-const FAVORITO_TIPO_RESTAURANTE = 'LUGAR' // valor válido de tipo_favorito
+const FAVORITO_TIPO_EVENTO = 'LUGAR' // mismo tipo_favorito que usás para restaurantes/bares
 
 function corsBaseHeaders () {
   return {
@@ -27,7 +28,6 @@ export function OPTIONS () {
 
 // Helper -> saca el userId del payload
 function getUserIdFromAuth (payload: JwtPayload): number {
-  // ahora el id viene en `sub` porque verifyAuth lo normaliza ahí
   const userId = Number(payload.sub)
 
   if (!userId || Number.isNaN(userId)) {
@@ -37,9 +37,8 @@ function getUserIdFromAuth (payload: JwtPayload): number {
   return userId
 }
 
-
 /* =========================
-   GET → listar favoritos
+   GET → listar favoritos de eventos
 ========================= */
 export async function GET (req: NextRequest) {
   try {
@@ -52,37 +51,34 @@ export async function GET (req: NextRequest) {
       SELECT
         f.id AS favorito_id,
         f.created_at,
-        r.id AS restaurante_id,
-        r.nombre,
-        r.tipo_comida,
-        r.slug,
-        r.descripcion_corta,
-        r.descripcion_larga,
-        r.direccion,
-        r.url_maps,
-        r.horario_text,
-        r.ciudad,
-        r.provincia,
-        r.zona,
-        r.pais,
-        r.sitio_web,
-        r.rango_precios,
-        r.estrellas,
-        r.es_destacado,
-        r.url_reservas,
-        r.url_reserva,
-        r.url_instagram,
-        r.url_imagen,
-        r.resena
+        e.id AS evento_id,
+        e.titulo,
+        e.slug,
+        e.categoria,
+        e.es_destacado,
+        e.fecha_inicio,
+        e.fecha_fin,
+        e.es_todo_el_dia,
+        e.zona,
+        e.direccion,
+        e.es_gratuito,
+        e.precio_desde,
+        e.moneda,
+        e.url_entradas,
+        e.estado,
+        e.visibilidad,
+        e.resena,
+        e.imagen_principal
       FROM public.favoritos f
-      JOIN public.restaurantes r ON r.id = f.item_id
+      JOIN public.eventos e ON e.id = f.item_id
       WHERE f.usuario_id = $1
         AND f.tipo = $2::tipo_favorito
-        AND r.estado = 'PUBLICADO'::estado_publicacion
+        AND e.estado = 'PUBLICADO'
+        AND e.visibilidad = 'PUBLICO'
       ORDER BY f.created_at DESC
     `
 
-    const { rows } = await db.query(query, [userId, FAVORITO_TIPO_RESTAURANTE])
+    const { rows } = await db.query(query, [userId, FAVORITO_TIPO_EVENTO])
 
     return new NextResponse(JSON.stringify(rows), {
       status: 200,
@@ -92,7 +88,7 @@ export async function GET (req: NextRequest) {
       }
     })
   } catch (err: any) {
-    console.error('Error en GET /api/admin/favoritos/restaurantes', err?.message ?? err)
+    console.error('Error en GET /api/admin/favoritos/eventos', err?.message ?? err)
     const status =
       err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
 
@@ -104,7 +100,7 @@ export async function GET (req: NextRequest) {
 }
 
 /* =========================
-   POST → guardar favorito
+   POST → guardar favorito de evento
 ========================= */
 export async function POST (req: NextRequest) {
   try {
@@ -112,11 +108,11 @@ export async function POST (req: NextRequest) {
     const userId = getUserIdFromAuth(auth)
 
     const body = await req.json().catch(() => null)
-    const restauranteId = Number(body?.restauranteId)
+    const eventoId = Number(body?.eventoId)
 
-    if (!restauranteId || Number.isNaN(restauranteId)) {
+    if (!eventoId || Number.isNaN(eventoId)) {
       return new NextResponse(
-        JSON.stringify({ error: 'restauranteId inválido' }),
+        JSON.stringify({ error: 'eventoId inválido' }),
         { status: 400, headers: { ...corsBaseHeaders() } }
       )
     }
@@ -132,8 +128,8 @@ export async function POST (req: NextRequest) {
     `
     const { rows } = await db.query(query, [
       userId,
-      FAVORITO_TIPO_RESTAURANTE,
-      restauranteId
+      FAVORITO_TIPO_EVENTO,
+      eventoId
     ])
 
     return new NextResponse(
@@ -150,7 +146,7 @@ export async function POST (req: NextRequest) {
       }
     )
   } catch (err: any) {
-    console.error('Error en POST /api/admin/favoritos/restaurantes', err?.message ?? err)
+    console.error('Error en POST /api/admin/favoritos/eventos', err?.message ?? err)
     const status =
       err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
 
@@ -162,7 +158,7 @@ export async function POST (req: NextRequest) {
 }
 
 /* =========================
-   DELETE → quitar favorito
+   DELETE → quitar favorito de evento
 ========================= */
 export async function DELETE (req: NextRequest) {
   try {
@@ -170,11 +166,11 @@ export async function DELETE (req: NextRequest) {
     const userId = getUserIdFromAuth(auth)
 
     const body = await req.json().catch(() => null)
-    const restauranteId = Number(body?.restauranteId)
+    const eventoId = Number(body?.eventoId)
 
-    if (!restauranteId || Number.isNaN(restauranteId)) {
+    if (!eventoId || Number.isNaN(eventoId)) {
       return new NextResponse(
-        JSON.stringify({ error: 'restauranteId inválido' }),
+        JSON.stringify({ error: 'eventoId inválido' }),
         { status: 400, headers: { ...corsBaseHeaders() } }
       )
     }
@@ -186,7 +182,7 @@ export async function DELETE (req: NextRequest) {
         AND tipo = $2::tipo_favorito
         AND item_id = $3
     `
-    await db.query(query, [userId, FAVORITO_TIPO_RESTAURANTE, restauranteId])
+    await db.query(query, [userId, FAVORITO_TIPO_EVENTO, eventoId])
 
     return new NextResponse(
       JSON.stringify({ ok: true }),
@@ -199,7 +195,7 @@ export async function DELETE (req: NextRequest) {
       }
     )
   } catch (err: any) {
-    console.error('Error en DELETE /api/admin/favoritos/restaurantes', err?.message ?? err)
+    console.error('Error en DELETE /api/admin/favoritos/eventos', err?.message ?? err)
     const status =
       err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
 
