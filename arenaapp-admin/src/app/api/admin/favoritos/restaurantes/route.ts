@@ -1,6 +1,8 @@
+// C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-admin\src\app\api\admin\favoritos\restaurantes\route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth } from '@/lib/auth'
+import type { JwtPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
@@ -22,13 +24,22 @@ export function OPTIONS () {
   })
 }
 
+// Helper para obtener userId seguro desde el token
+function getUserIdFromAuth(payload: JwtPayload) {
+  const userId = Number(payload.sub)
+  if (!userId || Number.isNaN(userId)) {
+    throw new Error('UNAUTHORIZED_INVALID_USER')
+  }
+  return userId
+}
+
 /* =========================
    GET → listar favoritos
 ========================= */
 export async function GET (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req)
-    const userId = auth.userId
+    const auth = await verifyAuth(req) as JwtPayload
+    const userId = getUserIdFromAuth(auth)
 
     const db = await getDb()
 
@@ -68,14 +79,19 @@ export async function GET (req: NextRequest) {
 
     const { rows } = await db.query(query, [userId])
 
-    return NextResponse.json(rows, {
-      headers: corsBaseHeaders()
+    return new NextResponse(JSON.stringify(rows), {
+      status: 200,
+      headers: {
+        ...corsBaseHeaders(),
+        'Content-Type': 'application/json'
+      }
     })
-  } catch (err) {
-    console.error(err)
-    return NextResponse.json(
-      { error: 'No autenticado' },
-      { status: 401, headers: corsBaseHeaders() }
+  } catch (err: any) {
+    console.error('Error en GET /api/admin/favoritos/restaurantes', err?.message ?? err)
+    const status = err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+    return new NextResponse(
+      JSON.stringify({ error: 'Error interno o no autenticado' }),
+      { status, headers: { ...corsBaseHeaders() } }
     )
   }
 }
@@ -85,38 +101,49 @@ export async function GET (req: NextRequest) {
 ========================= */
 export async function POST (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req)
-    const userId = auth.userId
+    const auth = await verifyAuth(req) as JwtPayload
+    const userId = getUserIdFromAuth(auth)
 
-    const { restauranteId } = await req.json()
+    const body = await req.json().catch(() => null)
+    const restauranteId = Number(body?.restauranteId)
 
-    if (!restauranteId) {
-      return NextResponse.json(
-        { error: 'restauranteId requerido' },
-        { status: 400, headers: corsBaseHeaders() }
+    if (!restauranteId || Number.isNaN(restauranteId)) {
+      return new NextResponse(
+        JSON.stringify({ error: 'restauranteId inválido' }),
+        { status: 400, headers: { ...corsBaseHeaders() } }
       )
     }
 
     const db = await getDb()
 
-    await db.query(
-      `
+    const query = `
       INSERT INTO public.favoritos (usuario_id, tipo, item_id)
       VALUES ($1, 'RESTAURANTE'::tipo_favorito, $2)
-      ON CONFLICT (usuario_id, tipo, item_id) DO NOTHING
-      `,
-      [userId, restauranteId]
-    )
+      ON CONFLICT (usuario_id, tipo, item_id)
+      DO NOTHING
+      RETURNING id, created_at
+    `
+    const { rows } = await db.query(query, [userId, restauranteId])
 
-    return NextResponse.json(
-      { ok: true },
-      { status: 201, headers: corsBaseHeaders() }
+    return new NextResponse(
+      JSON.stringify({
+        ok: true,
+        created: rows.length > 0
+      }),
+      {
+        status: 201,
+        headers: {
+          ...corsBaseHeaders(),
+          'Content-Type': 'application/json'
+        }
+      }
     )
-  } catch (err) {
-    console.error(err)
-    return NextResponse.json(
-      { error: 'No autenticado' },
-      { status: 401, headers: corsBaseHeaders() }
+  } catch (err: any) {
+    console.error('Error en POST /api/admin/favoritos/restaurantes', err?.message ?? err)
+    const status = err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+    return new NextResponse(
+      JSON.stringify({ error: 'Error interno o no autenticado' }),
+      { status, headers: { ...corsBaseHeaders() } }
     )
   }
 }
@@ -126,32 +153,44 @@ export async function POST (req: NextRequest) {
 ========================= */
 export async function DELETE (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req)
-    const userId = auth.userId
+    const auth = await verifyAuth(req) as JwtPayload
+    const userId = getUserIdFromAuth(auth)
 
-    const { restauranteId } = await req.json()
+    const body = await req.json().catch(() => null)
+    const restauranteId = Number(body?.restauranteId)
+
+    if (!restauranteId || Number.isNaN(restauranteId)) {
+      return new NextResponse(
+        JSON.stringify({ error: 'restauranteId inválido' }),
+        { status: 400, headers: { ...corsBaseHeaders() } }
+      )
+    }
 
     const db = await getDb()
-
-    await db.query(
-      `
+    const query = `
       DELETE FROM public.favoritos
       WHERE usuario_id = $1
         AND tipo = 'RESTAURANTE'::tipo_favorito
         AND item_id = $2
-      `,
-      [userId, restauranteId]
-    )
+    `
+    await db.query(query, [userId, restauranteId])
 
-    return NextResponse.json(
-      { ok: true },
-      { headers: corsBaseHeaders() }
+    return new NextResponse(
+      JSON.stringify({ ok: true }),
+      {
+        status: 200,
+        headers: {
+          ...corsBaseHeaders(),
+          'Content-Type': 'application/json'
+        }
+      }
     )
-  } catch (err) {
-    console.error(err)
-    return NextResponse.json(
-      { error: 'No autenticado' },
-      { status: 401, headers: corsBaseHeaders() }
+  } catch (err: any) {
+    console.error('Error en DELETE /api/admin/favoritos/restaurantes', err?.message ?? err)
+    const status = err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
+    return new NextResponse(
+      JSON.stringify({ error: 'Error interno o no autenticado' }),
+      { status, headers: { ...corsBaseHeaders() } }
     )
   }
 }
