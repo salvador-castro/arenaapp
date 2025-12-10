@@ -5,26 +5,26 @@ import { verifyAuth, requireAdmin } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // util simple para slug
-function slugify (str: string): string {
+function slugify(str: string): string {
   return str
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -34,7 +34,7 @@ function slugify (str: string): string {
 }
 
 // ========= GET lista (admin, con paginación y búsqueda) =========
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -153,14 +153,14 @@ export async function GET (req: NextRequest) {
         page,
         pageSize,
         total,
-        totalPages
+        totalPages,
       }),
       {
         status: 200,
         headers: {
           ...corsBaseHeaders(),
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
   } catch (err: any) {
@@ -172,25 +172,25 @@ export async function GET (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener eventos', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // ========= POST crear evento =========
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -212,63 +212,63 @@ export async function POST (req: NextRequest) {
       es_todo_el_dia,
       es_destacado,
       resena,
-      imagen_principal
+      imagen_principal,
     } = body
 
     // ===== Validaciones de obligatorios =====
     if (!titulo) {
       return new NextResponse('El título es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!categoria) {
       return new NextResponse('La categoría es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!zona || (Array.isArray(zona) && zona.length === 0)) {
       return new NextResponse('La zona es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!direccion) {
       return new NextResponse('La dirección es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (typeof es_gratuito !== 'boolean') {
       return new NextResponse('El campo "es_gratuito" es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!url_entradas) {
       return new NextResponse('La URL de entradas es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!estado) {
       return new NextResponse('El estado es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!fecha_inicio) {
       return new NextResponse('La fecha de inicio es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -282,7 +282,7 @@ export async function POST (req: NextRequest) {
           'El campo "Precio desde" es obligatorio si el evento no es gratuito',
           {
             status: 400,
-            headers: corsBaseHeaders()
+            headers: corsBaseHeaders(),
           }
         )
       }
@@ -352,22 +352,22 @@ export async function POST (req: NextRequest) {
         updated_at
       `,
       [
-        titulo,               // 1
-        slug,                 // 2
-        categoria,            // 3
-        esDestacadoValue,     // 4
-        fecha_inicio,         // 5
-        fecha_fin || null,    // 6
-        esTodoElDiaValue,     // 7
-        zonaValue,            // 8
-        direccion,            // 9
-        es_gratuito,          // 10
-        precioDesdeValue,     // 11
-        monedaValue,          // 12
-        url_entradas,         // 13
-        estadoValue,          // 14
-        resena || null,       // 15
-        imagen_principal || null // 16
+        titulo, // 1
+        slug, // 2
+        categoria, // 3
+        esDestacadoValue, // 4
+        fecha_inicio, // 5
+        fecha_fin || null, // 6
+        esTodoElDiaValue, // 7
+        zonaValue, // 8
+        direccion, // 9
+        es_gratuito, // 10
+        precioDesdeValue, // 11
+        monedaValue, // 12
+        url_entradas, // 13
+        estadoValue, // 14
+        resena || null, // 15
+        imagen_principal || null, // 16
       ]
     )
 
@@ -377,8 +377,8 @@ export async function POST (req: NextRequest) {
       status: 201,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error POST /api/admin/eventos:', err)
@@ -389,19 +389,19 @@ export async function POST (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al crear evento', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

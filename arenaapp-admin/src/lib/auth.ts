@@ -11,8 +11,8 @@ if (!rawSecret) {
 const JWT_SECRET = new TextEncoder().encode(rawSecret)
 
 export type JwtPayload = {
-  sub: string          // id del usuario en string
-  email: string        // opcional en la práctica, pero lo dejamos en el type
+  sub: string // id del usuario en string
+  email: string // opcional en la práctica, pero lo dejamos en el type
   rol: 'ADMIN' | 'USER'
   exp: number
   iat: number
@@ -23,7 +23,7 @@ export type AuthPayload = JWTPayload & {
   sub?: string
   email?: string
   rol?: 'ADMIN' | 'USER'
-  userId?: number | string    // por compatibilidad con tu login actual
+  userId?: number | string // por compatibilidad con tu login actual
 }
 
 /**
@@ -31,7 +31,7 @@ export type AuthPayload = JWTPayload & {
  *  - Authorization: Bearer xxx
  *  - o cookie httpOnly "token"
  */
-export async function verifyAuth (req: NextRequest): Promise<JwtPayload> {
+export async function verifyAuth(req: NextRequest): Promise<JwtPayload> {
   // 1) Intentar Authorization: Bearer xxx
   const authHeader = req.headers.get('authorization')
   let token: string | undefined
@@ -50,7 +50,9 @@ export async function verifyAuth (req: NextRequest): Promise<JwtPayload> {
   }
 
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET) as { payload: AuthPayload }
+    const { payload } = (await jwtVerify(token, JWT_SECRET)) as {
+      payload: AuthPayload
+    }
 
     // 👉 compatibilidad: si el token trae userId (como hace tu login actual),
     // lo usamos para construir sub
@@ -76,7 +78,7 @@ export async function verifyAuth (req: NextRequest): Promise<JwtPayload> {
       email: payload.email ?? '',
       rol,
       exp: payload.exp,
-      iat: payload.iat
+      iat: payload.iat,
     }
   } catch (err) {
     console.error('verifyAuth: error verificando token', err)
@@ -84,7 +86,7 @@ export async function verifyAuth (req: NextRequest): Promise<JwtPayload> {
   }
 }
 
-export function requireAdmin (payload: JwtPayload) {
+export function requireAdmin(payload: JwtPayload) {
   if (payload.rol !== 'ADMIN') {
     throw new Error('FORBIDDEN_NOT_ADMIN')
   }

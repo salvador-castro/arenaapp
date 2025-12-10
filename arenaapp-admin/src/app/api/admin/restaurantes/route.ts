@@ -5,26 +5,26 @@ import { verifyAuth, requireAdmin } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // util simple para slug
-function slugify (str: string): string {
+function slugify(str: string): string {
   return str
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // quita tildes
@@ -34,7 +34,7 @@ function slugify (str: string): string {
 }
 
 // GET todos (admin) con paginación y búsqueda
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -162,14 +162,14 @@ export async function GET (req: NextRequest) {
         page,
         pageSize,
         total,
-        totalPages
+        totalPages,
       }),
       {
         status: 200,
         headers: {
           ...corsBaseHeaders(),
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
   } catch (err: any) {
@@ -181,25 +181,25 @@ export async function GET (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener restaurantes', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // POST crear
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -224,7 +224,7 @@ export async function POST (req: NextRequest) {
       url_imagen,
       es_destacado,
       estado,
-      resena
+      resena,
     } = body
 
     if (
@@ -242,7 +242,7 @@ export async function POST (req: NextRequest) {
     ) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -304,25 +304,25 @@ export async function POST (req: NextRequest) {
         updated_at
       `,
       [
-        slug,                      // 1
-        nombre,                    // 2
-        tipo_comida,               // 3
-        rango_precios,             // 4
-        estrellas,                 // 5
-        zona,                      // 6
-        direccion,                 // 7
-        ciudad || null,            // 8
-        provincia || null,         // 9
-        pais || 'Uruguay',       // 10 (default de la tabla)
-        url_maps,                  // 11
-        horario_text,              // 12
-        url_reserva || null,       // 13
-        url_instagram,             // 14
-        sitio_web || null,         // 15
-        url_imagen,                // 16
-        !!es_destacado,            // 17
-        estado || 'PUBLICADO',     // 18
-        resena                     // 19
+        slug, // 1
+        nombre, // 2
+        tipo_comida, // 3
+        rango_precios, // 4
+        estrellas, // 5
+        zona, // 6
+        direccion, // 7
+        ciudad || null, // 8
+        provincia || null, // 9
+        pais || 'Uruguay', // 10 (default de la tabla)
+        url_maps, // 11
+        horario_text, // 12
+        url_reserva || null, // 13
+        url_instagram, // 14
+        sitio_web || null, // 15
+        url_imagen, // 16
+        !!es_destacado, // 17
+        estado || 'PUBLICADO', // 18
+        resena, // 19
       ]
     )
 
@@ -332,8 +332,8 @@ export async function POST (req: NextRequest) {
       status: 201,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error POST /api/admin/restaurantes:', err)
@@ -344,19 +344,19 @@ export async function POST (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al crear restaurante', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

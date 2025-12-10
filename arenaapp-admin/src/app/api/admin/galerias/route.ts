@@ -4,26 +4,26 @@ import { verifyAuth, requireAdmin } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // util simple para slug
-function slugify (str: string): string {
+function slugify(str: string): string {
   return str
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -33,7 +33,7 @@ function slugify (str: string): string {
 }
 
 // GET /api/admin/galerias
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -104,44 +104,44 @@ export async function GET (req: NextRequest) {
         page,
         pageSize,
         total,
-        totalPages: Math.max(1, Math.ceil(total / pageSize))
+        totalPages: Math.max(1, Math.ceil(total / pageSize)),
       }),
       {
         status: 200,
         headers: {
           ...corsBaseHeaders(),
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
   } catch (err: any) {
     console.error('Error GET /api/admin/galerias:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(
-      err?.message || 'Error al obtener galerías',
-      {
-        status: 500,
-        headers: corsBaseHeaders()
-      }
-    )
+    return new NextResponse(err?.message || 'Error al obtener galerías', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }
 
 // POST /api/admin/galerias
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -172,19 +172,14 @@ export async function POST (req: NextRequest) {
       meta_title,
       meta_description,
       es_destacado,
-      estado
+      estado,
     } = body
 
     // Obligatorios: nombre, dirección, reseña, imagen
-    if (
-      !nombre ||
-      !direccion ||
-      !resena ||
-      !url_imagen
-    ) {
+    if (!nombre || !direccion || !resena || !url_imagen) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -261,32 +256,32 @@ export async function POST (req: NextRequest) {
         updated_at
       `,
       [
-        nombre,                              // $1
-        slug,                                // $2
+        nombre, // $1
+        slug, // $2
         resena ? String(resena).slice(0, 200) : null, // $3 -> descripcion_corta auto
-        resena || null,                      // $4
-        direccion,                           // $5
-        zona || null,                        // $6
-        ciudad || null,                      // $7
-        provincia || null,                   // $8
-        pais || 'Uruguay',                   // $9
+        resena || null, // $4
+        direccion, // $5
+        zona || null, // $6
+        ciudad || null, // $7
+        provincia || null, // $8
+        pais || 'Uruguay', // $9
         lat === undefined || lat === null ? null : lat, // $10
         lng === undefined || lng === null ? null : lng, // $11
-        telefono || null,                    // $12
-        email_contacto || null,              // $13
-        sitio_web || null,                   // $14
-        instagram || null,                   // $15
-        facebook || null,                    // $16
-        anio_fundacion ?? null,              // $17
-        !!tiene_entrada_gratuita,            // $18
-        !!requiere_reserva,                  // $19
-        horario_desde || null,               // $20
-        horario_hasta || null,               // $21
-        url_imagen,                       // $22
-        meta_title || null,                  // $23
-        meta_description || null,            // $24
-        !!es_destacado,                      // $25
-        estado || 'PUBLICADO'                // $26
+        telefono || null, // $12
+        email_contacto || null, // $13
+        sitio_web || null, // $14
+        instagram || null, // $15
+        facebook || null, // $16
+        anio_fundacion ?? null, // $17
+        !!tiene_entrada_gratuita, // $18
+        !!requiere_reserva, // $19
+        horario_desde || null, // $20
+        horario_hasta || null, // $21
+        url_imagen, // $22
+        meta_title || null, // $23
+        meta_description || null, // $24
+        !!es_destacado, // $25
+        estado || 'PUBLICADO', // $26
       ]
     )
 
@@ -296,8 +291,8 @@ export async function POST (req: NextRequest) {
       status: 201,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error POST /api/admin/galerias:', err)
@@ -308,22 +303,19 @@ export async function POST (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(
-      err?.message || 'Error al crear galería',
-      {
-        status: 500,
-        headers: corsBaseHeaders()
-      }
-    )
+    return new NextResponse(err?.message || 'Error al crear galería', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }

@@ -18,16 +18,17 @@ export interface User {
   updated_at?: string
 }
 
-
 // Base del backend admin (3001). Le sacamos la barra final por las dudas.
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '')
+const API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+).replace(/\/$/, '')
 
-export async function getCurrentUser (): Promise<User | null> {
+export async function getCurrentUser(): Promise<User | null> {
   try {
     const res = await fetch(`${API_BASE}/api/auth/perfil`, {
       method: 'GET',
       credentials: 'include',
-      cache: 'no-store'
+      cache: 'no-store',
     })
 
     if (res.status === 401 || res.status === 403) {

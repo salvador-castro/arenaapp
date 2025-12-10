@@ -17,30 +17,30 @@ const supabase =
     ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     : null
 
-function corsHeaders () {
+function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsHeaders(),
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     if (!supabase) {
       return new NextResponse('Supabase no configurado en el servidor', {
         status: 500,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
@@ -52,7 +52,7 @@ export async function POST (req: NextRequest) {
     if (!file) {
       return new NextResponse('No se envió archivo', {
         status: 400,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
@@ -75,14 +75,14 @@ export async function POST (req: NextRequest) {
       .from('uploads') // nombre del bucket
       .upload(storagePath, buffer, {
         contentType: file.type || 'application/octet-stream',
-        upsert: false // si ya existe, falla (evita overwrite silencioso)
+        upsert: false, // si ya existe, falla (evita overwrite silencioso)
       })
 
     if (uploadError) {
       console.error('Error subiendo a Supabase Storage:', uploadError)
       return new NextResponse('Error al subir imagen', {
         status: 500,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
@@ -95,21 +95,21 @@ export async function POST (req: NextRequest) {
     return new NextResponse(
       JSON.stringify({
         path: publicUrl, // URL pública completa
-        storagePath // ej: restaurantes/la-huella.jpg
+        storagePath, // ej: restaurantes/la-huella.jpg
       }),
       {
         status: 200,
         headers: {
           ...corsHeaders(),
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
   } catch (err) {
     console.error('Error en upload-image:', err)
     return new NextResponse('Error al subir imagen', {
       status: 500,
-      headers: corsHeaders()
+      headers: corsHeaders(),
     })
   }
 }

@@ -6,26 +6,26 @@ import { verifyAuth, type JwtPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,PUT,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // helper para sacar el userId numérico desde el payload
-function getUserIdFromJwtPayload (payload: JwtPayload): number {
+function getUserIdFromJwtPayload(payload: JwtPayload): number {
   const raw = payload.sub // viene como string
   const id = Number(raw)
 
@@ -37,7 +37,7 @@ function getUserIdFromJwtPayload (payload: JwtPayload): number {
 }
 
 // GET /api/auth/perfil -> datos del usuario autenticado
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     const userId = getUserIdFromJwtPayload(payload)
@@ -72,13 +72,13 @@ export async function GET (req: NextRequest) {
     if (!user) {
       return new NextResponse('Usuario no encontrado', {
         status: 404,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return NextResponse.json(user, {
       status: 200,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error GET /api/auth/perfil:', err)
@@ -89,19 +89,19 @@ export async function GET (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse('Error al obtener perfil', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // PUT /api/auth/perfil -> actualizar datos + (opcional) contraseña
-export async function PUT (req: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     const userId = getUserIdFromJwtPayload(payload)
@@ -117,13 +117,13 @@ export async function PUT (req: NextRequest) {
       bio,
       avatar_url,
       passwordActual,
-      passwordNueva
+      passwordNueva,
     } = body
 
     if (!nombre || !apellido || !email) {
       return new NextResponse('Nombre, apellido y email son obligatorios', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -136,7 +136,7 @@ export async function PUT (req: NextRequest) {
           'Para cambiar la contraseña completá contraseña actual y nueva',
           {
             status: 400,
-            headers: corsBaseHeaders()
+            headers: corsBaseHeaders(),
           }
         )
       }
@@ -150,7 +150,7 @@ export async function PUT (req: NextRequest) {
       if (!row) {
         return new NextResponse('Usuario no encontrado', {
           status: 404,
-          headers: corsBaseHeaders()
+          headers: corsBaseHeaders(),
         })
       }
 
@@ -158,7 +158,7 @@ export async function PUT (req: NextRequest) {
       if (!ok) {
         return new NextResponse('La contraseña actual es incorrecta', {
           status: 400,
-          headers: corsBaseHeaders()
+          headers: corsBaseHeaders(),
         })
       }
 
@@ -197,7 +197,7 @@ export async function PUT (req: NextRequest) {
         pais || null,
         bio || null,
         avatar_url || null,
-        userId
+        userId,
       ]
     )
 
@@ -229,7 +229,7 @@ export async function PUT (req: NextRequest) {
 
     return NextResponse.json(user, {
       status: 200,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error PUT /api/auth/perfil:', err)
@@ -240,13 +240,13 @@ export async function PUT (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse('Error al actualizar perfil', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

@@ -9,7 +9,7 @@ const FAVORITO_TIPO_SHOPPING = 'SHOPPING' as const
 function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
@@ -19,8 +19,8 @@ export function OPTIONS() {
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
   })
 }
 
@@ -35,7 +35,11 @@ function getUserIdFromAuth(payload: JwtPayload): number {
 export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
-    if (!payload) return new NextResponse('No autorizado', { status: 401, headers: corsBaseHeaders() })
+    if (!payload)
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders(),
+      })
 
     const userId = getUserIdFromAuth(payload)
     const db = await getDb()
@@ -54,21 +58,32 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(rows, { status: 200, headers: corsBaseHeaders() })
   } catch (err) {
     console.error('GET favoritos/shopping', err)
-    return new NextResponse('Error', { status: 500, headers: corsBaseHeaders() })
+    return new NextResponse('Error', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
-    if (!payload) return new NextResponse('No autorizado', { status: 401, headers: corsBaseHeaders() })
+    if (!payload)
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders(),
+      })
 
     const userId = getUserIdFromAuth(payload)
     const db = await getDb()
     const body = await req.json()
 
     const shoppingId = Number(body.shoppingId ?? body.shopping_id ?? body.id)
-    if (!shoppingId) return new NextResponse('shoppingId inválido', { status: 400, headers: corsBaseHeaders() })
+    if (!shoppingId)
+      return new NextResponse('shoppingId inválido', {
+        status: 400,
+        headers: corsBaseHeaders(),
+      })
 
     await db.query(
       `INSERT INTO favoritos (usuario_id, tipo, item_id)
@@ -80,21 +95,32 @@ export async function POST(req: NextRequest) {
     return new NextResponse(null, { status: 204, headers: corsBaseHeaders() })
   } catch (err) {
     console.error('POST favoritos/shopping', err)
-    return new NextResponse('Error', { status: 500, headers: corsBaseHeaders() })
+    return new NextResponse('Error', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
-    if (!payload) return new NextResponse('No autorizado', { status: 401, headers: corsBaseHeaders() })
+    if (!payload)
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders(),
+      })
 
     const userId = getUserIdFromAuth(payload)
     const db = await getDb()
     const body = await req.json()
 
     const shoppingId = Number(body.shoppingId ?? body.shopping_id ?? body.id)
-    if (!shoppingId) return new NextResponse('shoppingId inválido', { status: 400, headers: corsBaseHeaders() })
+    if (!shoppingId)
+      return new NextResponse('shoppingId inválido', {
+        status: 400,
+        headers: corsBaseHeaders(),
+      })
 
     await db.query(
       `
@@ -107,6 +133,9 @@ export async function DELETE(req: NextRequest) {
     return new NextResponse(null, { status: 204, headers: corsBaseHeaders() })
   } catch (err) {
     console.error('DELETE favoritos/shopping', err)
-    return new NextResponse('Error', { status: 500, headers: corsBaseHeaders() })
+    return new NextResponse('Error', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }

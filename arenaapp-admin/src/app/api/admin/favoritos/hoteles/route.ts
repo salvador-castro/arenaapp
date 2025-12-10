@@ -7,25 +7,25 @@ import type { JwtPayload } from '@/lib/auth'
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 const FAVORITO_TIPO_HOTEL = 'HOTEL' as const
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
   })
 }
 
-function getUserIdFromAuth (payload: JwtPayload): number {
+function getUserIdFromAuth(payload: JwtPayload): number {
   const userId = (payload as any)?.sub
   if (!userId) throw new Error('Token sin sub')
   const parsed = Number(userId)
@@ -33,13 +33,13 @@ function getUserIdFromAuth (payload: JwtPayload): number {
   return parsed
 }
 
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -96,24 +96,24 @@ export async function GET (req: NextRequest) {
 
     return NextResponse.json(rows, {
       status: 200,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err) {
     console.error('GET favoritos/hoteles', err)
     return new NextResponse('Error', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -125,7 +125,7 @@ export async function POST (req: NextRequest) {
     if (!hotelId) {
       return new NextResponse('hotelId inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -140,24 +140,24 @@ export async function POST (req: NextRequest) {
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err) {
     console.error('POST favoritos/hoteles', err)
     return new NextResponse('Error', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
-export async function DELETE (req: NextRequest) {
+export async function DELETE(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -169,7 +169,7 @@ export async function DELETE (req: NextRequest) {
     if (!hotelId) {
       return new NextResponse('hotelId inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -185,13 +185,13 @@ export async function DELETE (req: NextRequest) {
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err) {
     console.error('DELETE favoritos/hoteles', err)
     return new NextResponse('Error', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

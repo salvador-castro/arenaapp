@@ -8,7 +8,7 @@ const COOKIE_DOMAIN = IS_PROD ? '.arenapress.app' : undefined
 function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
@@ -18,8 +18,8 @@ export function OPTIONS() {
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
@@ -30,15 +30,14 @@ export async function POST() {
   )
 
   // Borramos la cookie con el mismo dominio y path
-res.cookies.set('token', '', {
-  httpOnly: true,
-  sameSite: IS_PROD ? 'none' : 'lax',
-  secure: IS_PROD,
-  maxAge: 0,
-  path: '/',
-  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {})
-})
-
+  res.cookies.set('token', '', {
+    httpOnly: true,
+    sameSite: IS_PROD ? 'none' : 'lax',
+    secure: IS_PROD,
+    maxAge: 0,
+    path: '/',
+    ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
+  })
 
   return res
 }

@@ -15,8 +15,12 @@ if (!SUPABASE_SERVICE_ROLE_KEY) {
 }
 
 // Cliente "admin" para usar SOLO en el backend (routes de API, cron, etc.)
-export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: {
-    persistSession: false
+export const supabaseAdmin = createClient(
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+    },
   }
-})
+)

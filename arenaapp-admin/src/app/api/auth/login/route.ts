@@ -19,7 +19,7 @@ const COOKIE_DOMAIN = IS_PROD ? '.arenapress.app' : undefined
 function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
@@ -29,8 +29,8 @@ export function OPTIONS() {
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
@@ -98,8 +98,8 @@ export async function POST(req: NextRequest) {
           apellido: user.apellido,
           email: user.email,
           rol: user.rol,
-          avatar_url: user.avatar_url ?? null // 👈 lo mandamos al front
-        }
+          avatar_url: user.avatar_url ?? null, // 👈 lo mandamos al front
+        },
       },
       { status: 200, headers: corsBaseHeaders() }
     )
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       secure: IS_PROD,
       maxAge: SESSION_MINUTES * 60,
       path: '/',
-      ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {})
+      ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
     })
 
     return res

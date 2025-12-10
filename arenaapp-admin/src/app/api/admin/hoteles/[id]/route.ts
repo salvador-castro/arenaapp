@@ -6,26 +6,26 @@ import { AdminHotel, AdminHotelPayload, HotelDetalle } from '@/types/hotel'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
   })
 }
 
 // -------- GET /api/admin/hoteles/[id] ----------
-export async function GET (
+export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -39,7 +39,7 @@ export async function GET (
     if (Number.isNaN(hotelId)) {
       return new NextResponse('ID inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -53,14 +53,14 @@ export async function GET (
       console.error('Supabase error GET hotel [id]:', error)
       return new NextResponse(error.message, {
         status: 500,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!data) {
       return new NextResponse('Hotel no encontrado', {
         status: 404,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -72,7 +72,7 @@ export async function GET (
 
     const result: AdminHotel = {
       ...(hotelFields as any),
-      detalle
+      detalle,
     }
 
     return NextResponse.json(result, { headers: corsBaseHeaders() })
@@ -80,13 +80,13 @@ export async function GET (
     console.error('Error en GET /api/admin/hoteles/[id]', err)
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // -------- PUT /api/admin/hoteles/[id] ----------
-export async function PUT (
+export async function PUT(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -100,7 +100,7 @@ export async function PUT (
     if (Number.isNaN(hotelId)) {
       return new NextResponse('ID inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -110,7 +110,7 @@ export async function PUT (
     if (!hotel?.nombre) {
       return new NextResponse('El nombre es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -147,7 +147,7 @@ export async function PUT (
       meta_title: hotel.meta_title ?? null,
       meta_description: hotel.meta_description ?? null,
       resena: (hotel as any).resena ?? null,
-      estado: hotel.estado ?? 'PUBLICADO'
+      estado: hotel.estado ?? 'PUBLICADO',
     }
 
     const { data: updated, error: updateError } = await supabaseAdmin
@@ -161,7 +161,7 @@ export async function PUT (
       console.error('Supabase error PUT hotel [id]:', updateError)
       return new NextResponse(updateError.message, {
         status: 500,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -171,13 +171,13 @@ export async function PUT (
     if (detalle) {
       const detalleData: any = {
         ...detalle,
-        hotel_id: hotelId
+        hotel_id: hotelId,
       }
 
       const { data: detRows, error: detError } = await supabaseAdmin
         .from('hoteles_detalle')
         .upsert(detalleData, {
-          onConflict: 'hotel_id'
+          onConflict: 'hotel_id',
         })
         .select('*')
         .single()
@@ -194,7 +194,7 @@ export async function PUT (
 
     const result: AdminHotel = {
       ...(updated as any),
-      detalle: newDetalle
+      detalle: newDetalle,
     }
 
     return NextResponse.json(result, { headers: corsBaseHeaders() })
@@ -202,13 +202,13 @@ export async function PUT (
     console.error('Error en PUT /api/admin/hoteles/[id]', err)
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // -------- DELETE /api/admin/hoteles/[id] ----------
-export async function DELETE (
+export async function DELETE(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -222,15 +222,12 @@ export async function DELETE (
     if (Number.isNaN(hotelId)) {
       return new NextResponse('ID inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     // primero borro detalle por las dudas (aunque tengas ON DELETE CASCADE en la FK)
-    await supabaseAdmin
-      .from('hoteles_detalle')
-      .delete()
-      .eq('hotel_id', hotelId)
+    await supabaseAdmin.from('hoteles_detalle').delete().eq('hotel_id', hotelId)
 
     const { error: delError } = await supabaseAdmin
       .from('hoteles')
@@ -241,19 +238,19 @@ export async function DELETE (
       console.error('Supabase error DELETE hotel [id]:', delError)
       return new NextResponse(delError.message, {
         status: 500,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error en DELETE /api/admin/hoteles/[id]', err)
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

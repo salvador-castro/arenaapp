@@ -11,7 +11,7 @@ export async function POST(_req: NextRequest) {
   return NextResponse.json(
     {
       error:
-        'Este endpoint no se usa. El login se hace contra admin.arenapress.app/api/auth/login.'
+        'Este endpoint no se usa. El login se hace contra admin.arenapress.app/api/auth/login.',
     },
     { status: 410 } // Gone
   )

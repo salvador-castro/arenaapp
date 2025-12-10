@@ -17,13 +17,13 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
-export async function fetchRestaurantes (search = ''): Promise<Restaurante[]> {
+export async function fetchRestaurantes(search = ''): Promise<Restaurante[]> {
   const url = new URL(`${API_BASE}/api/restaurantes`)
   if (search) url.searchParams.set('search', search)
 
   const res = await fetch(url.toString(), {
     credentials: 'include',
-    cache: 'no-store'
+    cache: 'no-store',
   })
 
   if (!res.ok) {
@@ -33,11 +33,11 @@ export async function fetchRestaurantes (search = ''): Promise<Restaurante[]> {
   return res.json()
 }
 
-export async function createRestaurante (formData: FormData) {
+export async function createRestaurante(formData: FormData) {
   const res = await fetch(`${API_BASE}/api/restaurantes`, {
     method: 'POST',
     body: formData,
-    credentials: 'include'
+    credentials: 'include',
   })
 
   if (!res.ok) {
@@ -48,11 +48,11 @@ export async function createRestaurante (formData: FormData) {
   return res.json()
 }
 
-export async function updateRestaurante (id: number, formData: FormData) {
+export async function updateRestaurante(id: number, formData: FormData) {
   const res = await fetch(`${API_BASE}/api/restaurantes/${id}`, {
     method: 'PUT',
     body: formData,
-    credentials: 'include'
+    credentials: 'include',
   })
 
   if (!res.ok) {
@@ -63,10 +63,10 @@ export async function updateRestaurante (id: number, formData: FormData) {
   return res.json()
 }
 
-export async function deleteRestaurante (id: number) {
+export async function deleteRestaurante(id: number) {
   const res = await fetch(`${API_BASE}/api/restaurantes/${id}`, {
     method: 'DELETE',
-    credentials: 'include'
+    credentials: 'include',
   })
 
   if (!res.ok && res.status !== 204) {

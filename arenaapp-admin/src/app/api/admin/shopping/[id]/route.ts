@@ -8,29 +8,26 @@ type ContextWithId = {
   params: Promise<{ id: string }>
 }
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // GET /api/admin/shopping/:id
-export async function GET (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function GET(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -77,7 +74,7 @@ export async function GET (
     if (!shopping) {
       return new NextResponse('Shopping no encontrado', {
         status: 404,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -85,37 +82,37 @@ export async function GET (
       status: 200,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error GET /api/admin/shopping/[id]:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener shopping', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // PUT /api/admin/shopping/:id
-export async function PUT (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function PUT(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -145,7 +142,7 @@ export async function PUT (
       instagram,
       facebook,
       estado,
-      resena
+      resena,
     } = body
 
     if (
@@ -160,7 +157,7 @@ export async function PUT (
     ) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -195,29 +192,29 @@ export async function PUT (
       WHERE id = $23
       `,
       [
-        nombre,                   // 1
-        rango_precios,            // 2
-        estrellas,                // 3
-        zona,                     // 4
-        direccion,                // 5
-        ciudad || null,           // 6
-        provincia || null,        // 7
-        pais || 'Argentina',      // 8
-        horario_text,             // 9
-        sitio_web || null,        // 10
-        url_imagen,               // 11
+        nombre, // 1
+        rango_precios, // 2
+        estrellas, // 3
+        zona, // 4
+        direccion, // 5
+        ciudad || null, // 6
+        provincia || null, // 7
+        pais || 'Argentina', // 8
+        horario_text, // 9
+        sitio_web || null, // 10
+        url_imagen, // 11
         cantidad_locales ?? null, // 12
-        !!tiene_estacionamiento,  // 13
-        !!tiene_patio_comidas,    // 14
-        !!tiene_cine,             // 15
-        !!es_outlet,              // 16
-        !!es_destacado,           // 17
-        telefono || null,         // 18
-        instagram || null,        // 19
-        facebook || null,         // 20
-        estado || 'PUBLICADO',    // 21
-        resena,                   // 22
-        id                        // 23
+        !!tiene_estacionamiento, // 13
+        !!tiene_patio_comidas, // 14
+        !!tiene_cine, // 15
+        !!es_outlet, // 16
+        !!es_destacado, // 17
+        telefono || null, // 18
+        instagram || null, // 19
+        facebook || null, // 20
+        estado || 'PUBLICADO', // 21
+        resena, // 22
+        id, // 23
       ]
     )
 
@@ -261,40 +258,37 @@ export async function PUT (
       status: 200,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error PUT /api/admin/shopping/[id]:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(
-      err?.message || 'Error al actualizar shopping',
-      {
-        status: 500,
-        headers: corsBaseHeaders()
-      }
-    )
+    return new NextResponse(err?.message || 'Error al actualizar shopping', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }
 
 // DELETE /api/admin/shopping/:id
-export async function DELETE (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function DELETE(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -306,30 +300,30 @@ export async function DELETE (
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error DELETE /api/admin/shopping/[id]:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(
-      err?.message || 'Error al eliminar shopping',
-      {
-        status: 500,
-        headers: corsBaseHeaders()
-      }
-    )
+    return new NextResponse(err?.message || 'Error al eliminar shopping', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }

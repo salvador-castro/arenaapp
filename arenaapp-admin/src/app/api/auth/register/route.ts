@@ -6,24 +6,24 @@ import { getDb } from '@/lib/db'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsHeaders (extra: Record<string, string> = {}) {
+function corsHeaders(extra: Record<string, string> = {}) {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
     'Access-Control-Allow-Methods': 'POST,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Credentials': 'true',
-    ...extra
+    ...extra,
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders()
+    headers: corsHeaders(),
   })
 }
 
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     console.log('BODY REGISTER =>', body)
@@ -35,7 +35,7 @@ export async function POST (req: NextRequest) {
       telefono,
       tipo_documento,
       numero_documento,
-      password
+      password,
     } = body
 
     if (
@@ -64,7 +64,7 @@ export async function POST (req: NextRequest) {
         return NextResponse.json(
           {
             error:
-              'Para pasaporte solo se permiten letras y números, sin espacios ni guiones.'
+              'Para pasaporte solo se permiten letras y números, sin espacios ni guiones.',
           },
           { status: 400, headers: corsHeaders() }
         )
@@ -130,7 +130,7 @@ export async function POST (req: NextRequest) {
         telefono ?? null,
         tipo_documento,
         docNormalized,
-        password_hash
+        password_hash,
       ]
     )
 
@@ -145,11 +145,11 @@ export async function POST (req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Error interno del servidor',
-        detalle: String(err?.message ?? err)
+        detalle: String(err?.message ?? err),
       },
       {
         status: 500,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       }
     )
   }

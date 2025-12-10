@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 
-export function useAuthRedirect (isLoggedIn: boolean) {
+export function useAuthRedirect(isLoggedIn: boolean) {
   const router = useRouter()
   const pathname = usePathname()
 

@@ -4,26 +4,26 @@ import { verifyAuth, requireAdmin } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // util simple para slug
-function slugify (str: string): string {
+function slugify(str: string): string {
   return str
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -33,7 +33,7 @@ function slugify (str: string): string {
 }
 
 // GET todos (admin) con paginación y búsqueda
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -167,14 +167,14 @@ export async function GET (req: NextRequest) {
         page,
         pageSize,
         total,
-        totalPages
+        totalPages,
       }),
       {
         status: 200,
         headers: {
           ...corsBaseHeaders(),
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
   } catch (err: any) {
@@ -186,25 +186,25 @@ export async function GET (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener shoppings', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // POST crear
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -233,7 +233,7 @@ export async function POST (req: NextRequest) {
       instagram,
       facebook,
       estado,
-      resena
+      resena,
     } = body
 
     if (
@@ -248,7 +248,7 @@ export async function POST (req: NextRequest) {
     ) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -319,29 +319,29 @@ export async function POST (req: NextRequest) {
         updated_at
       `,
       [
-        slug,                     // 1
-        nombre,                   // 2
-        rango_precios,            // 3
-        estrellas,                // 4
-        zona,                     // 5
-        direccion,                // 6
-        ciudad || null,           // 7
-        provincia || null,        // 8
-        pais || 'Argentina',      // 9
-        horario_text,             // 10
-        sitio_web || null,        // 11
-        url_imagen,               // 12
+        slug, // 1
+        nombre, // 2
+        rango_precios, // 3
+        estrellas, // 4
+        zona, // 5
+        direccion, // 6
+        ciudad || null, // 7
+        provincia || null, // 8
+        pais || 'Argentina', // 9
+        horario_text, // 10
+        sitio_web || null, // 11
+        url_imagen, // 12
         cantidad_locales ?? null, // 13
-        !!tiene_estacionamiento,  // 14
-        !!tiene_patio_comidas,    // 15
-        !!tiene_cine,             // 16
-        !!es_outlet,              // 17
-        !!es_destacado,           // 18
-        telefono || null,         // 19
-        instagram || null,        // 20
-        facebook || null,         // 21
-        estado || 'PUBLICADO',    // 22
-        resena                    // 23
+        !!tiene_estacionamiento, // 14
+        !!tiene_patio_comidas, // 15
+        !!tiene_cine, // 16
+        !!es_outlet, // 17
+        !!es_destacado, // 18
+        telefono || null, // 19
+        instagram || null, // 20
+        facebook || null, // 21
+        estado || 'PUBLICADO', // 22
+        resena, // 23
       ]
     )
 
@@ -351,8 +351,8 @@ export async function POST (req: NextRequest) {
       status: 201,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error POST /api/admin/shopping:', err)
@@ -363,19 +363,19 @@ export async function POST (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al crear shopping', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

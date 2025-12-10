@@ -6,26 +6,26 @@ import { AdminHotel, AdminHotelPayload, HotelDetalle } from '@/types/hotel'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
   })
 }
 
 // util simple para slug
-function slugify (str: string): string {
+function slugify(str: string): string {
   return str
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -35,7 +35,7 @@ function slugify (str: string): string {
 }
 
 // ---- GET /api/admin/hoteles  (lista + paginación + búsqueda) ----
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const user = await verifyAuth(req)
     requireAdmin(user)
@@ -70,7 +70,7 @@ export async function GET (req: NextRequest) {
       console.error('Supabase error GET hoteles:', error)
       return new NextResponse(error.message, {
         status: 500,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -87,7 +87,7 @@ export async function GET (req: NextRequest) {
 
         return {
           ...(hotelFields as any),
-          detalle
+          detalle,
         } as AdminHotel
       }) ?? []
 
@@ -97,7 +97,7 @@ export async function GET (req: NextRequest) {
         page,
         pageSize,
         total,
-        totalPages
+        totalPages,
       },
       { headers: corsBaseHeaders() }
     )
@@ -105,13 +105,13 @@ export async function GET (req: NextRequest) {
     console.error('Error en GET /api/admin/hoteles', err)
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // ---- POST /api/admin/hoteles  (crear) ----
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const user = await verifyAuth(req)
     requireAdmin(user)
@@ -122,7 +122,7 @@ export async function POST (req: NextRequest) {
     if (!hotel?.nombre) {
       return new NextResponse('El nombre es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -160,7 +160,7 @@ export async function POST (req: NextRequest) {
       meta_title: hotel.meta_title ?? null,
       meta_description: hotel.meta_description ?? null,
       resena: (hotel as any).resena ?? null,
-      estado: hotel.estado ?? 'PUBLICADO'
+      estado: hotel.estado ?? 'PUBLICADO',
     }
 
     const { data: inserted, error: insertError } = await supabaseAdmin
@@ -173,7 +173,7 @@ export async function POST (req: NextRequest) {
       console.error('Supabase error POST hoteles:', insertError)
       return new NextResponse(insertError.message, {
         status: 500,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -182,7 +182,7 @@ export async function POST (req: NextRequest) {
     if (detalle) {
       const detalleData: any = {
         ...detalle,
-        hotel_id: inserted.id
+        hotel_id: inserted.id,
       }
 
       const { data: det, error: detError } = await supabaseAdmin
@@ -201,18 +201,18 @@ export async function POST (req: NextRequest) {
 
     const result: AdminHotel = {
       ...(inserted as any),
-      detalle: detalleInsertado
+      detalle: detalleInsertado,
     }
 
     return NextResponse.json(result, {
       status: 201,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error en POST /api/admin/hoteles', err)
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

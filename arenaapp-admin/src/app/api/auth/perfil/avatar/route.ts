@@ -6,26 +6,26 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // Helper para obtener el userId del payload JWT
-function getUserIdFromPayload (payload: AuthPayload | any): number {
+function getUserIdFromPayload(payload: AuthPayload | any): number {
   // intentamos en este orden: userId, sub, id
   const raw =
     (payload as any)?.userId ?? (payload as any)?.sub ?? (payload as any)?.id
@@ -49,7 +49,7 @@ function getUserIdFromPayload (payload: AuthPayload | any): number {
 }
 
 // POST /api/auth/perfil/avatar
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     // 1) Verificar usuario autenticado
     const payload = await verifyAuth(req)
@@ -62,7 +62,7 @@ export async function POST (req: NextRequest) {
     if (!(file instanceof File)) {
       return new NextResponse('No se envió archivo', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -70,13 +70,15 @@ export async function POST (req: NextRequest) {
     if (file.size > 2 * 1024 * 1024) {
       return new NextResponse('La imagen no puede superar los 2 MB', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     // 4) Preparar nombre y ruta en el bucket "avatars"
     const originalName = file.name || 'avatar.jpg'
-    const ext = originalName.includes('.') ? originalName.split('.').pop() : 'jpg'
+    const ext = originalName.includes('.')
+      ? originalName.split('.').pop()
+      : 'jpg'
 
     // bucket: avatars
     // path:   user-<id>/avatar.<ext>
@@ -90,14 +92,14 @@ export async function POST (req: NextRequest) {
       .from('avatars')
       .upload(storagePath, buffer, {
         contentType: file.type || 'image/jpeg',
-        upsert: true // sobreescribe el avatar anterior del usuario
+        upsert: true, // sobreescribe el avatar anterior del usuario
       })
 
     if (uploadError) {
       console.error('Error subiendo avatar a Supabase Storage:', uploadError)
       return new NextResponse('Error al subir avatar', {
         status: 500,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -134,13 +136,13 @@ export async function POST (req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse('Error al subir avatar', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

@@ -5,26 +5,26 @@ import { getDb } from '@/lib/db'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
-function corsHeaders (extra: Record<string, string> = {}) {
+function corsHeaders(extra: Record<string, string> = {}) {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
     'Access-Control-Allow-Credentials': 'true',
-    ...extra
+    ...extra,
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: corsHeaders({
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    })
+      'Access-Control-Allow-Headers': 'Content-Type',
+    }),
   })
 }
 
 // GET /api/admin/users/:id
-export async function GET (
+export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> } // 👈 lo que Next espera
 ) {
@@ -63,15 +63,15 @@ export async function GET (
     if (!user) {
       return new NextResponse('Usuario no encontrado', {
         status: 404,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
     return new NextResponse(JSON.stringify(user), {
       status: 200,
       headers: corsHeaders({
-        'Content-Type': 'application/json'
-      })
+        'Content-Type': 'application/json',
+      }),
     })
   } catch (err: any) {
     console.error('Error GET /api/admin/users/[id]:', err)
@@ -82,25 +82,25 @@ export async function GET (
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
     return new NextResponse('Error al obtener usuario', {
       status: 500,
-      headers: corsHeaders()
+      headers: corsHeaders(),
     })
   }
 }
 
 // PUT /api/admin/users/:id
-export async function PUT (
+export async function PUT(
   req: NextRequest,
   context: { params: Promise<{ id: string }> } // 👈 igual acá
 ) {
@@ -120,13 +120,13 @@ export async function PUT (
       activo,
       telefono,
       ciudad,
-      pais
+      pais,
     } = body
 
     if (!nombre || !apellido || !email) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
@@ -164,14 +164,14 @@ export async function PUT (
           rolFinal,
           activoFinal,
           passwordHash,
-          id
+          id,
         ]
       )
 
       if (result.rowCount === 0) {
         return new NextResponse('Usuario no encontrado', {
           status: 404,
-          headers: corsHeaders()
+          headers: corsHeaders(),
         })
       }
     } else {
@@ -199,14 +199,14 @@ export async function PUT (
           pais ?? null,
           rolFinal,
           activoFinal,
-          id
+          id,
         ]
       )
 
       if (result.rowCount === 0) {
         return new NextResponse('Usuario no encontrado', {
           status: 404,
-          headers: corsHeaders()
+          headers: corsHeaders(),
         })
       }
     }
@@ -238,8 +238,8 @@ export async function PUT (
     return new NextResponse(JSON.stringify(user), {
       status: 200,
       headers: corsHeaders({
-        'Content-Type': 'application/json'
-      })
+        'Content-Type': 'application/json',
+      }),
     })
   } catch (err: any) {
     console.error('Error PUT /api/admin/users/[id]:', err)
@@ -248,7 +248,7 @@ export async function PUT (
     if (err.code === '23505') {
       return new NextResponse('El email ya está registrado', {
         status: 409,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
@@ -258,25 +258,25 @@ export async function PUT (
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
     return new NextResponse('Error al actualizar usuario', {
       status: 500,
-      headers: corsHeaders()
+      headers: corsHeaders(),
     })
   }
 }
 
 // DELETE /api/admin/users/:id
-export async function DELETE (
+export async function DELETE(
   req: NextRequest,
   context: { params: Promise<{ id: string }> } // 👈 y acá también
 ) {
@@ -288,21 +288,18 @@ export async function DELETE (
 
     const db = await getDb()
 
-    const result = await db.query(
-      'DELETE FROM usuarios WHERE id = $1',
-      [id]
-    )
+    const result = await db.query('DELETE FROM usuarios WHERE id = $1', [id])
 
     if (result.rowCount === 0) {
       return new NextResponse('Usuario no encontrado', {
         status: 404,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsHeaders()
+      headers: corsHeaders(),
     })
   } catch (err: any) {
     console.error('Error DELETE /api/admin/users/[id]:', err)
@@ -313,19 +310,19 @@ export async function DELETE (
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsHeaders()
+        headers: corsHeaders(),
       })
     }
 
     return new NextResponse('Error al eliminar usuario', {
       status: 500,
-      headers: corsHeaders()
+      headers: corsHeaders(),
     })
   }
 }

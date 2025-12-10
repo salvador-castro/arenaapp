@@ -6,26 +6,26 @@ import type { JwtPayload } from '@/lib/auth'
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 const FAVORITO_TIPO_BAR = 'BAR' as const // 👈 clave
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
   })
 }
 
 // Helper → saca el userId del payload
-function getUserIdFromAuth (payload: JwtPayload): number {
+function getUserIdFromAuth(payload: JwtPayload): number {
   const userId = (payload as any)?.sub
   if (!userId) {
     throw new Error('Token sin sub (userId)')
@@ -38,13 +38,13 @@ function getUserIdFromAuth (payload: JwtPayload): number {
 }
 
 // GET → lista favoritos de BARES para el usuario logueado
-export async function GET (req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -68,25 +68,25 @@ export async function GET (req: NextRequest) {
 
     return NextResponse.json(rows, {
       status: 200,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error GET /favoritos/bares', err)
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // POST → marca un bar como favorito
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -98,7 +98,7 @@ export async function POST (req: NextRequest) {
     if (!barId || Number.isNaN(barId)) {
       return new NextResponse('barId inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -113,25 +113,25 @@ export async function POST (req: NextRequest) {
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error POST /favoritos/bares', err)
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // DELETE → quita un bar de favoritos
-export async function DELETE (req: NextRequest) {
+export async function DELETE(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -143,7 +143,7 @@ export async function DELETE (req: NextRequest) {
     if (!barId || Number.isNaN(barId)) {
       return new NextResponse('barId inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -159,13 +159,13 @@ export async function DELETE (req: NextRequest) {
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error DELETE /favoritos/bares', err)
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }

@@ -8,30 +8,27 @@ type ContextWithId = {
   params: Promise<{ id: string }>
 }
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // GET /api/admin/galerias/:id
 // GET /api/admin/galerias/:id
-export async function GET (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function GET(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -53,7 +50,7 @@ export async function GET (
     if (!galeria) {
       return new NextResponse('Galería no encontrada', {
         status: 404,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -61,38 +58,37 @@ export async function GET (
       status: 200,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error GET /api/admin/galerias/[id]:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener galería', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
-
 // PUT /api/admin/galerias/:id
-export async function PUT (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function PUT(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -124,19 +120,14 @@ export async function PUT (
       meta_title,
       meta_description,
       es_destacado,
-      estado
+      estado,
     } = body
 
     // Obligatorios
-    if (
-      !nombre ||
-      !direccion ||
-      !resena ||
-      !url_imagen
-    ) {
+    if (!nombre || !direccion || !resena || !url_imagen) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -175,32 +166,32 @@ export async function PUT (
       WHERE id = $26
       `,
       [
-        nombre,                                   // $1
+        nombre, // $1
         resena ? String(resena).slice(0, 200) : null, // $2 -> descripcion_corta auto
-        resena || null,                           // $3
-        direccion,                                // $4
-        zona || null,                             // $5
-        ciudad || null,                           // $6
-        provincia || null,                        // $7
-        pais || 'Uruguay',                        // $8
+        resena || null, // $3
+        direccion, // $4
+        zona || null, // $5
+        ciudad || null, // $6
+        provincia || null, // $7
+        pais || 'Uruguay', // $8
         lat === undefined || lat === null ? null : lat, // $9
         lng === undefined || lng === null ? null : lng, // $10
-        telefono || null,                         // $11
-        email_contacto || null,                   // $12
-        sitio_web || null,                        // $13
-        instagram || null,                        // $14
-        facebook || null,                         // $15
-        anio_fundacion ?? null,                   // $16
-        !!tiene_entrada_gratuita,                 // $17
-        !!requiere_reserva,                       // $18
-        horario_desde || null,                    // $19
-        horario_hasta || null,                    // $20
-        url_imagen,                            // $21
-        meta_title || null,                       // $22
-        meta_description || null,                 // $23
-        !!es_destacado,                           // $24
-        estado || 'PUBLICADO',                    // $25
-        id                                        // $26
+        telefono || null, // $11
+        email_contacto || null, // $12
+        sitio_web || null, // $13
+        instagram || null, // $14
+        facebook || null, // $15
+        anio_fundacion ?? null, // $16
+        !!tiene_entrada_gratuita, // $17
+        !!requiere_reserva, // $18
+        horario_desde || null, // $19
+        horario_hasta || null, // $20
+        url_imagen, // $21
+        meta_title || null, // $22
+        meta_description || null, // $23
+        !!es_destacado, // $24
+        estado || 'PUBLICADO', // $25
+        id, // $26
       ]
     )
 
@@ -248,40 +239,37 @@ export async function PUT (
       status: 200,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error PUT /api/admin/galerias/[id]:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(
-      err?.message || 'Error al actualizar galería',
-      {
-        status: 500,
-        headers: corsBaseHeaders()
-      }
-    )
+    return new NextResponse(err?.message || 'Error al actualizar galería', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }
 
 // DELETE /api/admin/galerias/:id
-export async function DELETE (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function DELETE(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -293,30 +281,30 @@ export async function DELETE (
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error DELETE /api/admin/galerias/[id]:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(
-      err?.message || 'Error al eliminar galería',
-      {
-        status: 500,
-        headers: corsBaseHeaders()
-      }
-    )
+    return new NextResponse(err?.message || 'Error al eliminar galería', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }

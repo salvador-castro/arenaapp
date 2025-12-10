@@ -9,7 +9,7 @@ const FAVORITO_TIPO_GALERIA = 'GALERIA' as const
 function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
@@ -19,8 +19,8 @@ export function OPTIONS() {
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
   })
 }
 
@@ -36,7 +36,10 @@ export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload)
-      return new NextResponse('No autorizado', { status: 401, headers: corsBaseHeaders() })
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders(),
+      })
 
     const userId = getUserIdFromAuth(payload)
     const db = await getDb()
@@ -55,7 +58,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(rows, { status: 200, headers: corsBaseHeaders() })
   } catch (err) {
     console.error('GET favoritos/galerias', err)
-    return new NextResponse('Error', { status: 500, headers: corsBaseHeaders() })
+    return new NextResponse('Error', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }
 
@@ -63,14 +69,21 @@ export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload)
-      return new NextResponse('No autorizado', { status: 401, headers: corsBaseHeaders() })
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders(),
+      })
 
     const userId = getUserIdFromAuth(payload)
     const db = await getDb()
     const body = await req.json()
 
     const galeriaId = Number(body.galeriaId ?? body.galeria_id ?? body.id)
-    if (!galeriaId) return new NextResponse('galeriaId inválido', { status: 400, headers: corsBaseHeaders() })
+    if (!galeriaId)
+      return new NextResponse('galeriaId inválido', {
+        status: 400,
+        headers: corsBaseHeaders(),
+      })
 
     await db.query(
       `
@@ -84,7 +97,10 @@ export async function POST(req: NextRequest) {
     return new NextResponse(null, { status: 204, headers: corsBaseHeaders() })
   } catch (err) {
     console.error('POST favoritos/galerias', err)
-    return new NextResponse('Error', { status: 500, headers: corsBaseHeaders() })
+    return new NextResponse('Error', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }
 
@@ -92,14 +108,21 @@ export async function DELETE(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload)
-      return new NextResponse('No autorizado', { status: 401, headers: corsBaseHeaders() })
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders(),
+      })
 
     const userId = getUserIdFromAuth(payload)
     const db = await getDb()
     const body = await req.json()
 
     const galeriaId = Number(body.galeriaId ?? body.galeria_id ?? body.id)
-    if (!galeriaId) return new NextResponse('galeriaId inválido', { status: 400, headers: corsBaseHeaders() })
+    if (!galeriaId)
+      return new NextResponse('galeriaId inválido', {
+        status: 400,
+        headers: corsBaseHeaders(),
+      })
 
     await db.query(
       `
@@ -112,6 +135,9 @@ export async function DELETE(req: NextRequest) {
     return new NextResponse(null, { status: 204, headers: corsBaseHeaders() })
   } catch (err) {
     console.error('DELETE favoritos/galerias', err)
-    return new NextResponse('Error', { status: 500, headers: corsBaseHeaders() })
+    return new NextResponse('Error', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }

@@ -9,29 +9,26 @@ type ContextWithId = {
   params: Promise<{ id: string }>
 }
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }
 
 // GET /api/admin/eventos/:id
-export async function GET (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function GET(req: NextRequest, context: ContextWithId) {
   try {
     await verifyAuth(req) // cualquier user logueado
 
@@ -72,7 +69,7 @@ export async function GET (
     if (!evento) {
       return new NextResponse('Evento no encontrado', {
         status: 404,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -80,8 +77,8 @@ export async function GET (
       status: 200,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error GET /api/admin/eventos/[id]:', err)
@@ -92,22 +89,19 @@ export async function GET (
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener evento', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // PUT /api/admin/eventos/:id
-export async function PUT (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function PUT(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -130,41 +124,41 @@ export async function PUT (
       es_todo_el_dia,
       es_destacado,
       resena,
-      imagen_principal
+      imagen_principal,
     } = body
 
     if (!titulo || !categoria || !direccion || !fecha_inicio) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!zona || (Array.isArray(zona) && zona.length === 0)) {
       return new NextResponse('La zona es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (typeof es_gratuito !== 'boolean') {
       return new NextResponse('El campo "es_gratuito" es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!url_entradas) {
       return new NextResponse('La URL de entradas es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
     if (!estado) {
       return new NextResponse('El estado es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -177,7 +171,7 @@ export async function PUT (
           'El campo "Precio desde" es obligatorio si el evento no es gratuito',
           {
             status: 400,
-            headers: corsBaseHeaders()
+            headers: corsBaseHeaders(),
           }
         )
       }
@@ -232,7 +226,7 @@ export async function PUT (
         estadoValue,
         resena || null,
         imagen_principal || null,
-        id
+        id,
       ]
     )
 
@@ -271,8 +265,8 @@ export async function PUT (
       status: 200,
       headers: {
         ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (err: any) {
     console.error('Error PUT /api/admin/eventos/[id]:', err)
@@ -283,31 +277,25 @@ export async function PUT (
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(
-      err?.message || 'Error al actualizar evento',
-      {
-        status: 500,
-        headers: corsBaseHeaders()
-      }
-    )
+    return new NextResponse(err?.message || 'Error al actualizar evento', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }
 
 // DELETE /api/admin/eventos/:id
-export async function DELETE (
-  req: NextRequest,
-  context: ContextWithId
-) {
+export async function DELETE(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
     requireAdmin(payload)
@@ -319,7 +307,7 @@ export async function DELETE (
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error DELETE /api/admin/eventos/[id]:', err)
@@ -330,22 +318,19 @@ export async function DELETE (
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(
-      err?.message || 'Error al eliminar evento',
-      {
-        status: 500,
-        headers: corsBaseHeaders()
-      }
-    )
+    return new NextResponse(err?.message || 'Error al eliminar evento', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
   }
 }

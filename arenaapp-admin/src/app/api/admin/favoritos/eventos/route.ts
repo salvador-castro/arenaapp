@@ -6,26 +6,26 @@ import type { JwtPayload } from '@/lib/auth'
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 const FAVORITO_TIPO_EVENTO = 'EVENTO' as const // 👈 clave
 
-function corsBaseHeaders () {
+function corsBaseHeaders() {
   return {
     'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
   }
 }
 
-export function OPTIONS () {
+export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
       ...corsBaseHeaders(),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
   })
 }
 
 // Helper → saca el userId del payload
-function getUserIdFromAuth (payload: JwtPayload): number {
+function getUserIdFromAuth(payload: JwtPayload): number {
   const userId = (payload as any)?.sub
   if (!userId) {
     throw new Error('Token sin sub (userId)')
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -87,26 +87,25 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(rows, {
       status: 200,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err) {
     console.error('Error GET /favoritos/eventos', err)
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
-
 // POST → marca un evento como favorito
-export async function POST (req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -118,7 +117,7 @@ export async function POST (req: NextRequest) {
     if (!eventoId || Number.isNaN(eventoId)) {
       return new NextResponse('eventoId inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -133,25 +132,25 @@ export async function POST (req: NextRequest) {
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error POST /favoritos/eventos', err)
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
 
 // DELETE → quita un evento de favoritos
-export async function DELETE (req: NextRequest) {
+export async function DELETE(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -163,7 +162,7 @@ export async function DELETE (req: NextRequest) {
     if (!eventoId || Number.isNaN(eventoId)) {
       return new NextResponse('eventoId inválido', {
         status: 400,
-        headers: corsBaseHeaders()
+        headers: corsBaseHeaders(),
       })
     }
 
@@ -179,13 +178,13 @@ export async function DELETE (req: NextRequest) {
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   } catch (err: any) {
     console.error('Error DELETE /favoritos/eventos', err)
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders()
+      headers: corsBaseHeaders(),
     })
   }
 }
