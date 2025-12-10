@@ -1,4 +1,3 @@
-// C:\Users\salvaCastro\Desktop\arenaapp-front\src\components\UploadAvatar.tsx
 'use client'
 
 import React, { useRef, ChangeEvent } from 'react'
@@ -26,6 +25,12 @@ export default function UploadAvatar ({
     // limpiamos en el padre
     onFileSelected(null, null)
     onError?.(null)
+
+    // MUY IMPORTANTE: limpiar el input file para que al elegir el mismo archivo
+    // se dispare de nuevo el onChange
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   function handleAvatarChange (e: ChangeEvent<HTMLInputElement>) {
@@ -46,8 +51,9 @@ export default function UploadAvatar ({
     const previewUrl = URL.createObjectURL(file)
     onFileSelected(file, previewUrl)
 
-    // NO reseteamos el input acá, por si el usuario abre el diálogo de nuevo
-    // y el navegador no dispara change si el archivo es el mismo
+    // 🔑 resetear el input SIEMPRE después de procesar el archivo,
+    // así si el usuario elige de nuevo el mismo archivo, onChange vuelve a dispararse.
+    e.target.value = ''
   }
 
   return (
