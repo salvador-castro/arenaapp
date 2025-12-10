@@ -5,7 +5,13 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
-import { Instagram, SlidersHorizontal, ChevronDown, MapPin } from 'lucide-react'
+import {
+  Instagram,
+  SlidersHorizontal,
+  ChevronDown,
+  MapPin,
+  Heart
+} from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
@@ -45,6 +51,7 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/galerias/public`
+const FAVORITOS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
 const PAGE_SIZE = 12
 
 function getInstagramHandle (url: string | null): string {
@@ -96,6 +103,16 @@ export default function GaleriasPage () {
 
   const [currentPage, setCurrentPage] = useState(1)
 
+  // ⭐ Favoritos
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([])
+  const [favLoadingId, setFavLoadingId] = useState<number | null>(null)
+  const [favError, setFavError] = useState<string | null>(null)
+
+  const token: string =
+    auth?.accessToken || auth?.token || auth?.access_token || ''
+
+  const isFavorite = (id: number | string) => favoriteIds.includes(Number(id))
+
   // Guardia de auth (igual que restaurantes)
   useEffect(() => {
     if (isLoading) return
@@ -140,6 +157,36 @@ export default function GaleriasPage () {
     fetchGalerias()
   }, [user])
 
+  // Traer favoritos de galerías del usuario
+  useEffect(() => {
+    if (!user || !token) return
+
+    const fetchFavoritos = async () => {
+      try {
+        setFavError(null)
+        const res = await fetch(FAVORITOS_ENDPOINT, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (!res.ok) {
+          throw new Error(`Error HTTP ${res.status}`)
+        }
+
+        const data: { item_id: number }[] = await res.json()
+
+        setFavoriteIds(data.map(f => Number(f.item_id)))
+      } catch (err: any) {
+        console.error('Error cargando favoritos de galerías', err)
+        setFavError(err.message ?? 'Error al cargar favoritos')
+      }
+    }
+
+    fetchFavoritos()
+  }, [user, token])
+
   // Si venimos con ?galeriaId=, abrir modal cuando haya data
   useEffect(() => {
     if (!galerias.length) return
@@ -163,6 +210,44 @@ export default function GaleriasPage () {
     setSelectedGaleria(galeria)
     setIsModalOpen(true)
     router.push(`/galerias?galeriaId=${galeria.id}`)
+  }
+
+  const handleToggleFavorite = async (galeria: Galeria) => {
+    if (!token) return
+    try {
+      setFavError(null)
+      setFavLoadingId(Number(galeria.id))
+
+      const res = await fetch(FAVORITOS_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ galeriaId: galeria.id })
+      })
+
+      if (!res.ok) {
+        throw new Error(`Error HTTP ${res.status}`)
+      }
+
+      const data: { isFavorite: boolean } = await res.json()
+
+      setFavoriteIds(prev => {
+        const idNum = Number(galeria.id)
+        if (data.isFavorite) {
+          if (prev.includes(idNum)) return prev
+          return [...prev, idNum]
+        } else {
+          return prev.filter(id => id !== idNum)
+        }
+      })
+    } catch (err: any) {
+      console.error('Error al toggle favorito de galería', err)
+      setFavError(err.message ?? 'Error al guardar favorito')
+    } finally {
+      setFavLoadingId(null)
+    }
   }
 
   // Opciones dinámicas para filtros
@@ -370,6 +455,8 @@ export default function GaleriasPage () {
 
         {error && <p className='text-xs text-red-400'>{error}</p>}
 
+        {favError && <p className='text-xs text-red-400'>{favError}</p>}
+
         {/* Listado */}
         {!loading && !error && filteredGalerias.length === 0 && (
           <p className='text-xs text-slate-400'>
@@ -396,6 +483,26 @@ export default function GaleriasPage () {
                       className='object-cover'
                       sizes='(max-width: 768px) 100vw, 25vw'
                     />
+
+                    {/* Botón favoritos */}
+                    <button
+                      type='button'
+                      onClick={e => {
+                        e.stopPropagation()
+                        handleToggleFavorite(galeria)
+                      }}
+                      className='absolute top-2 right-2 inline-flex items-center justify-center rounded-full bg-slate-950/70 border border-slate-700 p-1.5 hover:bg-slate-900/90 transition'
+                      disabled={favLoadingId === Number(galeria.id)}
+                    >
+                      <Heart
+                        size={16}
+                        className={
+                          isFavorite(galeria.id)
+                            ? 'text-emerald-400 fill-emerald-400'
+                            : 'text-slate-200'
+                        }
+                      />
+                    </button>
                   </div>
 
                   <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
@@ -632,7 +739,26 @@ export default function GaleriasPage () {
                   </div>
                 </div>
 
-                <div className='flex justify-end pt-2'>
+                <div className='flex justify-between items-center pt-2 gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => handleToggleFavorite(selectedGaleria)}
+                    className='inline-flex items-center gap-2 rounded-full border border-emerald-500/60 px-4 py-1.5 text-xs font-medium text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50'
+                    disabled={favLoadingId === Number(selectedGaleria.id)}
+                  >
+                    <Heart
+                      size={14}
+                      className={
+                        isFavorite(selectedGaleria.id)
+                          ? 'text-emerald-400 fill-emerald-400'
+                          : 'text-emerald-300'
+                      }
+                    />
+                    {isFavorite(selectedGaleria.id)
+                      ? 'Quitar de favoritos'
+                      : 'Guardar en favoritos'}
+                  </button>
+
                   <button
                     type='button'
                     onClick={closeModal}

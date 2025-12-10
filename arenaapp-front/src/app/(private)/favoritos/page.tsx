@@ -7,7 +7,13 @@ import Image from 'next/image'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
-type FavoriteTipo = 'RESTAURANTE' | 'BAR' | 'EVENTO'
+type FavoriteTipo =
+  | 'RESTAURANTE'
+  | 'BAR'
+  | 'EVENTO'
+  | 'GALERIA'
+  | 'HOTEL'
+  | 'SHOPPING'
 
 interface FavoriteItem {
   favorito_id: number
@@ -35,6 +41,9 @@ const API_BASE = (
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
 const FAVORITOS_BARES_ENDPOINT = `${API_BASE}/api/admin/favoritos/bares`
 const FAVORITOS_EVENTOS_ENDPOINT = `${API_BASE}/api/admin/favoritos/eventos`
+const FAVORITOS_GALERIAS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
+const FAVORITOS_HOTELES_ENDPOINT = `${API_BASE}/api/admin/favoritos/hoteles`
+const FAVORITOS_SHOPPING_ENDPOINT = `${API_BASE}/api/admin/favoritos/shopping`
 
 function renderPriceRange (rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
@@ -68,7 +77,16 @@ export default function FavoritosPage () {
     }
   }, [user, isLoading, router])
 
-  // Cargar favoritos (restaurantes + bares + eventos)
+  // helper para headers con Authorization
+  function buildAuthHeaders (extra: HeadersInit = {}): HeadersInit {
+    const headers: HeadersInit = { ...extra }
+    if (auth?.token) {
+      headers['Authorization'] = `Bearer ${auth.token}`
+    }
+    return headers
+  }
+
+  // Cargar favoritos (restaurantes + bares + eventos + galerías + hoteles + shopping)
   useEffect(() => {
     if (!user) return
 
@@ -77,12 +95,16 @@ export default function FavoritosPage () {
         setLoading(true)
         setError(null)
 
-        const headers: HeadersInit = {}
-        if (auth?.token) {
-          headers['Authorization'] = `Bearer ${auth.token}`
-        }
+        const headers = buildAuthHeaders()
 
-        const [resRest, resBares, resEventos] = await Promise.all([
+        const [
+          resRest,
+          resBares,
+          resEventos,
+          resGalerias,
+          resHoteles,
+          resShopping
+        ] = await Promise.all([
           fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
             method: 'GET',
             headers,
@@ -90,9 +112,25 @@ export default function FavoritosPage () {
           }),
           fetch(FAVORITOS_BARES_ENDPOINT, {
             method: 'GET',
+            headers,
             credentials: 'include'
           }),
           fetch(FAVORITOS_EVENTOS_ENDPOINT, {
+            method: 'GET',
+            headers,
+            credentials: 'include'
+          }),
+          fetch(FAVORITOS_GALERIAS_ENDPOINT, {
+            method: 'GET',
+            headers,
+            credentials: 'include'
+          }),
+          fetch(FAVORITOS_HOTELES_ENDPOINT, {
+            method: 'GET',
+            headers,
+            credentials: 'include'
+          }),
+          fetch(FAVORITOS_SHOPPING_ENDPOINT, {
             method: 'GET',
             headers,
             credentials: 'include'
@@ -108,15 +146,27 @@ export default function FavoritosPage () {
         if (!resEventos.ok) {
           throw new Error(`Error HTTP favoritos eventos ${resEventos.status}`)
         }
+        if (!resGalerias.ok) {
+          throw new Error(`Error HTTP favoritos galerías ${resGalerias.status}`)
+        }
+        if (!resHoteles.ok) {
+          throw new Error(`Error HTTP favoritos hoteles ${resHoteles.status}`)
+        }
+        if (!resShopping.ok) {
+          throw new Error(`Error HTTP favoritos shopping ${resShopping.status}`)
+        }
 
         const dataRest: any[] = await resRest.json()
         const dataBares: any[] = await resBares.json()
         const dataEventos: any[] = await resEventos.json()
+        const dataGalerias: any[] = await resGalerias.json()
+        const dataHoteles: any[] = await resHoteles.json()
+        const dataShopping: any[] = await resShopping.json()
 
         const mappedRest: FavoriteItem[] = dataRest
           .map(row => ({
             favorito_id: Number(row.favorito_id),
-            item_id: Number(row.restaurante_id),
+            item_id: Number(row.restaurante_id ?? row.id),
             tipo: 'RESTAURANTE' as const,
             nombre: row.nombre,
             tipo_comida: row.tipo_comida,
@@ -130,7 +180,7 @@ export default function FavoritosPage () {
             sitio_web: row.sitio_web,
             rango_precios: row.rango_precios,
             estrellas: row.estrellas,
-            url_imagen: row.url_imagen
+            url_imagen: row.url_imagen ?? row.imagen_principal ?? null
           }))
           .filter(f => !Number.isNaN(f.item_id))
 
@@ -151,14 +201,14 @@ export default function FavoritosPage () {
             sitio_web: row.sitio_web,
             rango_precios: row.rango_precios,
             estrellas: row.estrellas,
-            url_imagen: row.url_imagen ?? row.imagen_principal
+            url_imagen: row.url_imagen ?? row.imagen_principal ?? null
           }))
           .filter(f => !Number.isNaN(f.item_id))
 
         const mappedEventos: FavoriteItem[] = dataEventos
           .map(row => ({
             favorito_id: Number(row.favorito_id),
-            item_id: Number(row.evento_id),
+            item_id: Number(row.evento_id ?? row.id),
             tipo: 'EVENTO' as const,
             nombre: row.titulo,
             // uso categoria como "tipo_comida" para reusar el badge
@@ -171,17 +221,83 @@ export default function FavoritosPage () {
             zona: row.zona,
             pais: null,
             sitio_web: row.url_entradas,
-            // para eventos no usamos el rango de precios tipo $$$, lo dejo null
             rango_precios: null,
             estrellas: null,
-            url_imagen: row.imagen_principal
+            url_imagen: row.imagen_principal ?? row.url_imagen ?? null
           }))
           .filter(f => !Number.isNaN(f.item_id))
 
-        // combinados, ordenados por favorito_id desc (aprox por fecha)
-        const combined = [...mappedRest, ...mappedBares, ...mappedEventos].sort(
-          (a, b) => b.favorito_id - a.favorito_id
-        )
+        const mappedGalerias: FavoriteItem[] = dataGalerias
+          .map(row => ({
+            favorito_id: Number(row.favorito_id),
+            item_id: Number(row.galeria_id ?? row.id),
+            tipo: 'GALERIA' as const,
+            nombre: row.nombre,
+            tipo_comida: null,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta ?? row.resena ?? null,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: null,
+            estrellas: null,
+            url_imagen: row.url_imagen ?? row.imagen_principal ?? null
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
+        const mappedHoteles: FavoriteItem[] = dataHoteles
+          .map(row => ({
+            favorito_id: Number(row.favorito_id),
+            item_id: Number(row.hotel_id ?? row.id),
+            tipo: 'HOTEL' as const,
+            nombre: row.nombre,
+            tipo_comida: null,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta ?? row.descripcion_larga,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: row.rango_precios ?? null,
+            estrellas: row.estrellas ?? null,
+            url_imagen: row.url_imagen ?? row.imagen_principal ?? null
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
+        const mappedShopping: FavoriteItem[] = dataShopping
+          .map(row => ({
+            favorito_id: Number(row.favorito_id),
+            item_id: Number(row.shopping_id ?? row.id),
+            tipo: 'SHOPPING' as const,
+            nombre: row.nombre,
+            tipo_comida: null,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta ?? null,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: null,
+            estrellas: null,
+            url_imagen: row.url_imagen ?? row.imagen_principal ?? null
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
+        const combined = [
+          ...mappedRest,
+          ...mappedBares,
+          ...mappedEventos,
+          ...mappedGalerias,
+          ...mappedHoteles,
+          ...mappedShopping
+        ].sort((a, b) => b.favorito_id - a.favorito_id)
 
         setFavorites(combined)
       } catch (err: any) {
@@ -201,12 +317,9 @@ export default function FavoritosPage () {
 
     try {
       if (tipo === 'RESTAURANTE') {
-        const headers: HeadersInit = {
+        const headers = buildAuthHeaders({
           'Content-Type': 'application/json'
-        }
-        if (auth?.token) {
-          headers['Authorization'] = `Bearer ${auth.token}`
-        }
+        })
 
         const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
           method: 'DELETE',
@@ -223,12 +336,14 @@ export default function FavoritosPage () {
           return
         }
       } else if (tipo === 'BAR') {
+        const headers = buildAuthHeaders({
+          'Content-Type': 'application/json'
+        })
+
         const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
           method: 'DELETE',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers,
           body: JSON.stringify({ barId: item_id })
         })
 
@@ -236,14 +351,10 @@ export default function FavoritosPage () {
           console.error('Error al quitar favorito bar', await res.text())
           return
         }
-      } else {
-        // EVENTO
-        const headers: HeadersInit = {
+      } else if (tipo === 'EVENTO') {
+        const headers = buildAuthHeaders({
           'Content-Type': 'application/json'
-        }
-        if (auth?.token) {
-          headers['Authorization'] = `Bearer ${auth.token}`
-        }
+        })
 
         const res = await fetch(FAVORITOS_EVENTOS_ENDPOINT, {
           method: 'DELETE',
@@ -254,6 +365,54 @@ export default function FavoritosPage () {
 
         if (!res.ok) {
           console.error('Error al quitar favorito evento', await res.text())
+          return
+        }
+      } else if (tipo === 'GALERIA') {
+        const headers = buildAuthHeaders({
+          'Content-Type': 'application/json'
+        })
+
+        const res = await fetch(FAVORITOS_GALERIAS_ENDPOINT, {
+          method: 'DELETE',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ galeriaId: item_id }) // ajustá si tu API usa otro nombre
+        })
+
+        if (!res.ok) {
+          console.error('Error al quitar favorito galería', await res.text())
+          return
+        }
+      } else if (tipo === 'HOTEL') {
+        const headers = buildAuthHeaders({
+          'Content-Type': 'application/json'
+        })
+
+        const res = await fetch(FAVORITOS_HOTELES_ENDPOINT, {
+          method: 'DELETE',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ hotelId: item_id }) // ajustá si tu API usa otro nombre
+        })
+
+        if (!res.ok) {
+          console.error('Error al quitar favorito hotel', await res.text())
+          return
+        }
+      } else if (tipo === 'SHOPPING') {
+        const headers = buildAuthHeaders({
+          'Content-Type': 'application/json'
+        })
+
+        const res = await fetch(FAVORITOS_SHOPPING_ENDPOINT, {
+          method: 'DELETE',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ shoppingId: item_id }) // ajustá si tu API usa otro nombre
+        })
+
+        if (!res.ok) {
+          console.error('Error al quitar favorito shopping', await res.text())
           return
         }
       }
@@ -273,8 +432,33 @@ export default function FavoritosPage () {
       router.push(`/restaurantes?restauranteId=${item.item_id}`)
     } else if (item.tipo === 'BAR') {
       router.push(`/bares?barId=${item.item_id}`)
-    } else {
+    } else if (item.tipo === 'EVENTO') {
       router.push(`/eventos?eventoId=${item.item_id}`)
+    } else if (item.tipo === 'GALERIA') {
+      router.push(`/galerias?galeriaId=${item.item_id}`)
+    } else if (item.tipo === 'HOTEL') {
+      router.push(`/hoteles?hotelId=${item.item_id}`)
+    } else if (item.tipo === 'SHOPPING') {
+      router.push(`/shopping?shoppingId=${item.item_id}`)
+    }
+  }
+
+  const getTipoLabel = (tipo: FavoriteTipo) => {
+    switch (tipo) {
+      case 'RESTAURANTE':
+        return 'Restaurante'
+      case 'BAR':
+        return 'Bar'
+      case 'EVENTO':
+        return 'Evento'
+      case 'GALERIA':
+        return 'Galería'
+      case 'HOTEL':
+        return 'Hotel'
+      case 'SHOPPING':
+        return 'Shopping'
+      default:
+        return 'Lugar'
     }
   }
 
@@ -339,11 +523,7 @@ export default function FavoritosPage () {
                       {place.zona || 'Zona no especificada'}
                     </p>
                     <span className='text-[9px] uppercase tracking-wide text-slate-500 border border-slate-700 rounded-full px-2 py-[2px]'>
-                      {place.tipo === 'RESTAURANTE'
-                        ? 'Restaurante'
-                        : place.tipo === 'BAR'
-                        ? 'Bar'
-                        : 'Evento'}
+                      {getTipoLabel(place.tipo)}
                     </span>
                   </div>
 
@@ -357,7 +537,7 @@ export default function FavoritosPage () {
                     </p>
                   )}
 
-                  {/* Para eventos estrellas/rango quedarán en "-" y no rompen el layout */}
+                  {/* Para tipos sin estrellas/rango quedarán en "-" y no rompen el layout */}
                   <div className='flex items-center gap-2 mt-1'>
                     <span className='text-amber-400'>
                       {renderStars(place.estrellas)}
