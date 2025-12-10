@@ -54,14 +54,14 @@ function LoginPageInner () {
         return
       }
 
-      // el backend devuelve los datos del usuario
+      // el backend devuelve los datos del usuario (incluyendo avatar_url)
       const user: User = {
         id: data.user.id,
         nombre: data.user.nombre,
         apellido: data.user.apellido,
         email: data.user.email,
-        rol: data.user.rol
-        // si tu interfaz User tiene más campos obligatorios, sumalos acá
+        rol: data.user.rol,
+        avatar_url: data.user.avatar_url ?? null
       }
 
       console.log('Login OK FRONT, user armado:', user)
