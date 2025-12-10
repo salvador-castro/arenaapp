@@ -8,6 +8,7 @@ import { CountrySelect } from '../../../components/CountrySelect'
 import UserDropdown from '@/components/UserDropdown'
 import BottomNav from '@/components/BottomNav'
 import { useAuth } from '@/context/AuthContext'
+import UploadAvatar from '@/components/UploadAvatar'
 
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
@@ -27,24 +28,22 @@ export default function ProfilePage () {
   const [pais, setPais] = useState('')
   const [telefono, setTelefono] = useState('')
   const [bio, setBio] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   const [passwordActual, setPasswordActual] = useState('')
   const [passwordNueva, setPasswordNueva] = useState('')
   const [passwordRepetida, setPasswordRepetida] = useState('')
 
-  const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null)
-
   const [message, setMessage] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
 
   const [showActual, setShowActual] = useState(false)
   const [showNueva, setShowNueva] = useState(false)
   const [showRepetida, setShowRepetida] = useState(false)
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
-
   const [perfilCargado, setPerfilCargado] = useState(false)
+
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   // 🔒 Protección de ruta: si no hay user, mandar a login
   useEffect(() => {
@@ -92,20 +91,6 @@ export default function ProfilePage () {
 
   const passwordsMismatch =
     passwordRepetida.length > 0 && passwordRepetida !== passwordNueva
-
-  function handleAvatarChange (e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (file.size > 2 * 1024 * 1024) {
-      setError('La imagen no puede superar los 2 MB.')
-      return
-    }
-
-    setNewAvatarFile(file)
-    const previewUrl = URL.createObjectURL(file)
-    setAvatarUrl(previewUrl)
-  }
 
   async function handleSubmit (e: FormEvent) {
     e.preventDefault()
@@ -289,57 +274,18 @@ export default function ProfilePage () {
 
           {user && (
             <form onSubmit={handleSubmit} className='space-y-4'>
-              {/* Avatar + botón cambiar */}
-              <div className='flex items-center gap-4 mb-4'>
-                <div className='h-16 w-16 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700'>
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt='Avatar'
-                      className='h-full w-full object-cover'
-                    />
-                  ) : (
-                    <span className='text-lg font-semibold text-slate-300'>
-                      {initials || '👤'}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <p className='text-sm font-medium'>Foto de perfil</p>
-                  <p className='text-xs text-slate-400 mb-2'>
-                    PNG o JPG, máximo 2 MB.
-                  </p>
-                  <div className='flex items-center gap-2'>
-                    <button
-                      type='button'
-                      onClick={() => fileInputRef.current?.click()}
-                      className='rounded-lg bg-slate-800 text-slate-100 font-semibold px-3 py-1.5 text-xs hover:bg-slate-700 transition cursor-pointer'
-                    >
-                      Cambiar foto
-                    </button>
-                    {avatarUrl && (
-                      <button
-                        type='button'
-                        onClick={() => {
-                          setAvatarUrl(null)
-                          setNewAvatarFile(null)
-                        }}
-                        className='text-[11px] text-slate-400 hover:text-red-400'
-                      >
-                        Quitar foto
-                      </button>
-                    )}
-                  </div>
-
-                  <input
-                    ref={fileInputRef}
-                    type='file'
-                    accept='image/*'
-                    className='hidden'
-                    onChange={handleAvatarChange}
-                  />
-                </div>
-              </div>
+              {/* Avatar + botón cambiar (componente reutilizable) */}
+              <UploadAvatar
+                avatarUrl={avatarUrl}
+                initials={initials || '👤'}
+                onFileSelected={(file, previewUrl) => {
+                  setNewAvatarFile(file)
+                  setAvatarUrl(previewUrl)
+                }}
+                onError={msg => {
+                  setError(msg)
+                }}
+              />
 
               <div className='grid gap-4 md:grid-cols-2'>
                 <div>
