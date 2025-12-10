@@ -1,12 +1,10 @@
-// /Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/app/api/admin/favoritos/eventos/route.ts
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth } from '@/lib/auth'
 import type { JwtPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
-const FAVORITO_TIPO_EVENTO = 'LUGAR' // mismo tipo_favorito que usás para restaurantes/bares
+const FAVORITO_TIPO_EVENTO = 'EVENTO' as const // 👈 clave
 
 function corsBaseHeaders () {
   return {
@@ -26,182 +24,148 @@ export function OPTIONS () {
   })
 }
 
-// Helper -> saca el userId del payload
+// Helper → saca el userId del payload
 function getUserIdFromAuth (payload: JwtPayload): number {
-  const userId = Number(payload.sub)
-
-  if (!userId || Number.isNaN(userId)) {
-    throw new Error('UNAUTHORIZED_INVALID_USER')
+  const userId = (payload as any)?.sub
+  if (!userId) {
+    throw new Error('Token sin sub (userId)')
   }
-
-  return userId
+  const parsed = Number(userId)
+  if (Number.isNaN(parsed)) {
+    throw new Error('sub del token no es numérico')
+  }
+  return parsed
 }
 
-/* =========================
-   GET → listar favoritos de eventos
-========================= */
+// GET → lista favoritos de EVENTOS para el usuario logueado
 export async function GET (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req)
-    const userId = getUserIdFromAuth(auth)
+    const payload = await verifyAuth(req)
+    if (!payload) {
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders()
+      })
+    }
 
+    const userId = getUserIdFromAuth(payload)
     const db = await getDb()
 
-    const query = `
+    const { rows } = await db.query(
+      `
       SELECT
         f.id AS favorito_id,
-        f.created_at,
         e.id AS evento_id,
-        e.titulo,
-        e.slug,
-        e.categoria,
-        e.es_destacado,
-        e.fecha_inicio,
-        e.fecha_fin,
-        e.es_todo_el_dia,
-        e.zona,
-        e.direccion,
-        e.es_gratuito,
-        e.precio_desde,
-        e.moneda,
-        e.url_entradas,
-        e.estado,
-        e.visibilidad,
-        e.resena,
-        e.imagen_principal
-      FROM public.favoritos f
-      JOIN public.eventos e ON e.id = f.item_id
+        e.*
+      FROM favoritos f
+      JOIN eventos e ON e.id = f.item_id
       WHERE f.usuario_id = $1
-        AND f.tipo = $2::tipo_favorito
-        AND e.estado = 'PUBLICADO'
-        AND e.visibilidad = 'PUBLICO'
-      ORDER BY f.created_at DESC
-    `
+        AND f.tipo = $2
+      ORDER BY f.id DESC
+      `,
+      [userId, FAVORITO_TIPO_EVENTO]
+    )
 
-    const { rows } = await db.query(query, [userId, FAVORITO_TIPO_EVENTO])
-
-    return new NextResponse(JSON.stringify(rows), {
+    return NextResponse.json(rows, {
       status: 200,
-      headers: {
-        ...corsBaseHeaders(),
-        'Content-Type': 'application/json'
-      }
+      headers: corsBaseHeaders()
     })
   } catch (err: any) {
-    console.error('Error en GET /api/admin/favoritos/eventos', err?.message ?? err)
-    const status =
-      err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
-
-    return new NextResponse(
-      JSON.stringify({ error: err?.message || 'Error interno o no autenticado' }),
-      { status, headers: { ...corsBaseHeaders() } }
-    )
+    console.error('Error GET /favoritos/eventos', err)
+    return new NextResponse('Error interno', {
+      status: 500,
+      headers: corsBaseHeaders()
+    })
   }
 }
 
-/* =========================
-   POST → guardar favorito de evento
-========================= */
+// POST → marca un evento como favorito
 export async function POST (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req)
-    const userId = getUserIdFromAuth(auth)
-
-    const body = await req.json().catch(() => null)
-    const eventoId = Number(body?.eventoId)
-
-    if (!eventoId || Number.isNaN(eventoId)) {
-      return new NextResponse(
-        JSON.stringify({ error: 'eventoId inválido' }),
-        { status: 400, headers: { ...corsBaseHeaders() } }
-      )
+    const payload = await verifyAuth(req)
+    if (!payload) {
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders()
+      })
     }
 
+    const userId = getUserIdFromAuth(payload)
     const db = await getDb()
+    const body = await req.json()
 
-    const query = `
-      INSERT INTO public.favoritos (usuario_id, tipo, item_id)
-      VALUES ($1, $2::tipo_favorito, $3)
-      ON CONFLICT (usuario_id, tipo, item_id)
-      DO NOTHING
-      RETURNING id, created_at
-    `
-    const { rows } = await db.query(query, [
-      userId,
-      FAVORITO_TIPO_EVENTO,
-      eventoId
-    ])
+    const eventoId = Number(body.eventoId ?? body.evento_id ?? body.id)
+    if (!eventoId || Number.isNaN(eventoId)) {
+      return new NextResponse('eventoId inválido', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
 
-    return new NextResponse(
-      JSON.stringify({
-        ok: true,
-        created: rows.length > 0
-      }),
-      {
-        status: 201,
-        headers: {
-          ...corsBaseHeaders(),
-          'Content-Type': 'application/json'
-        }
-      }
+    await db.query(
+      `
+      INSERT INTO favoritos (usuario_id, tipo, item_id)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (usuario_id, tipo, item_id) DO NOTHING
+      `,
+      [userId, FAVORITO_TIPO_EVENTO, eventoId]
     )
+
+    return new NextResponse(null, {
+      status: 204,
+      headers: corsBaseHeaders()
+    })
   } catch (err: any) {
-    console.error('Error en POST /api/admin/favoritos/eventos', err?.message ?? err)
-    const status =
-      err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
-
-    return new NextResponse(
-      JSON.stringify({ error: err?.message || 'Error interno o no autenticado' }),
-      { status, headers: { ...corsBaseHeaders() } }
-    )
+    console.error('Error POST /favoritos/eventos', err)
+    return new NextResponse('Error interno', {
+      status: 500,
+      headers: corsBaseHeaders()
+    })
   }
 }
 
-/* =========================
-   DELETE → quitar favorito de evento
-========================= */
+// DELETE → quita un evento de favoritos
 export async function DELETE (req: NextRequest) {
   try {
-    const auth = await verifyAuth(req)
-    const userId = getUserIdFromAuth(auth)
-
-    const body = await req.json().catch(() => null)
-    const eventoId = Number(body?.eventoId)
-
-    if (!eventoId || Number.isNaN(eventoId)) {
-      return new NextResponse(
-        JSON.stringify({ error: 'eventoId inválido' }),
-        { status: 400, headers: { ...corsBaseHeaders() } }
-      )
+    const payload = await verifyAuth(req)
+    if (!payload) {
+      return new NextResponse('No autorizado', {
+        status: 401,
+        headers: corsBaseHeaders()
+      })
     }
 
+    const userId = getUserIdFromAuth(payload)
     const db = await getDb()
-    const query = `
-      DELETE FROM public.favoritos
+    const body = await req.json()
+
+    const eventoId = Number(body.eventoId ?? body.evento_id ?? body.id)
+    if (!eventoId || Number.isNaN(eventoId)) {
+      return new NextResponse('eventoId inválido', {
+        status: 400,
+        headers: corsBaseHeaders()
+      })
+    }
+
+    await db.query(
+      `
+      DELETE FROM favoritos
       WHERE usuario_id = $1
-        AND tipo = $2::tipo_favorito
+        AND tipo = $2
         AND item_id = $3
-    `
-    await db.query(query, [userId, FAVORITO_TIPO_EVENTO, eventoId])
-
-    return new NextResponse(
-      JSON.stringify({ ok: true }),
-      {
-        status: 200,
-        headers: {
-          ...corsBaseHeaders(),
-          'Content-Type': 'application/json'
-        }
-      }
+      `,
+      [userId, FAVORITO_TIPO_EVENTO, eventoId]
     )
+
+    return new NextResponse(null, {
+      status: 204,
+      headers: corsBaseHeaders()
+    })
   } catch (err: any) {
-    console.error('Error en DELETE /api/admin/favoritos/eventos', err?.message ?? err)
-    const status =
-      err?.message?.startsWith('UNAUTHORIZED') ? 401 : 500
-
-    return new NextResponse(
-      JSON.stringify({ error: err?.message || 'Error interno o no autenticado' }),
-      { status, headers: { ...corsBaseHeaders() } }
-    )
+    console.error('Error DELETE /favoritos/eventos', err)
+    return new NextResponse('Error interno', {
+      status: 500,
+      headers: corsBaseHeaders()
+    })
   }
 }
