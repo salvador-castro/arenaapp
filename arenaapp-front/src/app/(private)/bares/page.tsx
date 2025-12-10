@@ -5,7 +5,14 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
-import { Instagram, SlidersHorizontal, ChevronDown } from 'lucide-react'
+import {
+  Instagram,
+  SlidersHorizontal,
+  ChevronDown,
+  Heart,
+  HeartOff,
+  Loader2
+} from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
@@ -784,17 +791,31 @@ export default function BaresPage () {
                         type='button'
                         disabled={favoriteLoading}
                         onClick={() => handleToggleFavoriteBar(selectedBar)}
-                        className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
-                          ${
-                            isFavorite
-                              ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
-                              : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
-                          }
-                        `}
+                        className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition
+        ${
+          isFavorite
+            ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
+            : 'bg-slate-900 text-slate-100 border border-slate-700 hover:border-emerald-400 hover:bg-slate-800'
+        }
+        ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
+      `}
                       >
-                        {isFavorite
-                          ? 'Quitar de favoritos'
-                          : 'Guardar como favorito'}
+                        {favoriteLoading ? (
+                          <>
+                            <Loader2 size={14} className='animate-spin' />
+                            <span>Guardando...</span>
+                          </>
+                        ) : isFavorite ? (
+                          <>
+                            <HeartOff size={14} />
+                            <span>Quitar de favoritos</span>
+                          </>
+                        ) : (
+                          <>
+                            <Heart size={14} className='fill-emerald-500/70' />
+                            <span>Guardar como favorito</span>
+                          </>
+                        )}
                       </button>
                     )
                   })()}
