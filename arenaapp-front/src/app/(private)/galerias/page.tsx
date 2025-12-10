@@ -1,17 +1,10 @@
-// /Users/salvacastro/Desktop/arenaapp/arenaapp-front/src/app/(private)/galerias/page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
-import {
-  Instagram,
-  SlidersHorizontal,
-  ChevronDown,
-  MapPin,
-  Heart
-} from 'lucide-react'
+import { SlidersHorizontal, ChevronDown, MapPin } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
@@ -26,8 +19,6 @@ interface Galeria {
   provincia: string | null
   pais: string | null
   zona: string | null
-  lat: number | null
-  lng: number | null
   telefono: string | null
   email_contacto: string | null
   sitio_web: string | null
@@ -36,35 +27,19 @@ interface Galeria {
   anio_fundacion: number | null
   tiene_entrada_gratuita: boolean | null
   requiere_reserva: boolean | null
-  horario_desde: string | null
-  horario_hasta: string | null
+  horario_desde?: string | null
+  horario_hasta?: string | null
   url_imagen: string | null
-  es_destacado: boolean
-  estado: string
+  imagen_principal?: string | null
 }
-
-// 🔠 tipo auxiliar para los selects SI/NO
-type YesNoFilter = '' | 'SI' | 'NO'
 
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/galerias/public`
-const FAVORITOS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
+const FAVORITOS_GALERIAS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
 const PAGE_SIZE = 12
-
-function getInstagramHandle (url: string | null): string {
-  if (!url) return 'Instagram'
-  try {
-    const u = new URL(url)
-    const cleanPath = u.pathname.replace(/\/$/, '')
-    const last = cleanPath.split('/').filter(Boolean).pop()
-    return last || 'Instagram'
-  } catch {
-    return 'Instagram'
-  }
-}
 
 function normalizeText (value: string | null | undefined): string {
   if (!value) return ''
@@ -92,28 +67,19 @@ export default function GaleriasPage () {
   const [selectedGaleria, setSelectedGaleria] = useState<Galeria | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Filtros
+  // filtros
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [zonaFilter, setZonaFilter] = useState('')
-  const [entradaGratisFilter, setEntradaGratisFilter] =
-    useState<YesNoFilter>('')
-  const [requiereReservaFilter, setRequiereReservaFilter] =
-    useState<YesNoFilter>('')
-
   const [currentPage, setCurrentPage] = useState(1)
 
-  // ⭐ Favoritos
-  const [favoriteIds, setFavoriteIds] = useState<number[]>([])
-  const [favLoadingId, setFavLoadingId] = useState<number | null>(null)
-  const [favError, setFavError] = useState<string | null>(null)
+  // favoritos
+  const [favoriteGaleriaIds, setFavoriteGaleriaIds] = useState<Set<number>>(
+    new Set()
+  )
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
 
-  const token: string =
-    auth?.accessToken || auth?.token || auth?.access_token || ''
-
-  const isFavorite = (id: number | string) => favoriteIds.includes(Number(id))
-
-  // Guardia de auth (igual que restaurantes)
+  // 1) Guardia de auth
   useEffect(() => {
     if (isLoading) return
 
@@ -127,7 +93,7 @@ export default function GaleriasPage () {
     }
   }, [user, isLoading, router, galeriaId])
 
-  // Traer galerías PUBLICADAS
+  // 2) Traer todas las galerías PUBLICADAS
   useEffect(() => {
     if (!user) return
 
@@ -148,7 +114,7 @@ export default function GaleriasPage () {
         setGalerias(data)
       } catch (err: any) {
         console.error('Error cargando galerías públicas', err)
-        setError(err.message ?? 'Error al cargar galerías')
+        setError(err?.message ?? 'Error al cargar galerías')
       } finally {
         setLoading(false)
       }
@@ -157,43 +123,52 @@ export default function GaleriasPage () {
     fetchGalerias()
   }, [user])
 
-  // Traer favoritos de galerías del usuario
+  // 3) Traer favoritos de galerías del usuario
   useEffect(() => {
-    if (!user || !token) return
+    if (!user) return
 
-    const fetchFavoritos = async () => {
+    const fetchFavorites = async () => {
       try {
-        setFavError(null)
-        const res = await fetch(FAVORITOS_ENDPOINT, {
+        const headers: HeadersInit = {}
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
+
+        const res = await fetch(FAVORITOS_GALERIAS_ENDPOINT, {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers,
+          credentials: 'include'
         })
 
         if (!res.ok) {
-          throw new Error(`Error HTTP ${res.status}`)
+          console.error(
+            'Error cargando favoritos de galerías',
+            await res.text()
+          )
+          return
         }
 
-        const data: { item_id: number }[] = await res.json()
+        const data: any[] = await res.json()
+        // query devuelve: favorito_id, galeria_id, g.*
+        const ids = data
+          .map(row => Number(row.galeria_id ?? row.id ?? row.item_id))
+          .filter(id => !Number.isNaN(id))
 
-        setFavoriteIds(data.map(f => Number(f.item_id)))
-      } catch (err: any) {
+        setFavoriteGaleriaIds(new Set(ids))
+      } catch (err) {
         console.error('Error cargando favoritos de galerías', err)
-        setFavError(err.message ?? 'Error al cargar favoritos')
       }
     }
 
-    fetchFavoritos()
-  }, [user, token])
+    fetchFavorites()
+  }, [user, auth?.token])
 
-  // Si venimos con ?galeriaId=, abrir modal cuando haya data
+  // 4) Si venimos con ?galeriaId=, abrir ese modal cuando ya hay data
   useEffect(() => {
     if (!galerias.length) return
     if (!galeriaId) return
 
     const found = galerias.find(g => Number(g.id) === Number(galeriaId))
-
     if (found) {
       setSelectedGaleria(found)
       setIsModalOpen(true)
@@ -212,45 +187,7 @@ export default function GaleriasPage () {
     router.push(`/galerias?galeriaId=${galeria.id}`)
   }
 
-  const handleToggleFavorite = async (galeria: Galeria) => {
-    if (!token) return
-    try {
-      setFavError(null)
-      setFavLoadingId(Number(galeria.id))
-
-      const res = await fetch(FAVORITOS_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ galeriaId: galeria.id })
-      })
-
-      if (!res.ok) {
-        throw new Error(`Error HTTP ${res.status}`)
-      }
-
-      const data: { isFavorite: boolean } = await res.json()
-
-      setFavoriteIds(prev => {
-        const idNum = Number(galeria.id)
-        if (data.isFavorite) {
-          if (prev.includes(idNum)) return prev
-          return [...prev, idNum]
-        } else {
-          return prev.filter(id => id !== idNum)
-        }
-      })
-    } catch (err: any) {
-      console.error('Error al toggle favorito de galería', err)
-      setFavError(err.message ?? 'Error al guardar favorito')
-    } finally {
-      setFavLoadingId(null)
-    }
-  }
-
-  // Opciones dinámicas para filtros
+  // 5) Opciones dinámicas (zonas)
   const zonas = useMemo(
     () =>
       Array.from(
@@ -263,7 +200,7 @@ export default function GaleriasPage () {
     [galerias]
   )
 
-  // Aplicar filtros
+  // 6) Aplicar filtros
   const filteredGalerias = useMemo(() => {
     let result = [...galerias]
 
@@ -271,14 +208,14 @@ export default function GaleriasPage () {
     if (term) {
       result = result.filter(g => {
         const nombre = normalizeText(g.nombre)
-        const ciudad = normalizeText(g.ciudad)
-        const provincia = normalizeText(g.provincia)
         const zona = normalizeText(g.zona)
+        const ciudad = normalizeText(g.ciudad)
+        const descripcion = normalizeText(g.descripcion_corta)
         return (
           nombre.includes(term) ||
+          zona.includes(term) ||
           ciudad.includes(term) ||
-          provincia.includes(term) ||
-          zona.includes(term)
+          descripcion.includes(term)
         )
       })
     }
@@ -287,38 +224,16 @@ export default function GaleriasPage () {
       result = result.filter(g => g.zona === zonaFilter)
     }
 
-    if (entradaGratisFilter) {
-      const flag = entradaGratisFilter === 'SI'
-      result = result.filter(
-        g =>
-          g.tiene_entrada_gratuita === flag ||
-          (g.tiene_entrada_gratuita === null && flag === false)
-      )
-    }
-
-    if (requiereReservaFilter) {
-      const flag = requiereReservaFilter === 'SI'
-      result = result.filter(
-        g =>
-          g.requiere_reserva === flag ||
-          (g.requiere_reserva === null && flag === false)
-      )
-    }
-
-    // Primero destacados, luego por nombre
-    result.sort((a, b) => {
-      if (a.es_destacado && !b.es_destacado) return -1
-      if (!a.es_destacado && b.es_destacado) return 1
-      return a.nombre.localeCompare(b.nombre)
-    })
+    // Podés ordenar por nombre y, si tenés, por algún flag de destacado
+    result.sort((a, b) => a.nombre.localeCompare(b.nombre))
 
     return result
-  }, [galerias, search, zonaFilter, entradaGratisFilter, requiereReservaFilter])
+  }, [galerias, search, zonaFilter])
 
-  // reset paginación al cambiar filtros
+  // Reset a página 1 cuando cambian filtros/búsqueda
   useEffect(() => {
     setCurrentPage(1)
-  }, [search, zonaFilter, entradaGratisFilter, requiereReservaFilter])
+  }, [search, zonaFilter])
 
   const totalPages = Math.max(1, Math.ceil(filteredGalerias.length / PAGE_SIZE))
 
@@ -326,6 +241,56 @@ export default function GaleriasPage () {
     const start = (currentPage - 1) * PAGE_SIZE
     return filteredGalerias.slice(start, start + PAGE_SIZE)
   }, [filteredGalerias, currentPage])
+
+  // 7) Toggle favorito de galería
+  const handleToggleFavorite = async (galeria: Galeria) => {
+    if (!galeria?.id) return
+
+    const galeriaIdNumeric = Number(galeria.id)
+    if (!galeriaIdNumeric || Number.isNaN(galeriaIdNumeric)) return
+
+    setFavoriteLoading(true)
+
+    try {
+      const isFavorite = favoriteGaleriaIds.has(galeriaIdNumeric)
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (auth?.token) {
+        headers['Authorization'] = `Bearer ${auth.token}`
+      }
+
+      const res = await fetch(FAVORITOS_GALERIAS_ENDPOINT, {
+        method: isFavorite ? 'DELETE' : 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ galeriaId: galeriaIdNumeric })
+      })
+
+      if (!res.ok) {
+        console.error(
+          'Error al actualizar favorito de galería',
+          await res.text()
+        )
+        return
+      }
+
+      setFavoriteGaleriaIds(prev => {
+        const next = new Set(prev)
+        if (isFavorite) {
+          next.delete(galeriaIdNumeric)
+        } else {
+          next.add(galeriaIdNumeric)
+        }
+        return next
+      })
+    } catch (err) {
+      console.error('Error al actualizar favorito de galería', err)
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
 
   if (isLoading || (!user && !error)) {
     return (
@@ -342,13 +307,13 @@ export default function GaleriasPage () {
       <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
         {/* Título */}
         <header className='flex flex-col gap-1 mb-1'>
-          <h1 className='text-lg font-semibold'>Galerías</h1>
+          <h1 className='text-lg font-semibold'>Galerías de arte</h1>
           <p className='text-xs text-slate-400'>
-            Descubrí galerías de arte y espacios culturales.
+            Espacios culturales, galerías y salas de exposición.
           </p>
         </header>
 
-        {/* Filtros colapsables */}
+        {/* Filtros */}
         <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
           <button
             type='button'
@@ -371,91 +336,49 @@ export default function GaleriasPage () {
           </button>
 
           {filtersOpen && (
-            <>
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                {/* Buscador */}
-                <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
-                    Buscar
-                  </label>
-                  <input
-                    type='text'
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder='Nombre, ciudad, provincia...'
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
-                  />
-                </div>
-
-                {/* Zona */}
-                <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
-                    Zona
-                  </label>
-                  <select
-                    value={zonaFilter}
-                    onChange={e => setZonaFilter(e.target.value)}
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
-                  >
-                    <option value=''>Todas</option>
-                    {zonas.map(z => (
-                      <option key={z} value={z}>
-                        {z}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Entrada gratuita */}
-                <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
-                    Entrada gratuita
-                  </label>
-                  <select
-                    value={entradaGratisFilter}
-                    onChange={e =>
-                      setEntradaGratisFilter(e.target.value as YesNoFilter)
-                    }
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
-                  >
-                    <option value=''>Todas</option>
-                    <option value='SI'>Sí</option>
-                    <option value='NO'>No</option>
-                  </select>
-                </div>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              {/* Buscador */}
+              <div>
+                <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  Buscar
+                </label>
+                <input
+                  type='text'
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder='Nombre, zona, ciudad...'
+                  className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                />
               </div>
 
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                {/* Requiere reserva */}
-                <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
-                    Requiere reserva
-                  </label>
-                  <select
-                    value={requiereReservaFilter}
-                    onChange={e =>
-                      setRequiereReservaFilter(e.target.value as YesNoFilter)
-                    }
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
-                  >
-                    <option value=''>Todas</option>
-                    <option value='SI'>Sí</option>
-                    <option value='NO'>No</option>
-                  </select>
-                </div>
+              {/* Zona */}
+              <div>
+                <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  Zona
+                </label>
+                <select
+                  value={zonaFilter}
+                  onChange={e => setZonaFilter(e.target.value)}
+                  className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                >
+                  <option value=''>Todas</option>
+                  {zonas.map(z => (
+                    <option key={z} value={z}>
+                      {z}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </>
+            </div>
           )}
         </section>
 
-        {/* Estado de carga / error */}
+        {/* Estado carga/error */}
         {loading && (
           <p className='text-xs text-slate-400'>Cargando galerías...</p>
         )}
 
         {error && <p className='text-xs text-red-400'>{error}</p>}
-
-        {favError && <p className='text-xs text-red-400'>{favError}</p>}
 
         {/* Listado */}
         {!loading && !error && filteredGalerias.length === 0 && (
@@ -467,86 +390,53 @@ export default function GaleriasPage () {
         {!loading && !error && filteredGalerias.length > 0 && (
           <>
             <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-              {paginatedGalerias.map(galeria => (
+              {paginatedGalerias.map(g => (
                 <div
-                  key={galeria.id}
+                  key={g.id}
                   className='rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
                 >
-                  <div className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800'>
+                  <div
+                    className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer'
+                    onClick={() => openModalFromCard(g)}
+                  >
                     <Image
-                      alt={galeria.nombre}
+                      alt={g.nombre}
                       src={
-                        galeria.url_imagen ||
+                        g.url_imagen ||
+                        g.imagen_principal ||
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
                       className='object-cover'
                       sizes='(max-width: 768px) 100vw, 25vw'
                     />
-
-                    {/* Botón favoritos */}
-                    <button
-                      type='button'
-                      onClick={e => {
-                        e.stopPropagation()
-                        handleToggleFavorite(galeria)
-                      }}
-                      className='absolute top-2 right-2 inline-flex items-center justify-center rounded-full bg-slate-950/70 border border-slate-700 p-1.5 hover:bg-slate-900/90 transition'
-                      disabled={favLoadingId === Number(galeria.id)}
-                    >
-                      <Heart
-                        size={16}
-                        className={
-                          isFavorite(galeria.id)
-                            ? 'text-emerald-400 fill-emerald-400'
-                            : 'text-slate-200'
-                        }
-                      />
-                    </button>
                   </div>
 
                   <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
                     <p className='text-[10px] uppercase font-semibold text-emerald-400'>
-                      {galeria.zona ||
-                        galeria.ciudad ||
-                        galeria.provincia ||
-                        'Ubicación no especificada'}
+                      {g.zona || 'Zona no especificada'}
                     </p>
-
                     <h3 className='text-sm font-semibold line-clamp-1'>
-                      {galeria.nombre}
+                      {g.nombre}
                     </h3>
 
-                    {galeria.descripcion_corta && (
+                    {g.descripcion_corta && (
                       <p className='text-slate-400 line-clamp-2'>
-                        {galeria.descripcion_corta}
+                        {g.descripcion_corta}
                       </p>
                     )}
 
-                    {galeria.direccion && (
-                      <p className='mt-1 text-[10px] text-slate-500 line-clamp-1 flex items-center gap-1'>
-                        <MapPin size={11} className='shrink-0' />
-                        {galeria.direccion}
-                      </p>
+                    {g.direccion && (
+                      <div className='mt-1 flex items-center gap-1 text-[10px] text-slate-500 line-clamp-1'>
+                        <MapPin size={11} />
+                        <span>{g.direccion}</span>
+                      </div>
                     )}
-
-                    <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
-                      {galeria.tiene_entrada_gratuita && (
-                        <span className='inline-flex rounded-full border border-emerald-500/60 px-2 py-[2px] text-[10px] text-emerald-300'>
-                          Entrada gratuita
-                        </span>
-                      )}
-                      {galeria.requiere_reserva && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
-                          Requiere reserva
-                        </span>
-                      )}
-                    </div>
 
                     <div className='mt-2 flex justify-end'>
                       <button
                         type='button'
-                        onClick={() => openModalFromCard(galeria)}
+                        onClick={() => openModalFromCard(g)}
                         className='rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors'
                       >
                         Más info
@@ -589,31 +479,33 @@ export default function GaleriasPage () {
         {/* MODAL detalle */}
         {isModalOpen && selectedGaleria && (
           <div
-            className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'
+            className='fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4'
             onClick={closeModal}
           >
             <div
-              className='relative mt-10 mb-24 w-full max-w-lg max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
+              className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
               onClick={e => e.stopPropagation()}
             >
+              {/* Botón cerrar arriba a la derecha */}
               <button
                 type='button'
                 onClick={closeModal}
                 className='absolute top-3 right-3 z-20
-                   flex h-8 w-8 items-center justify-center
-                   rounded-full bg-slate-900/80 border border-slate-700
-                   text-sm text-slate-200 hover:bg-slate-800 transition'
+                           flex h-8 w-8 items-center justify-center
+                           rounded-full bg-slate-900/80 border border-slate-700
+                           text-sm text-slate-200 hover:bg-slate-800 transition'
               >
                 ✕
               </button>
 
-              <div className='px-4 pb-4 pt-1 sm:p-6 space-y-4'>
+              <div className='px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4'>
                 <div className='flex flex-col sm:flex-row gap-4'>
                   <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
                     <Image
                       alt={selectedGaleria.nombre}
                       src={
                         selectedGaleria.url_imagen ||
+                        selectedGaleria.imagen_principal ||
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
@@ -624,46 +516,17 @@ export default function GaleriasPage () {
 
                   <div className='flex-1 space-y-1'>
                     <p className='text-[11px] uppercase font-semibold text-emerald-400'>
-                      {selectedGaleria.zona ||
-                        selectedGaleria.ciudad ||
-                        selectedGaleria.provincia ||
-                        'Ubicación no especificada'}
+                      {selectedGaleria.zona || 'Zona no especificada'}
                     </p>
                     <h3 className='text-lg font-semibold'>
                       {selectedGaleria.nombre}
                     </h3>
 
-                    {selectedGaleria.instagram && (
-                      <a
-                        href={selectedGaleria.instagram}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1'
-                      >
-                        <Instagram size={14} />
-                        <span>
-                          @{getInstagramHandle(selectedGaleria.instagram)}
-                        </span>
-                      </a>
+                    {selectedGaleria.anio_fundacion && (
+                      <p className='text-[11px] text-slate-400'>
+                        Fundada en {selectedGaleria.anio_fundacion}
+                      </p>
                     )}
-
-                    <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
-                      {selectedGaleria.tiene_entrada_gratuita && (
-                        <span className='inline-flex rounded-full border border-emerald-500/60 px-2 py-[2px] text-[10px] text-emerald-300'>
-                          Entrada gratuita
-                        </span>
-                      )}
-                      {selectedGaleria.requiere_reserva && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
-                          Requiere reserva
-                        </span>
-                      )}
-                      {selectedGaleria.anio_fundacion && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
-                          Fundada en {selectedGaleria.anio_fundacion}
-                        </span>
-                      )}
-                    </div>
                   </div>
                 </div>
 
@@ -688,23 +551,6 @@ export default function GaleriasPage () {
 
                   <div className='space-y-1'>
                     <p className='text-xs font-semibold text-slate-300'>
-                      Horario
-                    </p>
-                    <p className='text-slate-400'>
-                      {selectedGaleria.horario_desde ||
-                      selectedGaleria.horario_hasta
-                        ? `${selectedGaleria.horario_desde ?? ''}${
-                            selectedGaleria.horario_desde &&
-                            selectedGaleria.horario_hasta
-                              ? ' - '
-                              : ''
-                          }${selectedGaleria.horario_hasta ?? ''}`
-                        : '-'}
-                    </p>
-                  </div>
-
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
                       Sitio web
                     </p>
                     {selectedGaleria.sitio_web ? (
@@ -723,42 +569,29 @@ export default function GaleriasPage () {
 
                   <div className='space-y-1'>
                     <p className='text-xs font-semibold text-slate-300'>
-                      Contacto
+                      Entrada
                     </p>
                     <p className='text-slate-400'>
-                      {selectedGaleria.telefono ||
-                      selectedGaleria.email_contacto
-                        ? `${selectedGaleria.telefono ?? ''}${
-                            selectedGaleria.telefono &&
-                            selectedGaleria.email_contacto
-                              ? ' · '
-                              : ''
-                          }${selectedGaleria.email_contacto ?? ''}`
-                        : '-'}
+                      {selectedGaleria.tiene_entrada_gratuita
+                        ? 'Entrada gratuita'
+                        : 'Entrada paga o a confirmar'}
+                    </p>
+                  </div>
+
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      Reserva
+                    </p>
+                    <p className='text-slate-400'>
+                      {selectedGaleria.requiere_reserva
+                        ? 'Requiere reserva previa'
+                        : 'Sin reserva obligatoria'}
                     </p>
                   </div>
                 </div>
 
-                <div className='flex justify-between items-center pt-2 gap-2'>
-                  <button
-                    type='button'
-                    onClick={() => handleToggleFavorite(selectedGaleria)}
-                    className='inline-flex items-center gap-2 rounded-full border border-emerald-500/60 px-4 py-1.5 text-xs font-medium text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50'
-                    disabled={favLoadingId === Number(selectedGaleria.id)}
-                  >
-                    <Heart
-                      size={14}
-                      className={
-                        isFavorite(selectedGaleria.id)
-                          ? 'text-emerald-400 fill-emerald-400'
-                          : 'text-emerald-300'
-                      }
-                    />
-                    {isFavorite(selectedGaleria.id)
-                      ? 'Quitar de favoritos'
-                      : 'Guardar en favoritos'}
-                  </button>
-
+                {/* Botones cierre + favorito */}
+                <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
                   <button
                     type='button'
                     onClick={closeModal}
@@ -766,6 +599,31 @@ export default function GaleriasPage () {
                   >
                     Cerrar
                   </button>
+
+                  {(() => {
+                    const isFavorite = favoriteGaleriaIds.has(
+                      Number(selectedGaleria.id)
+                    )
+
+                    return (
+                      <button
+                        type='button'
+                        disabled={favoriteLoading}
+                        onClick={() => handleToggleFavorite(selectedGaleria)}
+                        className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
+                          ${
+                            isFavorite
+                              ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
+                              : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
+                          }
+                        `}
+                      >
+                        {isFavorite
+                          ? 'Quitar de favoritos'
+                          : 'Guardar como favorito'}
+                      </button>
+                    )
+                  })()}
                 </div>
               </div>
             </div>

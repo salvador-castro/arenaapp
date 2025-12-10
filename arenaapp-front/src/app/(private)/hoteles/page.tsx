@@ -1,4 +1,3 @@
-///Users/salvacastro/Desktop/arenaapp/arenaapp-front/src/app/(private)/hoteles/page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -50,6 +49,7 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/hoteles/public`
+const FAVORITOS_HOTELES_ENDPOINT = `${API_BASE}/api/admin/favoritos/hoteles`
 const PAGE_SIZE = 12
 
 function getInstagramHandle (url: string | null): string {
@@ -98,7 +98,13 @@ export default function HotelesPage () {
 
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Guardia de auth (igual que galerías)
+  // Favoritos
+  const [favoriteHotelIds, setFavoriteHotelIds] = useState<Set<number>>(
+    new Set()
+  )
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
+
+  // Guardia de auth (igual que galerías / restaurantes)
   useEffect(() => {
     if (isLoading) return
 
@@ -138,6 +144,89 @@ export default function HotelesPage () {
 
     fetchHoteles()
   }, [user])
+
+  // Traer hoteles favoritos del usuario
+  useEffect(() => {
+    if (!user) return
+
+    const fetchFavorites = async () => {
+      try {
+        const headers: HeadersInit = {}
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
+
+        const res = await fetch(FAVORITOS_HOTELES_ENDPOINT, {
+          method: 'GET',
+          headers,
+          credentials: 'include'
+        })
+
+        if (!res.ok) {
+          console.error('Error cargando favoritos de hoteles', await res.text())
+          return
+        }
+
+        const data: any[] = await res.json()
+        const ids = data
+          .map(row => Number(row.hotel_id))
+          .filter(id => !Number.isNaN(id))
+
+        setFavoriteHotelIds(new Set(ids))
+      } catch (err) {
+        console.error('Error cargando favoritos de hoteles', err)
+      }
+    }
+
+    fetchFavorites()
+  }, [user, auth?.token])
+
+  // Toggle favorito hotel
+  const handleToggleFavorite = async (hotel: Hotel) => {
+    if (!hotel?.id) return
+
+    const hotelIdNum = Number(hotel.id)
+    if (!hotelIdNum || Number.isNaN(hotelIdNum)) return
+
+    setFavoriteLoading(true)
+
+    try {
+      const isFavorite = favoriteHotelIds.has(hotelIdNum)
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (auth?.token) {
+        headers['Authorization'] = `Bearer ${auth.token}`
+      }
+
+      const res = await fetch(FAVORITOS_HOTELES_ENDPOINT, {
+        method: isFavorite ? 'DELETE' : 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ hotelId: hotelIdNum })
+      })
+
+      if (!res.ok) {
+        console.error('Error al actualizar favorito de hotel', await res.text())
+        return
+      }
+
+      setFavoriteHotelIds(prev => {
+        const next = new Set(prev)
+        if (isFavorite) {
+          next.delete(hotelIdNum)
+        } else {
+          next.add(hotelIdNum)
+        }
+        return next
+      })
+    } catch (err) {
+      console.error('Error al actualizar favorito de hotel', err)
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
 
   // Si venimos con ?hotelId=, abrir modal cuando haya data
   useEffect(() => {
@@ -468,7 +557,7 @@ export default function HotelesPage () {
         {/* MODAL detalle */}
         {isModalOpen && selectedHotel && (
           <div
-            className='fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4'
+            className='fixed inset-0 z-[60] flex items-start justify-center bg-black/60 px-4'
             onClick={closeModal}
           >
             <div
@@ -548,7 +637,7 @@ export default function HotelesPage () {
                 {selectedHotel.resena && (
                   <div className='space-y-1'>
                     <h4 className='text-sm font-semibold'>Reseña</h4>
-                    <p className='text-[12px] text-slate-300 whitespace-pre-line'>
+                    <p className='text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left'>
                       {selectedHotel.resena}
                     </p>
                   </div>
@@ -616,15 +705,42 @@ export default function HotelesPage () {
                   </div>
                 </div>
 
-                <div className='flex justify-end pt-2'>
-                  <button
-                    type='button'
-                    onClick={closeModal}
-                    className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
-                  >
-                    Cerrar
-                  </button>
-                </div>
+                {selectedHotel && (
+                  <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
+                    <button
+                      type='button'
+                      onClick={closeModal}
+                      className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                    >
+                      Cerrar
+                    </button>
+
+                    {(() => {
+                      const isFavorite = favoriteHotelIds.has(
+                        Number(selectedHotel.id)
+                      )
+
+                      return (
+                        <button
+                          type='button'
+                          disabled={favoriteLoading}
+                          onClick={() => handleToggleFavorite(selectedHotel)}
+                          className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
+                            ${
+                              isFavorite
+                                ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
+                                : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
+                            }
+                          `}
+                        >
+                          {isFavorite
+                            ? 'Quitar de favoritos'
+                            : 'Guardar como favorito'}
+                        </button>
+                      )
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           </div>
