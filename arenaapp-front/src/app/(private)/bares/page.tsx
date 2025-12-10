@@ -772,13 +772,14 @@ export default function BaresPage () {
                 </div>
 
                 {/* Botones cierre + favorito */}
-                <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
+                <div className='flex flex-col sm:flex-row sm:justify-end gap-2 pt-2'>
                   {/* BOTÓN CERRAR */}
                   <button
                     type='button'
                     onClick={closeModal}
-                    className='w-full sm:w-auto rounded-full border border-slate-700 
-               px-3 py-1 text-[11px] font-medium text-slate-300 
+                    className='w-full max-w-[200px] self-center sm:self-auto
+               rounded-full border border-slate-700 
+               px-3 py-1.5 text-[11px] font-medium text-slate-300 
                hover:bg-slate-800 transition'
                   >
                     Cerrar
@@ -789,14 +790,18 @@ export default function BaresPage () {
                     const isFavorite = favoriteBarIds.has(
                       Number(selectedBar.id)
                     )
+                    const label = isFavorite
+                      ? 'Quitar de favoritos'
+                      : 'Guardar como favorito'
 
                     return (
                       <button
                         type='button'
                         disabled={favoriteLoading}
                         onClick={() => handleToggleFavoriteBar(selectedBar)}
-                        className={`w-full sm:w-auto inline-flex items-center justify-center gap-1
-          rounded-full px-3 py-1 text-[11px] font-semibold transition
+                        className={`w-full max-w-[230px] self-center sm:self-auto
+          inline-flex items-center justify-center gap-6
+          rounded-full px-3 py-1.5 text-[11px] font-semibold transition
           ${
             isFavorite
               ? 'bg-emerald-500 text-slate-900 hover:bg-emerald-400'
@@ -805,22 +810,17 @@ export default function BaresPage () {
           ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
         `}
                       >
+                        {/* Ícono a la izquierda */}
                         {favoriteLoading ? (
-                          <>
-                            <Loader2 size={13} className='animate-spin' />
-                            <span>Guardando...</span>
-                          </>
+                          <Loader2 size={14} className='animate-spin' />
                         ) : isFavorite ? (
-                          <>
-                            <HeartOff size={13} />
-                            <span>Quitar</span>
-                          </>
+                          <HeartOff size={14} />
                         ) : (
-                          <>
-                            <Heart size={13} className='fill-emerald-500/70' />
-                            <span>Guardar</span>
-                          </>
+                          <Heart size={14} className='fill-emerald-500/70' />
                         )}
+
+                        {/* Texto estable, sin cambios raros */}
+                        <span>{label}</span>
                       </button>
                     )
                   })()}
