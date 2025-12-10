@@ -131,6 +131,7 @@ export default function ProfilePage () {
     try {
       let finalAvatarUrl = avatarUrl
 
+      // 1) SUBIR AVATAR SI HAY ARCHIVO NUEVO
       if (newAvatarFile) {
         const formData = new FormData()
         formData.append('avatar', newAvatarFile)
@@ -141,10 +142,23 @@ export default function ProfilePage () {
           body: formData
         })
 
-        const uploadData = await uploadRes.json()
+        const uploadText = await uploadRes.text()
+        let uploadData: any = {}
+
+        // intento parsear JSON, si no se puede uso texto plano
+        try {
+          uploadData = uploadText ? JSON.parse(uploadText) : {}
+        } catch {
+          uploadData = { error: uploadText }
+        }
 
         if (!uploadRes.ok) {
-          setError(uploadData.error || 'Error al subir la foto de perfil')
+          setError(
+            uploadData.error ||
+              uploadData.message ||
+              'Error al subir la foto de perfil'
+          )
+          setMessage(null)
           return
         }
 
@@ -160,6 +174,7 @@ export default function ProfilePage () {
         setNewAvatarFile(null)
       }
 
+      // 2) ACTUALIZAR PERFIL
       const res = await fetch(`${API_BASE}/api/auth/perfil`, {
         method: 'PUT',
         credentials: 'include',
@@ -180,13 +195,22 @@ export default function ProfilePage () {
         })
       })
 
-      const data = await res.json()
+      const text = await res.text()
+      let data: any = {}
+
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch {
+        data = { error: text }
+      }
 
       if (!res.ok) {
-        setError(data.error || 'Error al actualizar el perfil')
+        setError(data.error || data.message || 'Error al actualizar el perfil')
+        setMessage(null)
         return
       }
 
+      // 3) OK
       setMessage('Perfil actualizado correctamente ✔️')
 
       setPasswordActual('')
@@ -202,6 +226,7 @@ export default function ProfilePage () {
     } catch (err) {
       console.error(err)
       setError('Error de servidor')
+      setMessage(null)
     }
   }
 
