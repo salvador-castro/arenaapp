@@ -1,4 +1,3 @@
-// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-admin\src\app\api\auth\login\route.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import bcrypt from 'bcryptjs'
@@ -51,7 +50,14 @@ export async function POST(req: NextRequest) {
     const db = await getDb()
     const result = await db.query(
       `
-      SELECT id, nombre, apellido, email, password_hash, rol
+      SELECT
+        id,
+        nombre,
+        apellido,
+        email,
+        password_hash,
+        rol,
+        avatar_url  -- 👈 importante
       FROM usuarios
       WHERE email = $1
       LIMIT 1
@@ -91,22 +97,22 @@ export async function POST(req: NextRequest) {
           nombre: user.nombre,
           apellido: user.apellido,
           email: user.email,
-          rol: user.rol
+          rol: user.rol,
+          avatar_url: user.avatar_url ?? null // 👈 lo mandamos al front
         }
       },
       { status: 200, headers: corsBaseHeaders() }
     )
 
     // 👇 Cookie compartida por admin.arenapress.app y arenapress.app
-res.cookies.set('token', token, {
-  httpOnly: true,
-  sameSite: IS_PROD ? 'none' : 'lax',
-  secure: IS_PROD,
-  maxAge: SESSION_MINUTES * 60,
-  path: '/',
-  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {})
-})
-
+    res.cookies.set('token', token, {
+      httpOnly: true,
+      sameSite: IS_PROD ? 'none' : 'lax',
+      secure: IS_PROD,
+      maxAge: SESSION_MINUTES * 60,
+      path: '/',
+      ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {})
+    })
 
     return res
   } catch (error) {
