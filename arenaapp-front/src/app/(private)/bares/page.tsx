@@ -773,14 +773,18 @@ export default function BaresPage () {
 
                 {/* Botones cierre + favorito */}
                 <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
+                  {/* BOTÓN CERRAR */}
                   <button
                     type='button'
                     onClick={closeModal}
-                    className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                    className='w-full sm:w-auto rounded-full border border-slate-700 
+               px-3 py-1 text-[11px] font-medium text-slate-300 
+               hover:bg-slate-800 transition'
                   >
                     Cerrar
                   </button>
 
+                  {/* BOTÓN FAVORITO */}
                   {(() => {
                     const isFavorite = favoriteBarIds.has(
                       Number(selectedBar.id)
@@ -791,29 +795,30 @@ export default function BaresPage () {
                         type='button'
                         disabled={favoriteLoading}
                         onClick={() => handleToggleFavoriteBar(selectedBar)}
-                        className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition
-        ${
-          isFavorite
-            ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
-            : 'bg-slate-900 text-slate-100 border border-slate-700 hover:border-emerald-400 hover:bg-slate-800'
-        }
-        ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
-      `}
+                        className={`w-full sm:w-auto inline-flex items-center justify-center gap-1
+          rounded-full px-3 py-1 text-[11px] font-semibold transition
+          ${
+            isFavorite
+              ? 'bg-emerald-500 text-slate-900 hover:bg-emerald-400'
+              : 'bg-slate-900 text-slate-100 border border-slate-700 hover:border-emerald-400 hover:bg-slate-800'
+          }
+          ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
+        `}
                       >
                         {favoriteLoading ? (
                           <>
-                            <Loader2 size={14} className='animate-spin' />
+                            <Loader2 size={13} className='animate-spin' />
                             <span>Guardando...</span>
                           </>
                         ) : isFavorite ? (
                           <>
-                            <HeartOff size={14} />
-                            <span>Quitar de favoritos</span>
+                            <HeartOff size={13} />
+                            <span>Quitar</span>
                           </>
                         ) : (
                           <>
-                            <Heart size={14} className='fill-emerald-500/70' />
-                            <span>Guardar como favorito</span>
+                            <Heart size={13} className='fill-emerald-500/70' />
+                            <span>Guardar</span>
                           </>
                         )}
                       </button>
