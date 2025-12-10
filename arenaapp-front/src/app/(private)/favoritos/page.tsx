@@ -1,3 +1,4 @@
+// C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-front\src\app\(private)\favoritos\page.tsx
 'use client'
 
 import React, { useEffect, useState } from 'react'
@@ -7,7 +8,13 @@ import Image from 'next/image'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
-type FavoriteTipo = 'RESTAURANTE' | 'BAR' | 'EVENTO'
+type FavoriteTipo =
+  | 'RESTAURANTE'
+  | 'BAR'
+  | 'HOTEL'
+  | 'GALERIA'
+  | 'SHOPPING'
+  | 'EVENTO'
 
 interface FavoriteItem {
   favorito_id: number
@@ -32,8 +39,14 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
+// ENDPOINTS ACTUALES
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
 const FAVORITOS_BARES_ENDPOINT = `${API_BASE}/api/admin/favoritos/bares`
+
+// NUEVOS ENDPOINTS (ajustá paths si en tu backend son distintos)
+const FAVORITOS_HOTELES_ENDPOINT = `${API_BASE}/api/admin/favoritos/hoteles`
+const FAVORITOS_GALERIAS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
+const FAVORITOS_SHOPPING_ENDPOINT = `${API_BASE}/api/admin/favoritos/shopping`
 const FAVORITOS_EVENTOS_ENDPOINT = `${API_BASE}/api/admin/favoritos/eventos`
 
 function renderPriceRange (rango: number | null | undefined): string {
@@ -68,7 +81,7 @@ export default function FavoritosPage () {
     }
   }, [user, isLoading, router])
 
-  // Cargar favoritos (restaurantes + bares + eventos)
+  // Cargar favoritos (restaurantes + bares + hoteles + galerías + shopping + eventos)
   useEffect(() => {
     if (!user) return
 
@@ -77,24 +90,48 @@ export default function FavoritosPage () {
         setLoading(true)
         setError(null)
 
-        const headers: HeadersInit = {}
+        const headersAuth: HeadersInit = {}
         if (auth?.token) {
-          headers['Authorization'] = `Bearer ${auth.token}`
+          headersAuth['Authorization'] = `Bearer ${auth.token}`
         }
 
-        const [resRest, resBares, resEventos] = await Promise.all([
+        // Llamadas en paralelo
+        const [
+          resRest,
+          resBares,
+          resHoteles,
+          resGalerias,
+          resShopping,
+          resEventos
+        ] = await Promise.all([
           fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
             method: 'GET',
-            headers,
+            headers: headersAuth,
             credentials: 'include'
           }),
           fetch(FAVORITOS_BARES_ENDPOINT, {
             method: 'GET',
+            headers: headersAuth,
+            credentials: 'include'
+          }),
+          fetch(FAVORITOS_HOTELES_ENDPOINT, {
+            method: 'GET',
+            headers: headersAuth,
+            credentials: 'include'
+          }),
+          fetch(FAVORITOS_GALERIAS_ENDPOINT, {
+            method: 'GET',
+            headers: headersAuth,
+            credentials: 'include'
+          }),
+          fetch(FAVORITOS_SHOPPING_ENDPOINT, {
+            method: 'GET',
+            headers: headersAuth,
             credentials: 'include'
           }),
           fetch(FAVORITOS_EVENTOS_ENDPOINT, {
             method: 'GET',
-            headers,
+            headers: headersAuth,
             credentials: 'include'
           })
         ])
@@ -105,18 +142,56 @@ export default function FavoritosPage () {
         if (!resBares.ok) {
           throw new Error(`Error HTTP favoritos bares ${resBares.status}`)
         }
-        if (!resEventos.ok) {
-          throw new Error(`Error HTTP favoritos eventos ${resEventos.status}`)
-        }
 
+        // Los demás son opcionales: si 404/500, solo logueo y sigo
         const dataRest: any[] = await resRest.json()
         const dataBares: any[] = await resBares.json()
-        const dataEventos: any[] = await resEventos.json()
+
+        let dataHoteles: any[] = []
+        let dataGalerias: any[] = []
+        let dataShopping: any[] = []
+        let dataEventos: any[] = []
+
+        if (resHoteles.ok) {
+          dataHoteles = await resHoteles.json()
+        } else {
+          console.warn(
+            'No se pudieron cargar favoritos hoteles:',
+            resHoteles.status
+          )
+        }
+
+        if (resGalerias.ok) {
+          dataGalerias = await resGalerias.json()
+        } else {
+          console.warn(
+            'No se pudieron cargar favoritos galerías:',
+            resGalerias.status
+          )
+        }
+
+        if (resShopping.ok) {
+          dataShopping = await resShopping.json()
+        } else {
+          console.warn(
+            'No se pudieron cargar favoritos shopping:',
+            resShopping.status
+          )
+        }
+
+        if (resEventos.ok) {
+          dataEventos = await resEventos.json()
+        } else {
+          console.warn(
+            'No se pudieron cargar favoritos eventos:',
+            resEventos.status
+          )
+        }
 
         const mappedRest: FavoriteItem[] = dataRest
           .map(row => ({
-            favorito_id: Number(row.favorito_id),
-            item_id: Number(row.restaurante_id),
+            favorito_id: Number(row.favorito_id ?? row.id),
+            item_id: Number(row.restaurante_id ?? row.id),
             tipo: 'RESTAURANTE' as const,
             nombre: row.nombre,
             tipo_comida: row.tipo_comida,
@@ -136,7 +211,7 @@ export default function FavoritosPage () {
 
         const mappedBares: FavoriteItem[] = dataBares
           .map(row => ({
-            favorito_id: Number(row.favorito_id),
+            favorito_id: Number(row.favorito_id ?? row.id),
             item_id: Number(row.bar_id ?? row.id),
             tipo: 'BAR' as const,
             nombre: row.nombre,
@@ -155,33 +230,99 @@ export default function FavoritosPage () {
           }))
           .filter(f => !Number.isNaN(f.item_id))
 
+        const mappedHoteles: FavoriteItem[] = dataHoteles
+          .map(row => ({
+            favorito_id: Number(row.favorito_id ?? row.id),
+            item_id: Number(row.hotel_id ?? row.id),
+            tipo: 'HOTEL' as const,
+            nombre: row.nombre,
+            tipo_comida: null,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: row.rango_precios ?? null,
+            estrellas: row.estrellas,
+            url_imagen: row.url_imagen ?? row.imagen_principal
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
+        const mappedGalerias: FavoriteItem[] = dataGalerias
+          .map(row => ({
+            favorito_id: Number(row.favorito_id ?? row.id),
+            item_id: Number(row.galeria_id ?? row.id),
+            tipo: 'GALERIA' as const,
+            nombre: row.nombre,
+            tipo_comida: null,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta ?? row.resena ?? null,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: null,
+            estrellas: row.estrellas ?? null,
+            url_imagen: row.url_imagen ?? row.imagen_principal
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
+        const mappedShopping: FavoriteItem[] = dataShopping
+          .map(row => ({
+            favorito_id: Number(row.favorito_id ?? row.id),
+            item_id: Number(row.shopping_id ?? row.id),
+            tipo: 'SHOPPING' as const,
+            nombre: row.nombre,
+            tipo_comida: null,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta ?? row.resena ?? null,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: row.rango_precios ?? null,
+            estrellas: row.estrellas ?? null,
+            url_imagen: row.url_imagen
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
         const mappedEventos: FavoriteItem[] = dataEventos
           .map(row => ({
-            favorito_id: Number(row.favorito_id),
-            item_id: Number(row.evento_id),
+            favorito_id: Number(row.favorito_id ?? row.id),
+            item_id: Number(row.evento_id ?? row.id),
             tipo: 'EVENTO' as const,
-            nombre: row.titulo,
-            // uso categoria como "tipo_comida" para reusar el badge
-            tipo_comida: row.categoria ?? null,
+            nombre: row.titulo ?? row.nombre,
+            tipo_comida: null,
             slug: row.slug,
-            descripcion_corta: row.resena ?? null,
+            descripcion_corta: row.descripcion_corta ?? row.resena ?? null,
             direccion: row.direccion,
-            ciudad: null,
-            provincia: null,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
             zona: row.zona,
-            pais: null,
-            sitio_web: row.url_entradas,
-            // para eventos no usamos el rango de precios tipo $$$, lo dejo null
+            pais: row.pais,
+            sitio_web: row.sitio_web ?? row.url_entradas ?? null,
             rango_precios: null,
             estrellas: null,
-            url_imagen: row.imagen_principal
+            url_imagen: row.url_imagen
           }))
           .filter(f => !Number.isNaN(f.item_id))
 
         // combinados, ordenados por favorito_id desc (aprox por fecha)
-        const combined = [...mappedRest, ...mappedBares, ...mappedEventos].sort(
-          (a, b) => b.favorito_id - a.favorito_id
-        )
+        const combined = [
+          ...mappedRest,
+          ...mappedBares,
+          ...mappedHoteles,
+          ...mappedGalerias,
+          ...mappedShopping,
+          ...mappedEventos
+        ].sort((a, b) => b.favorito_id - a.favorito_id)
 
         setFavorites(combined)
       } catch (err: any) {
@@ -200,66 +341,64 @@ export default function FavoritosPage () {
     setRemovingId(item_id)
 
     try {
-      if (tipo === 'RESTAURANTE') {
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json'
-        }
-        if (auth?.token) {
-          headers['Authorization'] = `Bearer ${auth.token}`
-        }
+      const commonHeaders: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (auth?.token) {
+        commonHeaders['Authorization'] = `Bearer ${auth.token}`
+      }
 
-        const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
-          method: 'DELETE',
-          headers,
-          credentials: 'include',
-          body: JSON.stringify({ restauranteId: item_id })
-        })
+      let endpoint = ''
+      let body: any = {}
 
-        if (!res.ok) {
-          console.error(
-            'Error al quitar favorito restaurante',
-            await res.text()
-          )
+      switch (tipo) {
+        case 'RESTAURANTE':
+          endpoint = FAVORITOS_RESTAURANTES_ENDPOINT
+          body = { restauranteId: item_id }
+          break
+        case 'BAR':
+          endpoint = FAVORITOS_BARES_ENDPOINT
+          body = { barId: item_id }
+          break
+        case 'HOTEL':
+          endpoint = FAVORITOS_HOTELES_ENDPOINT
+          body = { hotelId: item_id }
+          break
+        case 'GALERIA':
+          endpoint = FAVORITOS_GALERIAS_ENDPOINT
+          body = { galeriaId: item_id }
+          break
+        case 'SHOPPING':
+          endpoint = FAVORITOS_SHOPPING_ENDPOINT
+          body = { shoppingId: item_id }
+          break
+        case 'EVENTO':
+          endpoint = FAVORITOS_EVENTOS_ENDPOINT
+          body = { eventoId: item_id }
+          break
+        default:
+          console.warn('Tipo de favorito no manejado en remove:', tipo)
+          setRemovingId(null)
           return
-        }
-      } else if (tipo === 'BAR') {
-        const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
-          method: 'DELETE',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ barId: item_id })
-        })
+      }
 
-        if (!res.ok) {
-          console.error('Error al quitar favorito bar', await res.text())
-          return
-        }
-      } else {
-        // EVENTO
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json'
-        }
-        if (auth?.token) {
-          headers['Authorization'] = `Bearer ${auth.token}`
-        }
+      const res = await fetch(endpoint, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: commonHeaders,
+        body: JSON.stringify(body)
+      })
 
-        const res = await fetch(FAVORITOS_EVENTOS_ENDPOINT, {
-          method: 'DELETE',
-          headers,
-          credentials: 'include',
-          body: JSON.stringify({ eventoId: item_id })
-        })
-
-        if (!res.ok) {
-          console.error('Error al quitar favorito evento', await res.text())
-          return
-        }
+      if (!res.ok) {
+        console.error(
+          `Error al quitar favorito (${tipo.toLowerCase()})`,
+          await res.text()
+        )
+        return
       }
 
       setFavorites(prev =>
-        prev.filter(f => f.item_id !== item_id || f.tipo !== tipo)
+        prev.filter(f => !(f.item_id === item_id && f.tipo === tipo))
       )
     } catch (err) {
       console.error('Error al quitar favorito', err)
@@ -269,12 +408,46 @@ export default function FavoritosPage () {
   }
 
   const handleGoToItem = (item: FavoriteItem) => {
-    if (item.tipo === 'RESTAURANTE') {
-      router.push(`/restaurantes?restauranteId=${item.item_id}`)
-    } else if (item.tipo === 'BAR') {
-      router.push(`/bares?barId=${item.item_id}`)
-    } else {
-      router.push(`/eventos?eventoId=${item.item_id}`)
+    switch (item.tipo) {
+      case 'RESTAURANTE':
+        router.push(`/restaurantes?restauranteId=${item.item_id}`)
+        break
+      case 'BAR':
+        router.push(`/bares?barId=${item.item_id}`)
+        break
+      case 'HOTEL':
+        router.push(`/hoteles?hotelId=${item.item_id}`)
+        break
+      case 'GALERIA':
+        router.push(`/galerias?galeriaId=${item.item_id}`)
+        break
+      case 'SHOPPING':
+        router.push(`/shopping?shoppingId=${item.item_id}`)
+        break
+      case 'EVENTO':
+        router.push(`/eventos?eventoId=${item.item_id}`)
+        break
+      default:
+        break
+    }
+  }
+
+  const labelTipo = (tipo: FavoriteTipo): string => {
+    switch (tipo) {
+      case 'RESTAURANTE':
+        return 'Restaurante'
+      case 'BAR':
+        return 'Bar'
+      case 'HOTEL':
+        return 'Hotel'
+      case 'GALERIA':
+        return 'Galería'
+      case 'SHOPPING':
+        return 'Shopping / Outlet'
+      case 'EVENTO':
+        return 'Evento'
+      default:
+        return tipo
     }
   }
 
@@ -336,14 +509,13 @@ export default function FavoritosPage () {
                 <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
                   <div className='flex items-center justify-between'>
                     <p className='text-[10px] uppercase font-semibold text-emerald-400'>
-                      {place.zona || 'Zona no especificada'}
+                      {place.zona ||
+                        place.ciudad ||
+                        place.provincia ||
+                        'Ubicación no especificada'}
                     </p>
                     <span className='text-[9px] uppercase tracking-wide text-slate-500 border border-slate-700 rounded-full px-2 py-[2px]'>
-                      {place.tipo === 'RESTAURANTE'
-                        ? 'Restaurante'
-                        : place.tipo === 'BAR'
-                        ? 'Bar'
-                        : 'Evento'}
+                      {labelTipo(place.tipo)}
                     </span>
                   </div>
 
@@ -357,7 +529,6 @@ export default function FavoritosPage () {
                     </p>
                   )}
 
-                  {/* Para eventos estrellas/rango quedarán en "-" y no rompen el layout */}
                   <div className='flex items-center gap-2 mt-1'>
                     <span className='text-amber-400'>
                       {renderStars(place.estrellas)}
