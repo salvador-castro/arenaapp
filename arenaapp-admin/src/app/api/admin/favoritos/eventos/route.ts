@@ -37,8 +37,8 @@ function getUserIdFromAuth (payload: JwtPayload): number {
   return parsed
 }
 
-// GET → lista favoritos de EVENTOS para el usuario logueado
-export async function GET (req: NextRequest) {
+// GET → lista favoritos de EVENTOS
+export async function GET(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
     if (!payload) {
@@ -56,7 +56,25 @@ export async function GET (req: NextRequest) {
       SELECT
         f.id AS favorito_id,
         e.id AS evento_id,
-        e.*
+        e.titulo,
+        e.slug,
+        e.categoria,
+        e.es_destacado,
+        e.fecha_inicio,
+        e.fecha_fin,
+        e.es_todo_el_dia,
+        e.zona,
+        e.direccion,
+        e.es_gratuito,
+        e.precio_desde,
+        e.moneda,
+        e.url_entradas,
+        e.estado,
+        e.resena,
+        COALESCE(e.url_imagen, e.imagen_principal) AS url_imagen,
+        e.imagen_principal,
+        e.created_at,
+        e.updated_at
       FROM favoritos f
       JOIN eventos e ON e.id = f.item_id
       WHERE f.usuario_id = $1
@@ -70,7 +88,7 @@ export async function GET (req: NextRequest) {
       status: 200,
       headers: corsBaseHeaders()
     })
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error GET /favoritos/eventos', err)
     return new NextResponse('Error interno', {
       status: 500,
