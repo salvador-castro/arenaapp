@@ -51,6 +51,7 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/shopping/public`
+const FAVORITOS_SHOPPING_ENDPOINT = `${API_BASE}/api/admin/favoritos/shopping`
 const PAGE_SIZE = 12
 
 function getInstagramHandle (url: string | null): string {
@@ -116,6 +117,12 @@ export default function ShoppingPage () {
 
   const [currentPage, setCurrentPage] = useState(1)
 
+  // Favoritos
+  const [favoriteShoppingIds, setFavoriteShoppingIds] = useState<Set<number>>(
+    new Set()
+  )
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
+
   // Guardia de auth
   useEffect(() => {
     if (isLoading) return
@@ -159,6 +166,95 @@ export default function ShoppingPage () {
 
     fetchShoppings()
   }, [user])
+
+  // Traer shoppings favoritos del usuario
+  useEffect(() => {
+    if (!user) return
+
+    const fetchFavorites = async () => {
+      try {
+        const headers: HeadersInit = {}
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
+
+        const res = await fetch(FAVORITOS_SHOPPING_ENDPOINT, {
+          method: 'GET',
+          headers,
+          credentials: 'include'
+        })
+
+        if (!res.ok) {
+          console.error(
+            'Error cargando favoritos de shoppings',
+            await res.text()
+          )
+          return
+        }
+
+        const data: any[] = await res.json()
+        const ids = data
+          .map(row => Number(row.shopping_id))
+          .filter(id => !Number.isNaN(id))
+
+        setFavoriteShoppingIds(new Set(ids))
+      } catch (err) {
+        console.error('Error cargando favoritos de shoppings', err)
+      }
+    }
+
+    fetchFavorites()
+  }, [user, auth?.token])
+
+  // Toggle favorito shopping
+  const handleToggleFavorite = async (shopping: Shopping) => {
+    if (!shopping?.id) return
+
+    const shoppingIdNum = Number(shopping.id)
+    if (!shoppingIdNum || Number.isNaN(shoppingIdNum)) return
+
+    setFavoriteLoading(true)
+
+    try {
+      const isFavorite = favoriteShoppingIds.has(shoppingIdNum)
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (auth?.token) {
+        headers['Authorization'] = `Bearer ${auth.token}`
+      }
+
+      const res = await fetch(FAVORITOS_SHOPPING_ENDPOINT, {
+        method: isFavorite ? 'DELETE' : 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ shoppingId: shoppingIdNum })
+      })
+
+      if (!res.ok) {
+        console.error(
+          'Error al actualizar favorito de shopping',
+          await res.text()
+        )
+        return
+      }
+
+      setFavoriteShoppingIds(prev => {
+        const next = new Set(prev)
+        if (isFavorite) {
+          next.delete(shoppingIdNum)
+        } else {
+          next.add(shoppingIdNum)
+        }
+        return next
+      })
+    } catch (err) {
+      console.error('Error al actualizar favorito de shopping', err)
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
 
   // Si venimos con ?shoppingId=, abrir modal cuando haya data
   useEffect(() => {
@@ -549,11 +645,11 @@ export default function ShoppingPage () {
         {isModalOpen && selectedShopping && (
           <div
             className='fixed inset-0 z-[60] flex items-start justify-center bg-black/60 px-4'
-            onClick={closeModal} // click en overlay cierra
+            onClick={closeModal}
           >
             <div
               className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
-              onClick={e => e.stopPropagation()} // click dentro no cierra
+              onClick={e => e.stopPropagation()}
             >
               {/* Botón cerrar arriba a la derecha */}
               <button
@@ -653,7 +749,7 @@ export default function ShoppingPage () {
                 {selectedShopping.resena && (
                   <div className='space-y-1'>
                     <h4 className='text-sm font-semibold'>Reseña</h4>
-                    <p className='text-[12px] text-slate-300 whitespace-pre-line'>
+                    <p className='text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left'>
                       {selectedShopping.resena}
                     </p>
                   </div>
@@ -713,15 +809,42 @@ export default function ShoppingPage () {
                   </div>
                 </div>
 
-                <div className='flex justify-end pt-2'>
-                  <button
-                    type='button'
-                    onClick={closeModal}
-                    className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
-                  >
-                    Cerrar
-                  </button>
-                </div>
+                {selectedShopping && (
+                  <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
+                    <button
+                      type='button'
+                      onClick={closeModal}
+                      className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                    >
+                      Cerrar
+                    </button>
+
+                    {(() => {
+                      const isFavorite = favoriteShoppingIds.has(
+                        Number(selectedShopping.id)
+                      )
+
+                      return (
+                        <button
+                          type='button'
+                          disabled={favoriteLoading}
+                          onClick={() => handleToggleFavorite(selectedShopping)}
+                          className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
+                            ${
+                              isFavorite
+                                ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
+                                : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
+                            }
+                          `}
+                        >
+                          {isFavorite
+                            ? 'Quitar de favoritos'
+                            : 'Guardar como favorito'}
+                        </button>
+                      )
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           </div>
