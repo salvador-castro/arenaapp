@@ -1,4 +1,4 @@
-// src/lib/auth.ts
+// /Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/lib/auth.ts
 import { NextRequest } from 'next/server'
 import { JWTPayload, jwtVerify } from 'jose'
 

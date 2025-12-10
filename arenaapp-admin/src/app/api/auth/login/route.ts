@@ -98,14 +98,15 @@ export async function POST(req: NextRequest) {
     )
 
     // 👇 Cookie compartida por admin.arenapress.app y arenapress.app
-    res.cookies.set('token', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: IS_PROD,
-      maxAge: SESSION_MINUTES * 60,
-      path: '/',
-      ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {})
-    })
+res.cookies.set('token', token, {
+  httpOnly: true,
+  sameSite: IS_PROD ? 'none' : 'lax',
+  secure: IS_PROD,
+  maxAge: SESSION_MINUTES * 60,
+  path: '/',
+  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {})
+})
+
 
     return res
   } catch (error) {

@@ -30,14 +30,15 @@ export async function POST() {
   )
 
   // Borramos la cookie con el mismo dominio y path
-  res.cookies.set('token', '', {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: IS_PROD,
-    maxAge: 0,
-    path: '/',
-    ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {})
-  })
+res.cookies.set('token', '', {
+  httpOnly: true,
+  sameSite: IS_PROD ? 'none' : 'lax',
+  secure: IS_PROD,
+  maxAge: 0,
+  path: '/',
+  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {})
+})
+
 
   return res
 }
