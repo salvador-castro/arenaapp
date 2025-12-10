@@ -337,8 +337,9 @@ export default function FavoritosPage () {
   }, [user, auth?.token])
 
   const handleRemoveFavorite = async (item: FavoriteItem) => {
-    const { item_id, tipo } = item
-    setRemovingId(item_id)
+    const { item_id, tipo, favorito_id } = item
+    // 👇 antes usabas item_id
+    setRemovingId(favorito_id)
 
     try {
       const commonHeaders: HeadersInit = {
@@ -562,10 +563,13 @@ export default function FavoritosPage () {
                     <button
                       type='button'
                       onClick={() => handleRemoveFavorite(place)}
-                      disabled={removingId === place.item_id}
+                      disabled={removingId === place.favorito_id} // 👈 antes item_id
                       className='rounded-full border border-slate-700 px-3 py-1 text-[11px] text-slate-300 hover:border-red-400 hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                     >
-                      {removingId === place.item_id ? 'Quitando...' : 'Quitar'}
+                      {removingId === place.favorito_id
+                        ? 'Quitando...'
+                        : 'Quitar'}{' '}
+                      {/* 👈 idem */}
                     </button>
                   </div>
                 </div>
