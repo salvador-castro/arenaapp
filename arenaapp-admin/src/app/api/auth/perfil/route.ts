@@ -1,7 +1,8 @@
+// /Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/app/api/auth/perfil/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { getDb } from '@/lib/db'
-import { AuthPayload, verifyAuth } from '@/lib/auth'
+import { verifyAuth, type JwtPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
@@ -23,18 +24,23 @@ export function OPTIONS () {
   })
 }
 
+// helper para sacar el userId numérico desde el payload
+function getUserIdFromJwtPayload (payload: JwtPayload): number {
+  const raw = payload.sub // viene como string
+  const id = Number(raw)
+
+  if (!raw || Number.isNaN(id) || id <= 0) {
+    throw new Error('UNAUTHORIZED_INVALID_TOKEN')
+  }
+
+  return id
+}
+
 // GET /api/auth/perfil -> datos del usuario autenticado
 export async function GET (req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
-    const userId = (payload as AuthPayload).userId
-
-    if (!userId) {
-      return new NextResponse('No autorizado', {
-        status: 401,
-        headers: corsBaseHeaders()
-      })
-    }
+    const userId = getUserIdFromJwtPayload(payload)
 
     const db = await getDb()
     const result = await db.query(
@@ -77,7 +83,10 @@ export async function GET (req: NextRequest) {
   } catch (err: any) {
     console.error('Error GET /api/auth/perfil:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
         headers: corsBaseHeaders()
@@ -95,14 +104,7 @@ export async function GET (req: NextRequest) {
 export async function PUT (req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
-    const userId = (payload as AuthPayload).userId
-
-    if (!userId) {
-      return new NextResponse('No autorizado', {
-        status: 401,
-        headers: corsBaseHeaders()
-      })
-    }
+    const userId = getUserIdFromJwtPayload(payload)
 
     const body = await req.json()
     const {
@@ -232,7 +234,10 @@ export async function PUT (req: NextRequest) {
   } catch (err: any) {
     console.error('Error PUT /api/auth/perfil:', err)
 
-    if (err.message === 'UNAUTHORIZED_NO_TOKEN' || err.message === 'UNAUTHORIZED_INVALID_TOKEN') {
+    if (
+      err.message === 'UNAUTHORIZED_NO_TOKEN' ||
+      err.message === 'UNAUTHORIZED_INVALID_TOKEN'
+    ) {
       return new NextResponse('No autorizado', {
         status: 401,
         headers: corsBaseHeaders()
