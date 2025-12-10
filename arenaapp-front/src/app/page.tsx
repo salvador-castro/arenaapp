@@ -25,9 +25,11 @@ export default function HomePage () {
       <main className='flex-1 pb-32'>
         <HeroCarousel isLoggedIn={isLoggedIn} />
 
-        <section className='px-4 pt-6'>
-          <PromoBanner />
-        </section>
+        {!isLoggedIn && (
+          <section className='px-4 pt-6'>
+            <PromoBanner />
+          </section>
+        )}
 
         <section className='px-4 pt-6'>
           <RestaurantesDestacados isLoggedIn={isLoggedIn} />
