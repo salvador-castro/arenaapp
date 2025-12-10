@@ -71,7 +71,8 @@ export async function GET(req: NextRequest) {
         e.url_entradas,
         e.estado,
         e.resena,
-        COALESCE(e.url_imagen, e.imagen_principal) AS url_imagen,
+        -- 👇 acá el cambio
+        e.imagen_principal AS url_imagen,
         e.imagen_principal,
         e.created_at,
         e.updated_at
@@ -96,6 +97,7 @@ export async function GET(req: NextRequest) {
     })
   }
 }
+
 
 // POST → marca un evento como favorito
 export async function POST (req: NextRequest) {
