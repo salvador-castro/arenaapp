@@ -6,7 +6,7 @@ import {
   useContext,
   useEffect,
   useState,
-  ReactNode
+  ReactNode,
 } from 'react'
 import type { User } from '@/lib/user'
 import { getCurrentUser } from '@/lib/user'
@@ -20,7 +20,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider ({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -28,7 +28,7 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false
 
-    async function syncAuth () {
+    async function syncAuth() {
       try {
         let storedUser: User | null = null
 
@@ -89,7 +89,7 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  function login (user: User) {
+  function login(user: User) {
     console.log('AuthContext.login: seteando usuario', user)
     setUser(user)
 
@@ -99,7 +99,7 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
     }
   }
 
-  async function logout () {
+  async function logout() {
     console.log('AuthContext.logout: limpiando usuario')
 
     const url = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`
@@ -108,7 +108,7 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
     try {
       await fetch(url, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
       })
     } catch (error) {
       console.error(
@@ -131,7 +131,7 @@ export function AuthProvider ({ children }: { children: ReactNode }) {
   )
 }
 
-export function useAuth () {
+export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) {
     throw new Error('useAuth debe usarse dentro de <AuthProvider>')

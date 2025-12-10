@@ -4,9 +4,9 @@ import './globals.css'
 import Providers from './Providers'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
-export default function RootLayout ({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='es'>
+    <html lang="es">
       <body>
         <Providers>{children}</Providers>
         <SpeedInsights />

@@ -62,10 +62,10 @@ const CATEGORIAS_EVENTO = [
   'GASTRONOMIA',
   'DEPORTES',
   'FIESTA',
-  'OTROS'
+  'OTROS',
 ]
 
-export default function AdminEventosPage () {
+export default function AdminEventosPage() {
   const router = useRouter()
   const { user, isLoading } = useAuth()
 
@@ -96,7 +96,7 @@ export default function AdminEventosPage () {
     es_todo_el_dia: false,
     es_destacado: false,
     resena: '',
-    imagen_principal: ''
+    imagen_principal: '',
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -116,7 +116,7 @@ export default function AdminEventosPage () {
     }
   }, [user, isLoading, router])
 
-  async function fetchEventos (pageToLoad: number, searchTerm: string) {
+  async function fetchEventos(pageToLoad: number, searchTerm: string) {
     try {
       if (!user || user.rol !== 'ADMIN') return
 
@@ -125,7 +125,7 @@ export default function AdminEventosPage () {
 
       const params = new URLSearchParams({
         page: String(pageToLoad),
-        pageSize: String(PAGE_SIZE)
+        pageSize: String(PAGE_SIZE),
       })
 
       if (searchTerm.trim()) {
@@ -136,7 +136,7 @@ export default function AdminEventosPage () {
         `${API_BASE}/api/admin/eventos?${params.toString()}`,
         {
           method: 'GET',
-          credentials: 'include'
+          credentials: 'include',
         }
       )
 
@@ -164,7 +164,7 @@ export default function AdminEventosPage () {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, search])
 
-  function openCreateForm () {
+  function openCreateForm() {
     setEditing(null)
     setFormValues({
       titulo: '',
@@ -181,12 +181,12 @@ export default function AdminEventosPage () {
       es_todo_el_dia: false,
       es_destacado: false,
       resena: '',
-      imagen_principal: ''
+      imagen_principal: '',
     })
     setIsFormOpen(true)
   }
 
-  function openEditForm (e: AdminEvento) {
+  function openEditForm(e: AdminEvento) {
     setEditing(e)
     setFormValues({
       titulo: e.titulo ?? '',
@@ -194,7 +194,7 @@ export default function AdminEventosPage () {
       zona: e.zona
         ? e.zona
             .split(',')
-            .map(s => s.trim())
+            .map((s) => s.trim())
             .filter(Boolean)
         : [],
       direccion: e.direccion ?? '',
@@ -208,45 +208,45 @@ export default function AdminEventosPage () {
       es_todo_el_dia: !!e.es_todo_el_dia,
       es_destacado: !!e.es_destacado,
       resena: e.resena ?? '',
-      imagen_principal: e.imagen_principal ?? ''
+      imagen_principal: e.imagen_principal ?? '',
     })
     setIsFormOpen(true)
   }
 
-  function closeForm () {
+  function closeForm() {
     setIsFormOpen(false)
     setEditing(null)
   }
 
-  function handleChange (
+  function handleChange(
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) {
     const target = e.target
     const { name, value } = target
 
     if (target instanceof HTMLInputElement && target.type === 'checkbox') {
-      setFormValues(prev => ({
+      setFormValues((prev) => ({
         ...prev,
-        [name]: target.checked
+        [name]: target.checked,
       }))
       return
     }
 
     if (name === 'precio_desde') {
-      setFormValues(prev => ({
+      setFormValues((prev) => ({
         ...prev,
-        [name]: value === '' ? '' : Number(value)
+        [name]: value === '' ? '' : Number(value),
       }))
       return
     }
 
-    setFormValues(prev => ({
+    setFormValues((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }))
   }
 
-  async function handleSubmit (e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
@@ -288,7 +288,7 @@ export default function AdminEventosPage () {
         precio_desde: formValues.es_gratuito ? null : formValues.precio_desde,
         moneda: formValues.moneda || 'URU',
         fecha_inicio: formValues.fecha_inicio,
-        fecha_fin: formValues.fecha_fin || null
+        fecha_fin: formValues.fecha_fin || null,
       }
 
       const isEdit = !!editing && editing.id != null
@@ -303,7 +303,7 @@ export default function AdminEventosPage () {
         method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
@@ -322,7 +322,7 @@ export default function AdminEventosPage () {
     }
   }
 
-  async function confirmDelete () {
+  async function confirmDelete() {
     if (!deleteTarget) return
     setIsDeleting(true)
     setError(null)
@@ -332,7 +332,7 @@ export default function AdminEventosPage () {
 
       const res = await fetch(url, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
       })
 
       if (!res.ok) {
@@ -352,8 +352,8 @@ export default function AdminEventosPage () {
 
   if (isLoading || !user || user.rol !== 'ADMIN') {
     return (
-      <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
-        <p className='text-sm text-slate-400'>Cargando...</p>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <p className="text-sm text-slate-400">Cargando...</p>
       </div>
     )
   }
@@ -363,12 +363,12 @@ export default function AdminEventosPage () {
     totalItems === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalItems)
 
   return (
-    <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
-      <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
-        <div className='max-w-4xl mx-auto flex items-center justify-between px-4 py-3'>
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+      <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800">
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
           <div>
-            <h1 className='text-lg font-semibold'>Gestión de eventos</h1>
-            <p className='text-xs text-slate-400'>
+            <h1 className="text-lg font-semibold">Gestión de eventos</h1>
+            <p className="text-xs text-slate-400">
               Crear, editar y eliminar eventos de ArenaApp.
             </p>
           </div>
@@ -376,65 +376,65 @@ export default function AdminEventosPage () {
         </div>
       </header>
 
-      <main className='max-w-4xl mx-auto px-4 pt-4 pb-6'>
-        <div className='flex flex-col sm:flex-row sm:items-center gap-3 mb-4'>
-          <div className='flex-1'>
+      <main className="max-w-4xl mx-auto px-4 pt-4 pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+          <div className="flex-1">
             <input
-              type='text'
-              placeholder='Buscar por título, categoría, zona...'
+              type="text"
+              placeholder="Buscar por título, categoría, zona..."
               value={search}
-              onChange={e => {
+              onChange={(e) => {
                 setSearch(e.target.value)
                 setCurrentPage(1)
               }}
-              className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500'
+              className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
           <button
-            type='button'
+            type="button"
             onClick={openCreateForm}
-            className='inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition'
+            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition"
           >
             + Nuevo evento
           </button>
         </div>
 
         {error && (
-          <div className='mb-3 rounded-xl border border-red-700 bg-red-950/50 px-3 py-2 text-xs text-red-200'>
+          <div className="mb-3 rounded-xl border border-red-700 bg-red-950/50 px-3 py-2 text-xs text-red-200">
             {error}
           </div>
         )}
         {isFetching && (
-          <div className='mb-3 text-xs text-slate-400'>Cargando eventos...</div>
+          <div className="mb-3 text-xs text-slate-400">Cargando eventos...</div>
         )}
 
-        <div className='overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70'>
-          <div className='overflow-x-auto'>
-            <table className='min-w-full text-sm'>
-              <thead className='bg-slate-900/90'>
+        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-slate-900/90">
                 <tr>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     ID
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Título
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Categoría
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Zona
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Fecha
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Gratuito
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Destacado
                   </th>
-                  <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-slate-400">
                     Acciones
                   </th>
                 </tr>
@@ -444,59 +444,59 @@ export default function AdminEventosPage () {
                   <tr>
                     <td
                       colSpan={8}
-                      className='px-3 py-4 text-center text-xs text-slate-500'
+                      className="px-3 py-4 text-center text-xs text-slate-500"
                     >
                       No hay eventos que coincidan con la búsqueda.
                     </td>
                   </tr>
                 )}
 
-                {eventos.map(ev => (
+                {eventos.map((ev) => (
                   <tr
                     key={String(ev.id)}
-                    className='border-t border-slate-800/80 hover:bg-slate-900/80'
+                    className="border-t border-slate-800/80 hover:bg-slate-900/80"
                   >
-                    <td className='px-3 py-2 text-xs text-slate-400'>
+                    <td className="px-3 py-2 text-xs text-slate-400">
                       {String(ev.id)}
                     </td>
-                    <td className='px-3 py-2'>
-                      <div className='flex flex-col'>
-                        <span className='text-sm'>{ev.titulo}</span>
-                        <span className='text-[11px] text-slate-400'>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-col">
+                        <span className="text-sm">{ev.titulo}</span>
+                        <span className="text-[11px] text-slate-400">
                           {ev.direccion}
                         </span>
                       </div>
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {ev.categoria}
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {ev.zona || '-'}
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {ev.fecha_inicio
                         ? new Date(ev.fecha_inicio).toLocaleString()
                         : '-'}
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {ev.es_gratuito ? 'Sí' : 'No'}
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {ev.es_destacado ? 'Sí' : 'No'}
                     </td>
-                    <td className='px-3 py-2 text-xs text-right'>
-                      <div className='inline-flex items-center gap-2'>
+                    <td className="px-3 py-2 text-xs text-right">
+                      <div className="inline-flex items-center gap-2">
                         <button
-                          type='button'
+                          type="button"
                           onClick={() => openEditForm(ev)}
-                          className='rounded-lg border border-slate-600 px-2 py-1 hover:bg-slate-800'
+                          className="rounded-lg border border-slate-600 px-2 py-1 hover:bg-slate-800"
                         >
                           Editar
                         </button>
                         <button
-                          type='button'
+                          type="button"
                           onClick={() => setDeleteTarget(ev)}
-                          className='rounded-lg border border-red-700 px-2 py-1 text-red-300 hover:bg-red-950/40'
+                          className="rounded-lg border border-red-700 px-2 py-1 text-red-300 hover:bg-red-950/40"
                         >
                           Eliminar
                         </button>
@@ -508,29 +508,29 @@ export default function AdminEventosPage () {
             </table>
 
             {totalItems > 0 && (
-              <div className='flex items-center justify-between px-4 py-2 border-t border-slate-800 text-[11px] text-slate-300'>
+              <div className="flex items-center justify-between px-4 py-2 border-t border-slate-800 text-[11px] text-slate-300">
                 <span>
                   Mostrando {fromItem}-{toItem} de {totalItems}
                 </span>
-                <div className='inline-flex gap-1'>
+                <div className="inline-flex gap-1">
                   <button
-                    type='button'
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className='px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800'
+                    className="px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800"
                   >
                     Anterior
                   </button>
-                  <span className='px-2 py-1'>
+                  <span className="px-2 py-1">
                     Página {currentPage} de {totalPages}
                   </span>
                   <button
-                    type='button'
+                    type="button"
                     onClick={() =>
-                      setCurrentPage(p => Math.min(totalPages, p + 1))
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className='px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800'
+                    className="px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800"
                   >
                     Siguiente
                   </button>
@@ -542,49 +542,49 @@ export default function AdminEventosPage () {
 
         {/* Modal formulario */}
         {isFormOpen && (
-          <div className='fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4'>
-            <div className='w-full max-w-2xl mx-auto my-8 rounded-3xl bg-slate-950 border border-slate-700 p-6 md:p-8 shadow-2xl max-h-[88vh] overflow-y-auto'>
-              <div className='flex items-center justify-between mb-3'>
-                <h2 className='text-sm font-semibold'>
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4">
+            <div className="w-full max-w-2xl mx-auto my-8 rounded-3xl bg-slate-950 border border-slate-700 p-6 md:p-8 shadow-2xl max-h-[88vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold">
                   {editing ? 'Editar evento' : 'Nuevo evento'}
                 </h2>
                 <button
-                  type='button'
+                  type="button"
                   onClick={closeForm}
-                  className='text-slate-400 hover:text-slate-200 text-sm'
+                  className="text-slate-400 hover:text-slate-200 text-sm"
                 >
                   ✕
                 </button>
               </div>
 
               {/* FORM */}
-              <form onSubmit={handleSubmit} className='space-y-3'>
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Título *
                     </label>
                     <input
-                      type='text'
-                      name='titulo'
+                      type="text"
+                      name="titulo"
                       value={formValues.titulo}
                       onChange={handleChange}
                       required
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Categoría *
                     </label>
                     <select
-                      name='categoria'
+                      name="categoria"
                       value={formValues.categoria}
                       onChange={handleChange}
                       required
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     >
-                      {CATEGORIAS_EVENTO.map(cat => (
+                      {CATEGORIAS_EVENTO.map((cat) => (
                         <option key={cat} value={cat}>
                           {cat}
                         </option>
@@ -595,230 +595,230 @@ export default function AdminEventosPage () {
 
                 <ZonasLugares
                   selected={formValues.zona}
-                  onChange={values =>
-                    setFormValues(prev => ({ ...prev, zona: values }))
+                  onChange={(values) =>
+                    setFormValues((prev) => ({ ...prev, zona: values }))
                   }
                 />
 
                 <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
+                  <label className="block text-xs mb-1 text-slate-300">
                     Dirección *
                   </label>
                   <input
-                    type='text'
-                    name='direccion'
+                    type="text"
+                    name="direccion"
                     value={formValues.direccion}
                     onChange={handleChange}
                     required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                   />
                 </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Fecha inicio *
                     </label>
                     <input
-                      type='datetime-local'
-                      name='fecha_inicio'
+                      type="datetime-local"
+                      name="fecha_inicio"
                       value={formValues.fecha_inicio}
                       onChange={handleChange}
                       required
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Fecha fin
                     </label>
                     <input
-                      type='datetime-local'
-                      name='fecha_fin'
+                      type="datetime-local"
+                      name="fecha_fin"
                       value={formValues.fecha_fin}
                       onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                 </div>
 
                 {/* Bloque alineado: Todo el día / Es gratuito / Precio desde */}
-                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Duración
                     </label>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                    <label className="inline-flex items-center gap-2 text-xs text-slate-200">
                       <input
-                        type='checkbox'
-                        name='es_todo_el_dia'
+                        type="checkbox"
+                        name="es_todo_el_dia"
                         checked={formValues.es_todo_el_dia}
                         onChange={handleChange}
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                        className="h-4 w-4 rounded border-slate-600 bg-slate-900"
                       />
                       Todo el día
                     </label>
                   </div>
 
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       ¿Es gratuito?
                     </label>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                    <label className="inline-flex items-center gap-2 text-xs text-slate-200">
                       <input
-                        type='checkbox'
-                        name='es_gratuito'
+                        type="checkbox"
+                        name="es_gratuito"
                         checked={formValues.es_gratuito}
-                        onChange={e =>
-                          setFormValues(prev => ({
+                        onChange={(e) =>
+                          setFormValues((prev) => ({
                             ...prev,
                             es_gratuito: e.target.checked,
                             precio_desde: e.target.checked
                               ? ''
-                              : prev.precio_desde
+                              : prev.precio_desde,
                           }))
                         }
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                        className="h-4 w-4 rounded border-slate-600 bg-slate-900"
                       />
                       Gratuito
                     </label>
                   </div>
 
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Precio desde{' '}
                       {formValues.es_gratuito ? '(no aplica)' : '*'}
                     </label>
                     <input
-                      type='number'
-                      name='precio_desde'
+                      type="number"
+                      name="precio_desde"
                       value={formValues.precio_desde}
                       onChange={handleChange}
                       disabled={formValues.es_gratuito}
                       required={!formValues.es_gratuito}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 disabled:opacity-50'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 disabled:opacity-50"
                     />
                   </div>
                 </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Moneda *
                     </label>
                     <select
-                      name='moneda'
+                      name="moneda"
                       value={formValues.moneda}
                       onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     >
-                      <option value='URU'>URU</option>
-                      <option value='ARS'>ARS</option>
-                      <option value='USD'>USD</option>
+                      <option value="URU">URU</option>
+                      <option value="ARS">ARS</option>
+                      <option value="USD">USD</option>
                     </select>
                   </div>
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       URL entradas *
                     </label>
                     <input
-                      type='url'
-                      name='url_entradas'
+                      type="url"
+                      name="url_entradas"
                       value={formValues.url_entradas}
                       onChange={handleChange}
                       required
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
+                  <label className="block text-xs mb-1 text-slate-300">
                     Reseña *
                   </label>
                   <textarea
-                    name='resena'
+                    name="resena"
                     value={formValues.resena}
                     onChange={handleChange}
                     rows={4}
                     required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
-                    placeholder='Descripción del evento, artistas, ambiente, etc.'
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                    placeholder="Descripción del evento, artistas, ambiente, etc."
                   />
                 </div>
 
                 <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
+                  <label className="block text-xs mb-1 text-slate-300">
                     Imagen principal *
                   </label>
                   <UploadImage
-                    onUploaded={path =>
-                      setFormValues(prev => ({
+                    onUploaded={(path) =>
+                      setFormValues((prev) => ({
                         ...prev,
-                        imagen_principal: path
+                        imagen_principal: path,
                       }))
                     }
                   />
                   {formValues.imagen_principal && (
-                    <p className='mt-1 text-[11px] text-emerald-400'>
+                    <p className="mt-1 text-[11px] text-emerald-400">
                       Imagen subida: {formValues.imagen_principal}
                     </p>
                   )}
-                  <p className='mt-1 text-[10px] text-slate-500'>
+                  <p className="mt-1 text-[10px] text-slate-500">
                     Se guarda en <code>public/uploads/[sección]</code> y en la
                     base se almacena la ruta relativa (por ejemplo:{' '}
                     <code>uploads/eventos/archivo.jpg</code>).
                   </p>
                 </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Estado
                     </label>
                     <select
-                      name='estado'
+                      name="estado"
                       value={formValues.estado}
                       onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     >
-                      <option value='PUBLICADO'>PUBLICADO</option>
-                      <option value='DRAFT'>BORRADOR</option>
-                      <option value='ARCHIVADO'>ARCHIVADO</option>
+                      <option value="PUBLICADO">PUBLICADO</option>
+                      <option value="DRAFT">BORRADOR</option>
+                      <option value="ARCHIVADO">ARCHIVADO</option>
                     </select>
                   </div>
-                  <div className='flex items-end'>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                  <div className="flex items-end">
+                    <label className="inline-flex items-center gap-2 text-xs text-slate-200">
                       <input
-                        type='checkbox'
-                        name='es_destacado'
+                        type="checkbox"
+                        name="es_destacado"
                         checked={formValues.es_destacado}
                         onChange={handleChange}
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                        className="h-4 w-4 rounded border-slate-600 bg-slate-900"
                       />
                       Destacado (aparece en inicio)
                     </label>
                   </div>
                 </div>
 
-                <div className='flex justify-end gap-2 pt-2'>
+                <div className="flex justify-end gap-2 pt-2">
                   <button
-                    type='button'
+                    type="button"
                     onClick={closeForm}
-                    className='rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800'
+                    className="rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
                   >
                     Cancelar
                   </button>
                   <button
-                    type='submit'
+                    type="submit"
                     disabled={isSubmitting}
-                    className='rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60'
+                    className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60"
                   >
                     {isSubmitting
                       ? 'Guardando...'
                       : editing
-                      ? 'Guardar cambios'
-                      : 'Crear evento'}
+                        ? 'Guardar cambios'
+                        : 'Crear evento'}
                   </button>
                 </div>
               </form>
@@ -828,27 +828,27 @@ export default function AdminEventosPage () {
 
         {/* Confirm delete */}
         {deleteTarget && (
-          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60'>
-            <div className='w-full max-w-sm rounded-2xl bg-slate-950 border border-slate-700 p-4 shadow-2xl'>
-              <h2 className='text-sm font-semibold mb-2'>Eliminar evento</h2>
-              <p className='text-xs text-slate-300 mb-3'>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="w-full max-w-sm rounded-2xl bg-slate-950 border border-slate-700 p-4 shadow-2xl">
+              <h2 className="text-sm font-semibold mb-2">Eliminar evento</h2>
+              <p className="text-xs text-slate-300 mb-3">
                 Estás por eliminar{' '}
-                <span className='font-semibold'>{deleteTarget.titulo}</span>.
+                <span className="font-semibold">{deleteTarget.titulo}</span>.
                 Esta acción no se puede deshacer.
               </p>
-              <div className='flex justify-end gap-2'>
+              <div className="flex justify-end gap-2">
                 <button
-                  type='button'
+                  type="button"
                   onClick={() => setDeleteTarget(null)}
-                  className='rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800'
+                  className="rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
                 >
                   Cancelar
                 </button>
                 <button
-                  type='button'
+                  type="button"
                   onClick={confirmDelete}
                   disabled={isDeleting}
-                  className='rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-60'
+                  className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-60"
                 >
                   {isDeleting ? 'Eliminando...' : 'Eliminar'}
                 </button>

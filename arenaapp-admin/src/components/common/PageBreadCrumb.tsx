@@ -1,8 +1,8 @@
-import Link from "next/link";
-import React from "react";
+import Link from 'next/link'
+import React from 'react'
 
 interface BreadcrumbProps {
-  pageTitle: string;
+  pageTitle: string
 }
 
 const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
@@ -46,7 +46,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
         </ol>
       </nav>
     </div>
-  );
-};
+  )
+}
 
-export default PageBreadcrumb;
+export default PageBreadcrumb

@@ -12,7 +12,7 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'https://admin.arenapress.app'
 ).replace(/\/$/, '')
 
-export default function UploadImage ({ onUploaded }: Props) {
+export default function UploadImage({ onUploaded }: Props) {
   const pathname = usePathname()
 
   // Ejemplos:
@@ -38,7 +38,7 @@ export default function UploadImage ({ onUploaded }: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleUpload (e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -53,7 +53,7 @@ export default function UploadImage ({ onUploaded }: Props) {
       const res = await fetch(`${API_BASE}/api/admin/upload-image`, {
         method: 'POST',
         body: formData,
-        credentials: 'include'
+        credentials: 'include',
       })
 
       const rawText = await res.text()
@@ -91,19 +91,19 @@ export default function UploadImage ({ onUploaded }: Props) {
   }
 
   return (
-    <div className='flex flex-col gap-2'>
+    <div className="flex flex-col gap-2">
       <input
-        type='file'
-        accept='image/*'
+        type="file"
+        accept="image/*"
         onChange={handleUpload}
-        className='w-full text-sm text-slate-100 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-xs file:text-slate-100 hover:file:bg-slate-700'
+        className="w-full text-sm text-slate-100 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-xs file:text-slate-100 hover:file:bg-slate-700"
       />
 
       {uploading && (
-        <p className='text-xs text-slate-400'>Subiendo imagen...</p>
+        <p className="text-xs text-slate-400">Subiendo imagen...</p>
       )}
 
-      {error && <p className='text-xs text-red-400'>{error}</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
   )
 }

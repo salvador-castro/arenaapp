@@ -41,19 +41,19 @@ const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/restaurantes/public`
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
 const PAGE_SIZE = 12
 
-function renderPriceRange (rango: number | null | undefined): string {
+function renderPriceRange(rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
   const value = Math.min(Math.max(rango, 1), 5)
   return '$'.repeat(value)
 }
 
-function renderStars (estrellas: number | null | undefined): string {
+function renderStars(estrellas: number | null | undefined): string {
   if (!estrellas || estrellas < 1) return '-'
   const value = Math.min(Math.max(estrellas, 1), 5)
   return '★'.repeat(value)
 }
 
-function getInstagramHandle (url: string | null): string {
+function getInstagramHandle(url: string | null): string {
   if (!url) return 'Instagram'
   try {
     const u = new URL(url)
@@ -65,7 +65,7 @@ function getInstagramHandle (url: string | null): string {
   }
 }
 
-function normalizeText (value: string | null | undefined): string {
+function normalizeText(value: string | null | undefined): string {
   if (!value) return ''
   return value
     .normalize('NFD')
@@ -73,7 +73,7 @@ function normalizeText (value: string | null | undefined): string {
     .toLowerCase()
 }
 
-export default function RestaurantesPage () {
+export default function RestaurantesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -101,7 +101,9 @@ export default function RestaurantesPage () {
   const [currentPage, setCurrentPage] = useState(1)
 
   // Favoritos
-  const [favoriteRestaurantIds, setFavoriteRestaurantIds] = useState<Set<number>>(new Set())
+  const [favoriteRestaurantIds, setFavoriteRestaurantIds] = useState<
+    Set<number>
+  >(new Set())
   const [favoriteLoading, setFavoriteLoading] = useState(false)
 
   // Guardia de auth
@@ -128,7 +130,7 @@ export default function RestaurantesPage () {
         setError(null)
 
         const res = await fetch(PUBLIC_ENDPOINT, {
-          method: 'GET'
+          method: 'GET',
         })
 
         if (!res.ok) {
@@ -162,7 +164,7 @@ export default function RestaurantesPage () {
         const res = await fetch(FAVORITOS_RESTAURANTES_ENDPOINT, {
           method: 'GET',
           headers,
-          credentials: 'include'
+          credentials: 'include',
         })
 
         if (!res.ok) {
@@ -172,8 +174,8 @@ export default function RestaurantesPage () {
 
         const data: any[] = await res.json()
         const ids = data
-          .map(row => Number(row.restaurante_id))
-          .filter(id => !Number.isNaN(id))
+          .map((row) => Number(row.restaurante_id))
+          .filter((id) => !Number.isNaN(id))
 
         setFavoriteRestaurantIds(new Set(ids))
       } catch (err) {
@@ -189,7 +191,9 @@ export default function RestaurantesPage () {
     if (!restaurants.length) return
     if (!restauranteId) return
 
-    const found = restaurants.find(r => Number(r.id) === Number(restauranteId))
+    const found = restaurants.find(
+      (r) => Number(r.id) === Number(restauranteId)
+    )
 
     if (found) {
       setSelectedRestaurant(found)
@@ -222,7 +226,7 @@ export default function RestaurantesPage () {
       const isFavorite = favoriteRestaurantIds.has(restauranteId)
 
       const headers: HeadersInit = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       }
       if (auth?.token) {
         headers['Authorization'] = `Bearer ${auth.token}`
@@ -232,7 +236,7 @@ export default function RestaurantesPage () {
         method: isFavorite ? 'DELETE' : 'POST',
         headers,
         credentials: 'include',
-        body: JSON.stringify({ restauranteId })
+        body: JSON.stringify({ restauranteId }),
       })
 
       if (!res.ok) {
@@ -240,7 +244,7 @@ export default function RestaurantesPage () {
         return
       }
 
-      setFavoriteRestaurantIds(prev => {
+      setFavoriteRestaurantIds((prev) => {
         const next = new Set(prev)
         if (isFavorite) {
           next.delete(restauranteId)
@@ -262,7 +266,7 @@ export default function RestaurantesPage () {
       Array.from(
         new Set(
           restaurants
-            .map(r => r.zona)
+            .map((r) => r.zona)
             .filter((z): z is string => !!z && z.trim().length > 0)
         )
       ).sort(),
@@ -274,7 +278,7 @@ export default function RestaurantesPage () {
       Array.from(
         new Set(
           restaurants
-            .map(r => r.rango_precios)
+            .map((r) => r.rango_precios)
             .filter(
               (p): p is number => typeof p === 'number' && !Number.isNaN(p)
             )
@@ -288,7 +292,7 @@ export default function RestaurantesPage () {
       Array.from(
         new Set(
           restaurants
-            .map(r => r.tipo_comida)
+            .map((r) => r.tipo_comida)
             .filter((t): t is string => !!t && t.trim().length > 0)
         )
       ).sort(),
@@ -301,7 +305,7 @@ export default function RestaurantesPage () {
 
     const term = normalizeText(search.trim())
     if (term) {
-      result = result.filter(r => {
+      result = result.filter((r) => {
         const nombre = normalizeText(r.nombre)
         const tipo = normalizeText(r.tipo_comida)
         const zona = normalizeText(r.zona)
@@ -316,19 +320,19 @@ export default function RestaurantesPage () {
     }
 
     if (zonaFilter) {
-      result = result.filter(r => r.zona === zonaFilter)
+      result = result.filter((r) => r.zona === zonaFilter)
     }
 
     if (priceFilter) {
       const priceNumber = Number(priceFilter)
       if (!Number.isNaN(priceNumber)) {
-        result = result.filter(r => r.rango_precios === priceNumber)
+        result = result.filter((r) => r.rango_precios === priceNumber)
       }
     }
 
     if (tiposFilter.length > 0) {
       result = result.filter(
-        r => r.tipo_comida && tiposFilter.includes(r.tipo_comida)
+        (r) => r.tipo_comida && tiposFilter.includes(r.tipo_comida)
       )
     }
 
@@ -362,82 +366,83 @@ export default function RestaurantesPage () {
   }, [filteredRestaurants, currentPage])
 
   const toggleTipoComida = (tipo: string) => {
-    setTiposFilter(prev =>
-      prev.includes(tipo) ? prev.filter(t => t !== tipo) : [...prev, tipo]
+    setTiposFilter((prev) =>
+      prev.includes(tipo) ? prev.filter((t) => t !== tipo) : [...prev, tipo]
     )
   }
 
   if (isLoading || (!user && !error)) {
     return (
-      <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
-        <p className='text-sm text-slate-400'>Cargando...</p>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <p className="text-sm text-slate-400">Cargando...</p>
       </div>
     )
   }
 
   return (
-    <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
       <TopNav isLoggedIn={isLoggedIn} />
 
-      <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
+      <main className="max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4">
         {/* Título */}
-        <header className='flex flex-col gap-1 mb-1'>
-          <h1 className='text-lg font-semibold'>Restaurantes</h1>
-          <p className='text-xs text-slate-400'>
+        <header className="flex flex-col gap-1 mb-1">
+          <h1 className="text-lg font-semibold">Restaurantes</h1>
+          <p className="text-xs text-slate-400">
             Explorá los lugares recomendados.
           </p>
         </header>
 
         {/* Filtros */}
-        <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3">
           <button
-            type='button'
-            onClick={() => setFiltersOpen(open => !open)}
-            className='w-full flex items-center justify-between gap-2 text-sm font-semibold text-slate-100'
+            type="button"
+            onClick={() => setFiltersOpen((open) => !open)}
+            className="w-full flex items-center justify-between gap-2 text-sm font-semibold text-slate-100"
           >
-            <span className='flex items-center gap-2'>
+            <span className="flex items-center gap-2">
               <SlidersHorizontal size={14} />
               <span>Filtros</span>
             </span>
-            <span className='flex items-center gap-1 text-[11px] text-emerald-400'>
+            <span className="flex items-center gap-1 text-[11px] text-emerald-400">
               {filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
               <ChevronDown
                 size={14}
-                className={`transition-transform ${filtersOpen ? 'rotate-180' : ''
-                  }`}
+                className={`transition-transform ${
+                  filtersOpen ? 'rotate-180' : ''
+                }`}
               />
             </span>
           </button>
 
           {filtersOpen && (
             <>
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Buscador */}
-                <div className='sm:col-span-1'>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                <div className="sm:col-span-1">
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     Buscar
                   </label>
                   <input
-                    type='text'
+                    type="text"
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder='Nombre, zona, ciudad...'
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Nombre, zona, ciudad..."
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
                 {/* Zona */}
                 <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     Zona
                   </label>
                   <select
                     value={zonaFilter}
-                    onChange={e => setZonaFilter(e.target.value)}
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    onChange={(e) => setZonaFilter(e.target.value)}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value=''>Todas</option>
-                    {zonas.map(z => (
+                    <option value="">Todas</option>
+                    {zonas.map((z) => (
                       <option key={z} value={z}>
                         {z}
                       </option>
@@ -447,16 +452,16 @@ export default function RestaurantesPage () {
 
                 {/* Rango de precios */}
                 <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     Rango de precios
                   </label>
                   <select
                     value={priceFilter}
-                    onChange={e => setPriceFilter(e.target.value)}
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    onChange={(e) => setPriceFilter(e.target.value)}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value=''>Todos</option>
-                    {precios.map(p => (
+                    <option value="">Todos</option>
+                    {precios.map((p) => (
                       <option key={p} value={p}>
                         {renderPriceRange(p)}
                       </option>
@@ -467,22 +472,23 @@ export default function RestaurantesPage () {
 
               {/* Multiselect tipo de comida */}
               {tiposComida.length > 0 && (
-                <div className='space-y-1'>
-                  <p className='text-[11px] font-medium text-slate-300'>
+                <div className="space-y-1">
+                  <p className="text-[11px] font-medium text-slate-300">
                     Tipo de comida
                   </p>
-                  <div className='flex flex-wrap gap-2'>
-                    {tiposComida.map(tipo => {
+                  <div className="flex flex-wrap gap-2">
+                    {tiposComida.map((tipo) => {
                       const active = tiposFilter.includes(tipo)
                       return (
                         <button
                           key={tipo}
-                          type='button'
+                          type="button"
                           onClick={() => toggleTipoComida(tipo)}
-                          className={`rounded-full border px-3 py-1 text-[11px] ${active
-                            ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
-                            : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-400/60'
-                            }`}
+                          className={`rounded-full border px-3 py-1 text-[11px] ${
+                            active
+                              ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
+                              : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-400/60'
+                          }`}
                         >
                           {tipo}
                         </button>
@@ -497,27 +503,27 @@ export default function RestaurantesPage () {
 
         {/* Estado */}
         {loading && (
-          <p className='text-xs text-slate-400'>Cargando restaurantes...</p>
+          <p className="text-xs text-slate-400">Cargando restaurantes...</p>
         )}
 
-        {error && <p className='text-xs text-red-400'>{error}</p>}
+        {error && <p className="text-xs text-red-400">{error}</p>}
 
         {/* Listado */}
         {!loading && !error && filteredRestaurants.length === 0 && (
-          <p className='text-xs text-slate-400'>
+          <p className="text-xs text-slate-400">
             No se encontraron restaurantes con los filtros actuales.
           </p>
         )}
 
         {!loading && !error && filteredRestaurants.length > 0 && (
           <>
-            <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-              {paginatedRestaurants.map(place => (
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {paginatedRestaurants.map((place) => (
                 <div
                   key={place.id}
-                  className='rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
+                  className="rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden"
                 >
-                  <div className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800'>
+                  <div className="relative w-full h-36 sm:h-40 md:h-44 bg-slate-800">
                     <Image
                       alt={place.nombre}
                       src={
@@ -525,51 +531,51 @@ export default function RestaurantesPage () {
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
-                      className='object-cover'
-                      sizes='(max-width: 768px) 100vw, 25vw'
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 25vw"
                     />
                   </div>
 
-                  <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
-                    <p className='text-[10px] uppercase font-semibold text-emerald-400'>
+                  <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
+                    <p className="text-[10px] uppercase font-semibold text-emerald-400">
                       {place.zona || 'Zona no especificada'}
                     </p>
-                    <h3 className='text-sm font-semibold line-clamp-1'>
+                    <h3 className="text-sm font-semibold line-clamp-1">
                       {place.nombre}
                     </h3>
 
                     {place.descripcion_corta && (
-                      <p className='text-slate-400 line-clamp-2'>
+                      <p className="text-slate-400 line-clamp-2">
                         {place.descripcion_corta}
                       </p>
                     )}
 
-                    <div className='flex items-center gap-2 mt-1'>
-                      <span className='text-amber-400'>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-amber-400">
                         {renderStars(place.estrellas)}
                       </span>
-                      <span className='text-slate-400'>
+                      <span className="text-slate-400">
                         {renderPriceRange(place.rango_precios)}
                       </span>
                     </div>
 
                     {place.tipo_comida && (
-                      <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-0.5 text-[10px] text-slate-300'>
+                      <span className="mt-1 inline-flex rounded-full border border-slate-700 px-2 py-0.5 text-[10px] text-slate-300">
                         {place.tipo_comida}
                       </span>
                     )}
 
                     {place.direccion && (
-                      <p className='mt-1 text-[10px] text-slate-500 line-clamp-1'>
+                      <p className="mt-1 text-[10px] text-slate-500 line-clamp-1">
                         {place.direccion}
                       </p>
                     )}
 
-                    <div className='mt-2 flex justify-end'>
+                    <div className="mt-2 flex justify-end">
                       <button
-                        type='button'
+                        type="button"
                         onClick={() => openModalFromCard(place)}
-                        className='rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors'
+                        className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors"
                       >
                         Más info
                       </button>
@@ -581,25 +587,25 @@ export default function RestaurantesPage () {
 
             {/* Paginación */}
             {totalPages > 1 && (
-              <div className='flex items-center justify-center gap-3 pt-2'>
+              <div className="flex items-center justify-center gap-3 pt-2">
                 <button
-                  type='button'
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className='px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70'
+                  className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
                 >
                   Anterior
                 </button>
-                <span className='text-[11px] text-slate-400'>
+                <span className="text-[11px] text-slate-400">
                   Página {currentPage} de {totalPages}
                 </span>
                 <button
-                  type='button'
+                  type="button"
                   onClick={() =>
-                    setCurrentPage(p => Math.min(totalPages, p + 1))
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
                   disabled={currentPage === totalPages}
-                  className='px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70'
+                  className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
                 >
                   Siguiente
                 </button>
@@ -611,28 +617,28 @@ export default function RestaurantesPage () {
         {/* MODAL detalle */}
         {isModalOpen && selectedRestaurant && (
           <div
-            className='fixed inset-0 z-60 flex items-start justify-center bg-black/60 px-4'
+            className="fixed inset-0 z-60 flex items-start justify-center bg-black/60 px-4"
             onClick={closeModal} // click en overlay cierra
           >
             <div
-              className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
-              onClick={e => e.stopPropagation()} // evita cerrar si clickeás dentro
+              className="relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl"
+              onClick={(e) => e.stopPropagation()} // evita cerrar si clickeás dentro
             >
               {/* Botón cerrar arriba a la derecha */}
               <button
-                type='button'
+                type="button"
                 onClick={closeModal}
-                className='absolute top-3 right-3 z-20
+                className="absolute top-3 right-3 z-20
                            flex h-8 w-8 items-center justify-center
                            rounded-full bg-slate-900/80 border border-slate-700
-                           text-sm text-slate-200 hover:bg-slate-800 transition'
+                           text-sm text-slate-200 hover:bg-slate-800 transition"
               >
                 ✕
               </button>
 
-              <div className='px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4'>
-                <div className='flex flex-col sm:flex-row gap-4'>
-                  <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
+              <div className="px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800">
                     <Image
                       alt={selectedRestaurant.nombre}
                       src={
@@ -640,27 +646,27 @@ export default function RestaurantesPage () {
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
-                      className='object-cover'
-                      sizes='(max-width: 640px) 100vw, 160px'
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 160px"
                     />
                   </div>
 
-                  <div className='flex-1 space-y-1'>
-                    <p className='text-[11px] uppercase font-semibold text-emerald-400'>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-[11px] uppercase font-semibold text-emerald-400">
                       {selectedRestaurant.zona || 'Zona no especificada'}
                     </p>
-                    <h3 className='text-lg font-semibold'>
+                    <h3 className="text-lg font-semibold">
                       {selectedRestaurant.nombre}
                     </h3>
-                    <div className='flex flex-wrap items-center gap-2 text-[12px]'>
-                      <span className='text-amber-400'>
+                    <div className="flex flex-wrap items-center gap-2 text-[12px]">
+                      <span className="text-amber-400">
                         {renderStars(selectedRestaurant.estrellas)}
                       </span>
-                      <span className='text-slate-400'>
+                      <span className="text-slate-400">
                         {renderPriceRange(selectedRestaurant.rango_precios)}
                       </span>
                       {selectedRestaurant.tipo_comida && (
-                        <span className='rounded-full border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300'>
+                        <span className="rounded-full border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300">
                           {selectedRestaurant.tipo_comida}
                         </span>
                       )}
@@ -669,9 +675,9 @@ export default function RestaurantesPage () {
                     {selectedRestaurant.url_instagram && (
                       <a
                         href={selectedRestaurant.url_instagram}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1'
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1"
                       >
                         <Instagram size={14} />
                         <span>
@@ -684,91 +690,91 @@ export default function RestaurantesPage () {
                 </div>
 
                 {selectedRestaurant.resena && (
-                  <div className='space-y-1'>
-                    <h4 className='text-sm font-semibold'>Reseña</h4>
-                    <p className='text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left'>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-semibold">Reseña</h4>
+                    <p className="text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left">
                       {selectedRestaurant.resena}
                     </p>
                   </div>
                 )}
 
-                <div className='grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]'>
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
+                <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
                       Dirección
                     </p>
-                    <p className='text-slate-400'>
+                    <p className="text-slate-400">
                       {selectedRestaurant.direccion || '-'}
                     </p>
                     {selectedRestaurant.url_maps && (
                       <a
                         href={selectedRestaurant.url_maps}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 mt-1 inline-block'
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 mt-1 inline-block"
                       >
                         Cómo llegar
                       </a>
                     )}
                   </div>
 
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
                       Horario
                     </p>
-                    <p className='text-slate-400'>
+                    <p className="text-slate-400">
                       {selectedRestaurant.horario_text || '-'}
                     </p>
                   </div>
 
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
                       Sitio web
                     </p>
                     {selectedRestaurant.sitio_web ? (
                       <a
                         href={selectedRestaurant.sitio_web}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
                       >
                         {selectedRestaurant.sitio_web}
                       </a>
                     ) : (
-                      <p className='text-slate-400'>-</p>
+                      <p className="text-slate-400">-</p>
                     )}
                   </div>
 
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
                       Reservas
                     </p>
                     {selectedRestaurant.url_reservas ||
-                      selectedRestaurant.url_reserva ? (
+                    selectedRestaurant.url_reserva ? (
                       <a
                         href={
                           selectedRestaurant.url_reservas ||
                           selectedRestaurant.url_reserva ||
                           '#'
                         }
-                        target='_blank'
-                        rel='noreferrer'
-                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
                       >
                         Hacer reserva
                       </a>
                     ) : (
-                      <p className='text-slate-400'>-</p>
+                      <p className="text-slate-400">-</p>
                     )}
                   </div>
                 </div>
 
                 {selectedRestaurant && (
-                  <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2">
                     <button
-                      type='button'
+                      type="button"
                       onClick={closeModal}
-                      className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                      className="rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
                     >
                       Cerrar
                     </button>
@@ -780,23 +786,27 @@ export default function RestaurantesPage () {
 
                       return (
                         <button
-                          type='button'
+                          type="button"
                           disabled={favoriteLoading}
-                          onClick={() => handleToggleFavorite(selectedRestaurant)}
+                          onClick={() =>
+                            handleToggleFavorite(selectedRestaurant)
+                          }
                           className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
-                            ${isFavorite
-                              ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
-                              : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
+                            ${
+                              isFavorite
+                                ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
+                                : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
                             }
                           `}
                         >
-                          {isFavorite ? 'Quitar de favoritos' : 'Guardar como favorito'}
+                          {isFavorite
+                            ? 'Quitar de favoritos'
+                            : 'Guardar como favorito'}
                         </button>
                       )
                     })()}
                   </div>
                 )}
-
               </div>
             </div>
           </div>

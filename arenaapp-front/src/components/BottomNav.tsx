@@ -16,7 +16,7 @@ import {
   Hotel,
   Image,
   PartyPopper,
-  ShoppingBag
+  ShoppingBag,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import React, { useState, useEffect } from 'react'
@@ -34,7 +34,7 @@ type AdminSubItem = {
   icon: React.ReactNode
 }
 
-export default function BottomNav () {
+export default function BottomNav() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, isLoading } = useAuth()
@@ -51,7 +51,7 @@ export default function BottomNav () {
   const guestItems: Item[] = [
     { href: '/', label: 'Inicio', icon: <Home size={20} /> },
     { href: '/buscar', label: 'Buscar', icon: <Search size={20} /> },
-    { href: '/login', label: 'Iniciar sesión', icon: <User size={20} /> }
+    { href: '/login', label: 'Iniciar sesión', icon: <User size={20} /> },
   ]
 
   const loggedItems: Item[] = [
@@ -59,7 +59,7 @@ export default function BottomNav () {
     {
       href: '/dashboard',
       label: 'Dashboard',
-      icon: <LayoutDashboard size={20} />
+      icon: <LayoutDashboard size={20} />,
     },
     { href: '/favoritos', label: 'Favoritos', icon: <Heart size={20} /> },
     { href: '/buscar', label: 'Buscar', icon: <Search size={20} /> },
@@ -67,9 +67,9 @@ export default function BottomNav () {
       href: '/menu',
       label: 'Menú',
       icon: <MenuIcon size={20} />,
-      requiresAdmin: true
+      requiresAdmin: true,
     },
-    { href: '/perfil', label: 'Perfil', icon: <User size={20} /> }
+    { href: '/perfil', label: 'Perfil', icon: <User size={20} /> },
   ]
 
   const adminSubItems: AdminSubItem[] = [
@@ -77,7 +77,7 @@ export default function BottomNav () {
     {
       href: '/admin-restaurantes',
       label: 'Restaurante',
-      icon: <Utensils size={16} />
+      icon: <Utensils size={16} />,
     },
     { href: '/admin-bares', label: 'Bares', icon: <Wine size={16} /> },
     { href: '/admin-hoteles', label: 'Hoteles', icon: <Hotel size={16} /> },
@@ -86,17 +86,17 @@ export default function BottomNav () {
     {
       href: '/admin-shopping',
       label: 'Shopping',
-      icon: <ShoppingBag size={16} />
+      icon: <ShoppingBag size={16} />,
     },
     {
       href: '/admin-eventos',
       label: 'Eventos',
-      icon: <PartyPopper size={16} />
-    }
+      icon: <PartyPopper size={16} />,
+    },
   ]
 
   const items = isLoggedIn
-    ? loggedItems.filter(item => !(item.requiresAdmin && !isAdmin))
+    ? loggedItems.filter((item) => !(item.requiresAdmin && !isAdmin))
     : guestItems
 
   return (
@@ -104,22 +104,22 @@ export default function BottomNav () {
       {/* 🔹 Overlay para cerrar el menú al clickear fuera del BottomNav */}
       {isLoggedIn && isAdmin && isMenuOpen && (
         <div
-          className='fixed inset-0 z-40'
+          className="fixed inset-0 z-40"
           onClick={() => setIsMenuOpen(false)}
         />
       )}
 
-      <nav className='fixed bottom-0 inset-x-0 z-50 h-16 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md'>
+      <nav className="fixed bottom-0 inset-x-0 z-50 h-16 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md">
         {/* SUBMENÚ ADMIN */}
         {isLoggedIn && isAdmin && isMenuOpen && (
-          <div className='absolute bottom-16 inset-x-0 mb-2'>
-            <div className='mx-auto max-w-md rounded-2xl bg-slate-900 border border-slate-700 shadow-xl p-2 grid grid-cols-2 gap-2 text-xs'>
-              {adminSubItems.map(sub => {
+          <div className="absolute bottom-16 inset-x-0 mb-2">
+            <div className="mx-auto max-w-md rounded-2xl bg-slate-900 border border-slate-700 shadow-xl p-2 grid grid-cols-2 gap-2 text-xs">
+              {adminSubItems.map((sub) => {
                 const isActive = pathname === sub.href
                 return (
                   <button
                     key={sub.href}
-                    type='button'
+                    type="button"
                     onClick={() => {
                       router.push(sub.href)
                       setIsMenuOpen(false)
@@ -132,10 +132,10 @@ export default function BottomNav () {
                       }
                     `}
                   >
-                    <span className='flex items-center justify-center w-6 h-6'>
+                    <span className="flex items-center justify-center w-6 h-6">
                       {sub.icon}
                     </span>
-                    <span className='truncate'>{sub.label}</span>
+                    <span className="truncate">{sub.label}</span>
                   </button>
                 )
               })}
@@ -144,8 +144,8 @@ export default function BottomNav () {
         )}
 
         {/* BARRA PRINCIPAL */}
-        <div className='mx-auto max-w-md flex h-full items-center justify-between px-4'>
-          {items.map(item => {
+        <div className="mx-auto max-w-md flex h-full items-center justify-between px-4">
+          {items.map((item) => {
             const isMenuItem = item.href === '/menu'
             const isActive =
               pathname === item.href || (isMenuItem && isMenuOpen)
@@ -154,10 +154,10 @@ export default function BottomNav () {
               <Link
                 key={item.href + item.label}
                 href={item.href}
-                onClick={e => {
+                onClick={(e) => {
                   if (isMenuItem) {
                     e.preventDefault()
-                    if (isAdmin) setIsMenuOpen(prev => !prev)
+                    if (isAdmin) setIsMenuOpen((prev) => !prev)
                   }
                 }}
                 className={`flex flex-col items-center gap-0.5 text-[11px] transition
@@ -168,10 +168,10 @@ export default function BottomNav () {
                   }
                 `}
               >
-                <span className='flex items-center justify-center w-8 h-8'>
+                <span className="flex items-center justify-center w-8 h-8">
                   {item.icon}
                 </span>
-                <span className='leading-none'>{item.label}</span>
+                <span className="leading-none">{item.label}</span>
               </Link>
             )
           })}

@@ -1,17 +1,17 @@
-import React from "react";
+import React from 'react'
 
 interface ComponentCardProps {
-  title: string;
-  children: React.ReactNode;
-  className?: string; // Additional custom classes for styling
-  desc?: string; // Description text
+  title: string
+  children: React.ReactNode
+  className?: string // Additional custom classes for styling
+  desc?: string // Description text
 }
 
 const ComponentCard: React.FC<ComponentCardProps> = ({
   title,
   children,
-  className = "",
-  desc = "",
+  className = '',
+  desc = '',
 }) => {
   return (
     <div
@@ -34,7 +34,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
         <div className="space-y-6">{children}</div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ComponentCard;
+export default ComponentCard

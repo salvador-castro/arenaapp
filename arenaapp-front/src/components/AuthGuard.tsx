@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 
-export default function AuthGuard ({ children }: { children: ReactNode }) {
+export default function AuthGuard({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
@@ -19,8 +19,8 @@ export default function AuthGuard ({ children }: { children: ReactNode }) {
   // Mientras carga o todavía no hay user, mostramos un loader
   if (isLoading || !user) {
     return (
-      <div className='flex h-screen items-center justify-center'>
-        <p className='text-sm text-gray-500'>Cargando…</p>
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-sm text-gray-500">Cargando…</p>
       </div>
     )
   }

@@ -12,7 +12,7 @@ type TopNavProps = {
   isLoggedIn: boolean
 }
 
-export default function TopNav ({ isLoggedIn }: TopNavProps) {
+export default function TopNav({ isLoggedIn }: TopNavProps) {
   const pathname = usePathname()
   const { goTo } = useAuthRedirect(isLoggedIn)
 
@@ -24,7 +24,7 @@ export default function TopNav ({ isLoggedIn }: TopNavProps) {
   }
 
   return (
-    <header className='sticky top-0 z-20 border-b border-slate-800 bg-slate-950/80 backdrop-blur'>
+    <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
       <div
         className={`
           max-w-3xl mx-auto px-4 py-3 flex items-center
@@ -33,7 +33,7 @@ export default function TopNav ({ isLoggedIn }: TopNavProps) {
       >
         {/* LOGO */}
         <button
-          type='button'
+          type="button"
           onClick={handleLogoClick}
           className={`flex items-center gap-2 focus:outline-none
             ${isHome ? 'mx-auto' : ''}
@@ -41,10 +41,10 @@ export default function TopNav ({ isLoggedIn }: TopNavProps) {
         >
           <Image
             src={LOGO_URL}
-            alt='ArenaPress'
+            alt="ArenaPress"
             width={120}
             height={32}
-            className='h-8 w-auto'
+            className="h-8 w-auto"
             priority
           />
         </button>

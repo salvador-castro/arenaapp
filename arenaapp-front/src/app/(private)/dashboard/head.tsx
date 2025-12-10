@@ -1,8 +1,8 @@
-export default function Head () {
+export default function Head() {
   return (
     <>
       <title>Dashboard - ArenaPress</title>
-      <meta name='description' content='Panel principal de ArenaPress' />
+      <meta name="description" content="Panel principal de ArenaPress" />
     </>
   )
 }

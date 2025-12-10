@@ -61,12 +61,12 @@ interface FormValues {
   resena: string
 }
 
-function priceTierToSymbols (tier?: number | null) {
+function priceTierToSymbols(tier?: number | null) {
   if (!tier || tier < 1) return '-'
   return '$'.repeat(Math.min(tier, 5))
 }
 
-export default function BaresPage () {
+export default function BaresPage() {
   const router = useRouter()
   const { user, isLoading } = useAuth()
 
@@ -100,7 +100,7 @@ export default function BaresPage () {
     url_imagen: '',
     es_destacado: false,
     resena: '',
-    estado: 'PUBLICADO'
+    estado: 'PUBLICADO',
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -121,7 +121,7 @@ export default function BaresPage () {
   }, [user, isLoading, router])
 
   // Fetch a la API con paginación + búsqueda
-  async function fetchBares (pageToLoad: number, searchTerm: string) {
+  async function fetchBares(pageToLoad: number, searchTerm: string) {
     try {
       if (!user || user.rol !== 'ADMIN') return
 
@@ -130,7 +130,7 @@ export default function BaresPage () {
 
       const params = new URLSearchParams({
         page: String(pageToLoad),
-        pageSize: String(PAGE_SIZE)
+        pageSize: String(PAGE_SIZE),
       })
 
       if (searchTerm.trim()) {
@@ -141,7 +141,7 @@ export default function BaresPage () {
         `${API_BASE}/api/admin/bares?${params.toString()}`,
         {
           method: 'GET',
-          credentials: 'include'
+          credentials: 'include',
         }
       )
 
@@ -151,7 +151,7 @@ export default function BaresPage () {
 
       const json = await res.json()
 
-      const data: AdminBar[] = (json.data as any[]).map(row => ({
+      const data: AdminBar[] = (json.data as any[]).map((row) => ({
         ...row,
         rango_precios:
           row.rango_precios === null || row.rango_precios === undefined
@@ -160,7 +160,7 @@ export default function BaresPage () {
         estrellas:
           row.estrellas === null || row.estrellas === undefined
             ? null
-            : Number(row.estrellas)
+            : Number(row.estrellas),
       }))
 
       setBares(data)
@@ -183,7 +183,7 @@ export default function BaresPage () {
   }, [user, currentPage, search])
 
   // Helpers form
-  function openCreateForm () {
+  function openCreateForm() {
     setEditing(null)
     setFormValues({
       nombre: '',
@@ -203,19 +203,19 @@ export default function BaresPage () {
       url_imagen: '',
       es_destacado: false,
       resena: '',
-      estado: 'PUBLICADO'
+      estado: 'PUBLICADO',
     })
     setIsFormOpen(true)
   }
 
-  function openEditForm (b: AdminBar) {
+  function openEditForm(b: AdminBar) {
     setEditing(b)
     setFormValues({
       nombre: b.nombre ?? '',
       tipo_comida: b.tipo_comida
         ? b.tipo_comida
             .split(',')
-            .map(s => s.trim())
+            .map((s) => s.trim())
             .filter(Boolean)
         : [],
       rango_precios: b.rango_precios ?? '',
@@ -223,7 +223,7 @@ export default function BaresPage () {
       zona: b.zona
         ? b.zona
             .split(',')
-            .map(s => s.trim())
+            .map((s) => s.trim())
             .filter(Boolean)
         : [],
       direccion: b.direccion ?? '',
@@ -238,45 +238,45 @@ export default function BaresPage () {
       url_imagen: b.url_imagen ?? '',
       es_destacado: !!b.es_destacado,
       resena: b.resena ?? '',
-      estado: (b.estado as FormValues['estado']) ?? 'PUBLICADO'
+      estado: (b.estado as FormValues['estado']) ?? 'PUBLICADO',
     })
     setIsFormOpen(true)
   }
 
-  function closeForm () {
+  function closeForm() {
     setIsFormOpen(false)
     setEditing(null)
   }
 
-  function handleChange (
+  function handleChange(
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) {
     const target = e.target
     const { name, value } = target
 
     if (target instanceof HTMLInputElement && target.type === 'checkbox') {
-      setFormValues(prev => ({
+      setFormValues((prev) => ({
         ...prev,
-        [name]: target.checked
+        [name]: target.checked,
       }))
       return
     }
 
     if (name === 'rango_precios' || name === 'estrellas') {
-      setFormValues(prev => ({
+      setFormValues((prev) => ({
         ...prev,
-        [name]: value === '' ? '' : Number(value)
+        [name]: value === '' ? '' : Number(value),
       }))
       return
     }
 
-    setFormValues(prev => ({
+    setFormValues((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }))
   }
 
-  async function handleSubmit (e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
@@ -298,7 +298,7 @@ export default function BaresPage () {
         rango_precios:
           formValues.rango_precios === '' ? null : formValues.rango_precios,
         estrellas: formValues.estrellas === '' ? null : formValues.estrellas,
-        es_destacado: formValues.es_destacado ? 1 : 0
+        es_destacado: formValues.es_destacado ? 1 : 0,
       }
 
       const isEdit = !!editing && editing.id != null
@@ -313,7 +313,7 @@ export default function BaresPage () {
         method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
@@ -333,7 +333,7 @@ export default function BaresPage () {
     }
   }
 
-  async function confirmDelete () {
+  async function confirmDelete() {
     if (!deleteTarget) return
     setIsDeleting(true)
     setError(null)
@@ -343,7 +343,7 @@ export default function BaresPage () {
 
       const res = await fetch(url, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
       })
 
       if (!res.ok) {
@@ -363,8 +363,8 @@ export default function BaresPage () {
 
   if (isLoading || !user || user.rol !== 'ADMIN') {
     return (
-      <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
-        <p className='text-sm text-slate-400'>Cargando...</p>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <p className="text-sm text-slate-400">Cargando...</p>
       </div>
     )
   }
@@ -374,13 +374,13 @@ export default function BaresPage () {
     totalItems === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalItems)
 
   return (
-    <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
       {/* Header */}
-      <header className='sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800'>
-        <div className='max-w-4xl mx-auto flex items-center justify-between px-4 py-3'>
+      <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800">
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
           <div>
-            <h1 className='text-lg font-semibold'>Gestión de bares</h1>
-            <p className='text-xs text-slate-400'>
+            <h1 className="text-lg font-semibold">Gestión de bares</h1>
+            <p className="text-xs text-slate-400">
               Crear, editar y eliminar bares de ArenaApp.
             </p>
           </div>
@@ -388,25 +388,25 @@ export default function BaresPage () {
         </div>
       </header>
 
-      <main className='max-w-4xl mx-auto px-4 pt-4 pb-6'>
+      <main className="max-w-4xl mx-auto px-4 pt-4 pb-6">
         {/* Barra superior */}
-        <div className='flex flex-col sm:flex-row sm:items-center gap-3 mb-4'>
-          <div className='flex-1'>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+          <div className="flex-1">
             <input
-              type='text'
-              placeholder='Buscar por nombre, tipo de comida, zona...'
+              type="text"
+              placeholder="Buscar por nombre, tipo de comida, zona..."
               value={search}
-              onChange={e => {
+              onChange={(e) => {
                 setSearch(e.target.value)
                 setCurrentPage(1)
               }}
-              className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500'
+              className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
           <button
-            type='button'
+            type="button"
             onClick={openCreateForm}
-            className='inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition'
+            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition"
           >
             + Nuevo bar
           </button>
@@ -414,42 +414,42 @@ export default function BaresPage () {
 
         {/* Mensajes */}
         {error && (
-          <div className='mb-3 rounded-xl border border-red-700 bg-red-950/50 px-3 py-2 text-xs text-red-200'>
+          <div className="mb-3 rounded-xl border border-red-700 bg-red-950/50 px-3 py-2 text-xs text-red-200">
             {error}
           </div>
         )}
         {isFetching && (
-          <div className='mb-3 text-xs text-slate-400'>Cargando bares...</div>
+          <div className="mb-3 text-xs text-slate-400">Cargando bares...</div>
         )}
 
         {/* Tabla */}
-        <div className='overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70'>
-          <div className='overflow-x-auto'>
-            <table className='min-w-full text-sm'>
-              <thead className='bg-slate-900/90'>
+        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-slate-900/90">
                 <tr>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     ID
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Nombre
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Tipo de comida
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Zona
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     $
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     ⭐
                   </th>
-                  <th className='px-3 py-2 text-left text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-400">
                     Es destacado
                   </th>
-                  <th className='px-3 py-2 text-center text-xs font-medium text-slate-400'>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-slate-400">
                     Acciones
                   </th>
                 </tr>
@@ -459,57 +459,57 @@ export default function BaresPage () {
                   <tr>
                     <td
                       colSpan={7}
-                      className='px-3 py-4 text-center text-xs text-slate-500'
+                      className="px-3 py-4 text-center text-xs text-slate-500"
                     >
                       No hay bares que coincidan con la búsqueda.
                     </td>
                   </tr>
                 )}
 
-                {bares.map(b => (
+                {bares.map((b) => (
                   <tr
                     key={String(b.id)}
-                    className='border-t border-slate-800/80 hover:bg-slate-900/80'
+                    className="border-t border-slate-800/80 hover:bg-slate-900/80"
                   >
-                    <td className='px-3 py-2 text-xs text-slate-400'>
+                    <td className="px-3 py-2 text-xs text-slate-400">
                       {String(b.id)}
                     </td>
-                    <td className='px-3 py-2'>
-                      <div className='flex flex-col'>
-                        <span className='text-sm'>{b.nombre}</span>
-                        <span className='text-[11px] text-slate-400'>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-col">
+                        <span className="text-sm">{b.nombre}</span>
+                        <span className="text-[11px] text-slate-400">
                           {b.direccion}
                         </span>
                       </div>
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {b.tipo_comida}
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {b.zona || b.ciudad || '-'}
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {priceTierToSymbols(b.rango_precios ?? null)}
                     </td>
-                    <td className='px-3 py-2 text-xs text-yellow-300'>
+                    <td className="px-3 py-2 text-xs text-yellow-300">
                       {b.estrellas ? '★'.repeat(Math.min(b.estrellas, 5)) : '-'}
                     </td>
-                    <td className='px-3 py-2 text-xs text-slate-300'>
+                    <td className="px-3 py-2 text-xs text-slate-300">
                       {b.es_destacado ? 'Si' : 'No'}
                     </td>
-                    <td className='px-3 py-2 text-xs text-right'>
-                      <div className='inline-flex items-center gap-2'>
+                    <td className="px-3 py-2 text-xs text-right">
+                      <div className="inline-flex items-center gap-2">
                         <button
-                          type='button'
+                          type="button"
                           onClick={() => openEditForm(b)}
-                          className='rounded-lg border border-slate-600 px-2 py-1 hover:bg-slate-800'
+                          className="rounded-lg border border-slate-600 px-2 py-1 hover:bg-slate-800"
                         >
                           Editar
                         </button>
                         <button
-                          type='button'
+                          type="button"
                           onClick={() => setDeleteTarget(b)}
-                          className='rounded-lg border border-red-700 px-2 py-1 text-red-300 hover:bg-red-950/40'
+                          className="rounded-lg border border-red-700 px-2 py-1 text-red-300 hover:bg-red-950/40"
                         >
                           Eliminar
                         </button>
@@ -521,29 +521,29 @@ export default function BaresPage () {
             </table>
 
             {totalItems > 0 && (
-              <div className='flex items-center justify-between px-4 py-2 border-t border-slate-800 text-[11px] text-slate-300'>
+              <div className="flex items-center justify-between px-4 py-2 border-t border-slate-800 text-[11px] text-slate-300">
                 <span>
                   Mostrando {fromItem}-{toItem} de {totalItems}
                 </span>
-                <div className='inline-flex gap-1'>
+                <div className="inline-flex gap-1">
                   <button
-                    type='button'
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className='px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800'
+                    className="px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800"
                   >
                     Anterior
                   </button>
-                  <span className='px-2 py-1'>
+                  <span className="px-2 py-1">
                     Página {currentPage} de {totalPages}
                   </span>
                   <button
-                    type='button'
+                    type="button"
                     onClick={() =>
-                      setCurrentPage(p => Math.min(totalPages, p + 1))
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className='px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800'
+                    className="px-2 py-1 rounded-lg border border-slate-700 disabled:opacity-40 hover:bg-slate-800"
                   >
                     Siguiente
                   </button>
@@ -555,42 +555,42 @@ export default function BaresPage () {
 
         {/* Modal formulario */}
         {isFormOpen && (
-          <div className='fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4'>
-            <div className='w-full max-w-2xl mx-auto my-8 rounded-3xl bg-slate-950 border border-slate-700 p-6 md:p-8 shadow-2xl max-h-[88vh] overflow-y-auto'>
-              <div className='flex items-center justify-between mb-3'>
-                <h2 className='text-sm font-semibold'>
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4">
+            <div className="w-full max-w-2xl mx-auto my-8 rounded-3xl bg-slate-950 border border-slate-700 p-6 md:p-8 shadow-2xl max-h-[88vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold">
                   {editing ? 'Editar bar' : 'Nuevo bar'}
                 </h2>
                 <button
-                  type='button'
+                  type="button"
                   onClick={closeForm}
-                  className='text-slate-400 hover:text-slate-200 text-sm'
+                  className="text-slate-400 hover:text-slate-200 text-sm"
                 >
                   ✕
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className='space-y-3'>
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Nombre *
                     </label>
                     <input
-                      type='text'
-                      placeholder='Nombre del bar'
-                      name='nombre'
+                      type="text"
+                      placeholder="Nombre del bar"
+                      name="nombre"
                       value={formValues.nombre}
                       onChange={handleChange}
                       required
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
                   <div>
                     <Zonas
                       selected={formValues.zona}
-                      onChange={values =>
-                        setFormValues(prev => ({ ...prev, zona: values }))
+                      onChange={(values) =>
+                        setFormValues((prev) => ({ ...prev, zona: values }))
                       }
                     />
                   </div>
@@ -598,24 +598,24 @@ export default function BaresPage () {
 
                 <TipoComidaBares
                   selected={formValues.tipo_comida}
-                  onChange={values =>
-                    setFormValues(prev => ({ ...prev, tipo_comida: values }))
+                  onChange={(values) =>
+                    setFormValues((prev) => ({ ...prev, tipo_comida: values }))
                   }
                 />
 
-                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Rango de precios *
                     </label>
                     <select
-                      name='rango_precios'
+                      name="rango_precios"
                       value={formValues.rango_precios}
                       onChange={handleChange}
                       required
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     >
-                      <option value=''>Sin definir</option>
+                      <option value="">Sin definir</option>
                       <option value={1}>$</option>
                       <option value={2}>$$</option>
                       <option value={3}>$$$</option>
@@ -624,17 +624,17 @@ export default function BaresPage () {
                     </select>
                   </div>
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Estrellas *
                     </label>
                     <select
-                      name='estrellas'
+                      name="estrellas"
                       value={formValues.estrellas}
                       onChange={handleChange}
                       required
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     >
-                      <option value=''>Sin definir</option>
+                      <option value="">Sin definir</option>
                       <option value={1}>1</option>
                       <option value={2}>2</option>
                       <option value={3}>3</option>
@@ -642,14 +642,14 @@ export default function BaresPage () {
                       <option value={5}>5</option>
                     </select>
                   </div>
-                  <div className='flex items-end'>
-                    <label className='inline-flex items-center gap-2 text-xs text-slate-200'>
+                  <div className="flex items-end">
+                    <label className="inline-flex items-center gap-2 text-xs text-slate-200">
                       <input
-                        type='checkbox'
-                        name='es_destacado'
+                        type="checkbox"
+                        name="es_destacado"
                         checked={formValues.es_destacado}
                         onChange={handleChange}
-                        className='h-4 w-4 rounded border-slate-600 bg-slate-900'
+                        className="h-4 w-4 rounded border-slate-600 bg-slate-900"
                       />
                       Destacado
                     </label>
@@ -657,168 +657,168 @@ export default function BaresPage () {
                 </div>
 
                 <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
+                  <label className="block text-xs mb-1 text-slate-300">
                     Dirección *
                   </label>
                   <input
-                    type='text'
-                    name='direccion'
+                    type="text"
+                    name="direccion"
                     value={formValues.direccion}
                     onChange={handleChange}
                     required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                   />
                 </div>
 
                 <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
+                  <label className="block text-xs mb-1 text-slate-300">
                     Reseña (texto largo) *
                   </label>
                   <textarea
-                    name='resena'
+                    name="resena"
                     value={formValues.resena}
                     onChange={handleChange}
                     rows={5}
                     required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500'
-                    placeholder='Escribí una reseña descriptiva del bar...'
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    placeholder="Escribí una reseña descriptiva del bar..."
                   />
-                  <p className='mt-1 text-[11px] text-slate-500'>
+                  <p className="mt-1 text-[11px] text-slate-500">
                     Podés escribir un texto largo: ambiente, barra, coctelería,
                     recomendaciones, etc.
                   </p>
                 </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Ciudad
                     </label>
                     <input
-                      type='text'
-                      name='ciudad'
+                      type="text"
+                      name="ciudad"
                       value={formValues.ciudad}
                       onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Provincia
                     </label>
                     <input
-                      type='text'
-                      name='provincia'
+                      type="text"
+                      name="provincia"
                       value={formValues.provincia}
                       onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       País
                     </label>
                     <input
-                      type='text'
-                      name='pais'
+                      type="text"
+                      name="pais"
                       value={formValues.pais}
                       onChange={handleChange}
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
+                  <label className="block text-xs mb-1 text-slate-300">
                     Horarios (texto) *
                   </label>
                   <input
-                    type='text'
-                    name='horario_text'
-                    placeholder='Lun a jue de 18 a 01, vie y sáb hasta las 03...'
+                    type="text"
+                    name="horario_text"
+                    placeholder="Lun a jue de 18 a 01, vie y sáb hasta las 03..."
                     value={formValues.horario_text}
                     onChange={handleChange}
                     required
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                   />
                 </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Link Google Maps *
                     </label>
                     <input
-                      type='url'
-                      name='url_maps'
+                      type="url"
+                      name="url_maps"
                       value={formValues.url_maps}
                       onChange={handleChange}
                       required
-                      placeholder='https://maps.google.com/...'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      placeholder="https://maps.google.com/..."
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       URL reservas
                     </label>
                     <input
-                      type='url'
-                      name='url_reserva'
+                      type="url"
+                      name="url_reserva"
                       value={formValues.url_reserva}
                       onChange={handleChange}
-                      placeholder='https://...'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      placeholder="https://..."
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                 </div>
 
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Instagram *
                     </label>
                     <input
-                      type='url'
-                      name='instagram'
+                      type="url"
+                      name="instagram"
                       value={formValues.instagram}
                       onChange={handleChange}
                       required
-                      placeholder='https://instagram.com/...'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      placeholder="https://instagram.com/..."
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                   <div>
-                    <label className='block text-xs mb-1 text-slate-300'>
+                    <label className="block text-xs mb-1 text-slate-300">
                       Web
                     </label>
                     <input
-                      type='url'
-                      name='sitio_web'
+                      type="url"
+                      name="sitio_web"
                       value={formValues.sitio_web}
                       onChange={handleChange}
-                      placeholder='https://...'
-                      className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                      placeholder="https://..."
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
                 </div>
 
                 {/* Imagen con UploadImage */}
                 <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
+                  <label className="block text-xs mb-1 text-slate-300">
                     Imagen *
                   </label>
                   <UploadImage
-                    onUploaded={path =>
-                      setFormValues(prev => ({ ...prev, url_imagen: path }))
+                    onUploaded={(path) =>
+                      setFormValues((prev) => ({ ...prev, url_imagen: path }))
                     }
                   />
                   {formValues.url_imagen && (
-                    <p className='mt-1 text-[11px] text-emerald-400'>
+                    <p className="mt-1 text-[11px] text-emerald-400">
                       Imagen subida: {formValues.url_imagen}
                     </p>
                   )}
-                  <p className='mt-1 text-[10px] text-slate-500'>
+                  <p className="mt-1 text-[10px] text-slate-500">
                     Se guarda en <code>public/uploads/[sección]</code> y en la
                     base se almacena la ruta relativa (por ejemplo:{' '}
                     <code>uploads/bares/archivo.jpg</code>).
@@ -826,39 +826,39 @@ export default function BaresPage () {
                 </div>
 
                 <div>
-                  <label className='block text-xs mb-1 text-slate-300'>
+                  <label className="block text-xs mb-1 text-slate-300">
                     Estado
                   </label>
                   <select
-                    name='estado'
+                    name="estado"
                     value={formValues.estado}
                     onChange={handleChange}
-                    className='w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100'
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                   >
-                    <option value='PUBLICADO'>PUBLICADO</option>
-                    <option value='BORRADOR'>BORRADOR</option>
-                    <option value='ARCHIVADO'>ARCHIVADO</option>
+                    <option value="PUBLICADO">PUBLICADO</option>
+                    <option value="BORRADOR">BORRADOR</option>
+                    <option value="ARCHIVADO">ARCHIVADO</option>
                   </select>
                 </div>
 
-                <div className='flex justify-end gap-2 pt-2'>
+                <div className="flex justify-end gap-2 pt-2">
                   <button
-                    type='button'
+                    type="button"
                     onClick={closeForm}
-                    className='rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800'
+                    className="rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
                   >
                     Cancelar
                   </button>
                   <button
-                    type='submit'
+                    type="submit"
                     disabled={isSubmitting}
-                    className='rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60'
+                    className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60"
                   >
                     {isSubmitting
                       ? 'Guardando...'
                       : editing
-                      ? 'Guardar cambios'
-                      : 'Crear bar'}
+                        ? 'Guardar cambios'
+                        : 'Crear bar'}
                   </button>
                 </div>
               </form>
@@ -868,27 +868,27 @@ export default function BaresPage () {
 
         {/* Confirm delete */}
         {deleteTarget && (
-          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60'>
-            <div className='w-full max-w-sm rounded-2xl bg-slate-950 border border-slate-700 p-4 shadow-2xl'>
-              <h2 className='text-sm font-semibold mb-2'>Eliminar bar</h2>
-              <p className='text-xs text-slate-300 mb-3'>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="w-full max-w-sm rounded-2xl bg-slate-950 border border-slate-700 p-4 shadow-2xl">
+              <h2 className="text-sm font-semibold mb-2">Eliminar bar</h2>
+              <p className="text-xs text-slate-300 mb-3">
                 Estás por eliminar{' '}
-                <span className='font-semibold'>{deleteTarget.nombre}</span>.
+                <span className="font-semibold">{deleteTarget.nombre}</span>.
                 Esta acción no se puede deshacer.
               </p>
-              <div className='flex justify-end gap-2'>
+              <div className="flex justify-end gap-2">
                 <button
-                  type='button'
+                  type="button"
                   onClick={() => setDeleteTarget(null)}
-                  className='rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800'
+                  className="rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
                 >
                   Cancelar
                 </button>
                 <button
-                  type='button'
+                  type="button"
                   onClick={confirmDelete}
                   disabled={isDeleting}
-                  className='rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-60'
+                  className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-60"
                 >
                   {isDeleting ? 'Eliminando...' : 'Eliminar'}
                 </button>

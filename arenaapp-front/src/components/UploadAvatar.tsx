@@ -9,19 +9,19 @@ type UploadAvatarProps = {
   onError?: (msg: string | null) => void
 }
 
-export default function UploadAvatar ({
+export default function UploadAvatar({
   avatarUrl,
   initials,
   onFileSelected,
-  onError
+  onError,
 }: UploadAvatarProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  function handleClickChange () {
+  function handleClickChange() {
     fileInputRef.current?.click()
   }
 
-  function handleRemove () {
+  function handleRemove() {
     // limpiamos en el padre
     onFileSelected(null, null)
     onError?.(null)
@@ -33,7 +33,7 @@ export default function UploadAvatar ({
     }
   }
 
-  function handleAvatarChange (e: ChangeEvent<HTMLInputElement>) {
+  function handleAvatarChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -57,36 +57,36 @@ export default function UploadAvatar ({
   }
 
   return (
-    <div className='flex items-center gap-4 mb-4'>
-      <div className='h-16 w-16 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700'>
+    <div className="flex items-center gap-4 mb-4">
+      <div className="h-16 w-16 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
         {avatarUrl ? (
           <img
             src={avatarUrl}
-            alt='Avatar'
-            className='h-full w-full object-cover'
+            alt="Avatar"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <span className='text-lg font-semibold text-slate-300'>
+          <span className="text-lg font-semibold text-slate-300">
             {initials || '👤'}
           </span>
         )}
       </div>
       <div>
-        <p className='text-sm font-medium'>Foto de perfil</p>
-        <p className='text-xs text-slate-400 mb-2'>PNG o JPG, máximo 2 MB.</p>
-        <div className='flex items-center gap-2'>
+        <p className="text-sm font-medium">Foto de perfil</p>
+        <p className="text-xs text-slate-400 mb-2">PNG o JPG, máximo 2 MB.</p>
+        <div className="flex items-center gap-2">
           <button
-            type='button'
+            type="button"
             onClick={handleClickChange}
-            className='rounded-lg bg-slate-800 text-slate-100 font-semibold px-3 py-1.5 text-xs hover:bg-slate-700 transition cursor-pointer'
+            className="rounded-lg bg-slate-800 text-slate-100 font-semibold px-3 py-1.5 text-xs hover:bg-slate-700 transition cursor-pointer"
           >
             Cambiar foto
           </button>
           {avatarUrl && (
             <button
-              type='button'
+              type="button"
               onClick={handleRemove}
-              className='text-[11px] text-slate-400 hover:text-red-400'
+              className="text-[11px] text-slate-400 hover:text-red-400"
             >
               Quitar foto
             </button>
@@ -95,9 +95,9 @@ export default function UploadAvatar ({
 
         <input
           ref={fileInputRef}
-          type='file'
-          accept='image/*'
-          className='hidden'
+          type="file"
+          accept="image/*"
+          className="hidden"
           onChange={handleAvatarChange}
         />
       </div>

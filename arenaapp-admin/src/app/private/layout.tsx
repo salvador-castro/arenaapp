@@ -6,8 +6,8 @@ import { jwtVerify } from 'jose'
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!)
 
-export default async function PrivateLayout ({
-  children
+export default async function PrivateLayout({
+  children,
 }: {
   children: ReactNode
 }) {

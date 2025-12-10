@@ -39,7 +39,7 @@ const ALL_COUNTRIES: Country[] = [
   {
     code: 'BA',
     name: 'Bosnia y Herzegovina',
-    flag: 'https://flagcdn.com/ba.svg'
+    flag: 'https://flagcdn.com/ba.svg',
   },
   { code: 'BW', name: 'Botsuana', flag: 'https://flagcdn.com/bw.svg' },
   { code: 'BN', name: 'Brunéi', flag: 'https://flagcdn.com/bn.svg' },
@@ -71,7 +71,7 @@ const ALL_COUNTRIES: Country[] = [
   {
     code: 'AE',
     name: 'Emiratos Árabes Unidos',
-    flag: 'https://flagcdn.com/ae.svg'
+    flag: 'https://flagcdn.com/ae.svg',
   },
   { code: 'ER', name: 'Eritrea', flag: 'https://flagcdn.com/er.svg' },
   { code: 'SK', name: 'Eslovaquia', flag: 'https://flagcdn.com/sk.svg' },
@@ -158,7 +158,7 @@ const ALL_COUNTRIES: Country[] = [
   {
     code: 'PG',
     name: 'Papúa Nueva Guinea',
-    flag: 'https://flagcdn.com/pg.svg'
+    flag: 'https://flagcdn.com/pg.svg',
   },
   { code: 'PY', name: 'Paraguay', flag: 'https://flagcdn.com/py.svg' },
   { code: 'PE', name: 'Perú', flag: 'https://flagcdn.com/pe.svg' },
@@ -168,23 +168,23 @@ const ALL_COUNTRIES: Country[] = [
   {
     code: 'CF',
     name: 'República Centroafricana',
-    flag: 'https://flagcdn.com/cf.svg'
+    flag: 'https://flagcdn.com/cf.svg',
   },
   { code: 'CZ', name: 'República Checa', flag: 'https://flagcdn.com/cz.svg' },
   {
     code: 'CG',
     name: 'República del Congo',
-    flag: 'https://flagcdn.com/cg.svg'
+    flag: 'https://flagcdn.com/cg.svg',
   },
   {
     code: 'CD',
     name: 'República Democrática del Congo',
-    flag: 'https://flagcdn.com/cd.svg'
+    flag: 'https://flagcdn.com/cd.svg',
   },
   {
     code: 'DO',
     name: 'República Dominicana',
-    flag: 'https://flagcdn.com/do.svg'
+    flag: 'https://flagcdn.com/do.svg',
   },
   { code: 'RW', name: 'Ruanda', flag: 'https://flagcdn.com/rw.svg' },
   { code: 'RO', name: 'Rumania', flag: 'https://flagcdn.com/ro.svg' },
@@ -193,19 +193,19 @@ const ALL_COUNTRIES: Country[] = [
   {
     code: 'KN',
     name: 'San Cristóbal y Nieves',
-    flag: 'https://flagcdn.com/kn.svg'
+    flag: 'https://flagcdn.com/kn.svg',
   },
   { code: 'SM', name: 'San Marino', flag: 'https://flagcdn.com/sm.svg' },
   {
     code: 'VC',
     name: 'San Vicente y las Granadinas',
-    flag: 'https://flagcdn.com/vc.svg'
+    flag: 'https://flagcdn.com/vc.svg',
   },
   { code: 'LC', name: 'Santa Lucía', flag: 'https://flagcdn.com/lc.svg' },
   {
     code: 'ST',
     name: 'Santo Tomé y Príncipe',
-    flag: 'https://flagcdn.com/st.svg'
+    flag: 'https://flagcdn.com/st.svg',
   },
   { code: 'SN', name: 'Senegal', flag: 'https://flagcdn.com/sn.svg' },
   { code: 'RS', name: 'Serbia', flag: 'https://flagcdn.com/rs.svg' },
@@ -242,12 +242,12 @@ const ALL_COUNTRIES: Country[] = [
   { code: 'YE', name: 'Yemen', flag: 'https://flagcdn.com/ye.svg' },
   { code: 'DJ', name: 'Yibuti', flag: 'https://flagcdn.com/dj.svg' },
   { code: 'ZM', name: 'Zambia', flag: 'https://flagcdn.com/zm.svg' },
-  { code: 'ZW', name: 'Zimbabue', flag: 'https://flagcdn.com/zw.svg' }
+  { code: 'ZW', name: 'Zimbabue', flag: 'https://flagcdn.com/zw.svg' },
 ]
 
-export function CountrySelect ({
+export function CountrySelect({
   value,
-  onChange
+  onChange,
 }: {
   value: string
   onChange: (v: string) => void
@@ -255,77 +255,77 @@ export function CountrySelect ({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
 
-  const selected = ALL_COUNTRIES.find(c => c.name === value) ?? null
+  const selected = ALL_COUNTRIES.find((c) => c.name === value) ?? null
 
-  const filtered = ALL_COUNTRIES.filter(c =>
+  const filtered = ALL_COUNTRIES.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  function handleSelect (country: Country) {
+  function handleSelect(country: Country) {
     onChange(country.name) // en la BBDD guardás el nombre
     setOpen(false)
     setSearch('')
   }
 
   return (
-    <div className='relative'>
+    <div className="relative">
       {/* “Input” visual */}
       <button
-        type='button'
-        onClick={() => setOpen(o => !o)}
-        className='w-full flex items-center justify-between rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500'
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
       >
-        <span className='flex items-center gap-2 truncate'>
+        <span className="flex items-center gap-2 truncate">
           {selected ? (
             <>
               <img
                 src={selected.flag}
                 alt={selected.name}
-                className='h-4 w-6 rounded-sm object-cover'
+                className="h-4 w-6 rounded-sm object-cover"
               />
               <span>{selected.name}</span>
             </>
           ) : (
-            <span className='text-slate-500'>Seleccioná un país</span>
+            <span className="text-slate-500">Seleccioná un país</span>
           )}
         </span>
-        <span className='ml-2 text-xs text-slate-400'>{open ? '▲' : '▼'}</span>
+        <span className="ml-2 text-xs text-slate-400">{open ? '▲' : '▼'}</span>
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className='absolute z-50 mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 shadow-lg'>
+        <div className="absolute z-50 mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 shadow-lg">
           {/* Buscador */}
-          <div className='border-b border-slate-800 px-2 py-2'>
+          <div className="border-b border-slate-800 px-2 py-2">
             <input
               autoFocus
-              type='text'
-              placeholder='Buscar país...'
-              className='w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500'
+              type="text"
+              placeholder="Buscar país..."
+              className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
           {/* Lista */}
-          <ul className='max-h-56 overflow-y-auto py-1 text-sm'>
+          <ul className="max-h-56 overflow-y-auto py-1 text-sm">
             {filtered.length === 0 && (
-              <li className='px-3 py-2 text-xs text-slate-400'>
+              <li className="px-3 py-2 text-xs text-slate-400">
                 No se encontraron resultados
               </li>
             )}
 
-            {filtered.map(country => (
+            {filtered.map((country) => (
               <li key={country.code}>
                 <button
-                  type='button'
+                  type="button"
                   onClick={() => handleSelect(country)}
-                  className='flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-slate-800'
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-slate-800"
                 >
                   <img
                     src={country.flag}
                     alt={country.name}
-                    className='h-4 w-6 rounded-sm object-cover'
+                    className="h-4 w-6 rounded-sm object-cover"
                   />
                   <span>{country.name}</span>
                 </button>
