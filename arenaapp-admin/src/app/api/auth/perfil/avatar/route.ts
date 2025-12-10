@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { AuthPayload, verifyAuth } from '@/lib/auth'
-import { supabaseAdmin } from '@/lib/supabaseAdmin' // 👈 usamos el cliente admin de Supabase
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
@@ -24,19 +24,36 @@ export function OPTIONS () {
   })
 }
 
+// Helper para obtener el userId del payload JWT
+function getUserIdFromPayload (payload: AuthPayload | any): number {
+  // intentamos en este orden: userId, sub, id
+  const raw =
+    (payload as any)?.userId ?? (payload as any)?.sub ?? (payload as any)?.id
+
+  if (!raw) {
+    throw new Error('UNAUTHORIZED_INVALID_TOKEN')
+  }
+
+  const num =
+    typeof raw === 'string'
+      ? Number.parseInt(raw, 10)
+      : typeof raw === 'number'
+        ? raw
+        : NaN
+
+  if (!num || Number.isNaN(num)) {
+    throw new Error('UNAUTHORIZED_INVALID_TOKEN')
+  }
+
+  return num
+}
+
 // POST /api/auth/perfil/avatar
 export async function POST (req: NextRequest) {
   try {
     // 1) Verificar usuario autenticado
     const payload = await verifyAuth(req)
-    const userId = (payload as AuthPayload).userId
-
-    if (!userId) {
-      return new NextResponse('No autorizado', {
-        status: 401,
-        headers: corsBaseHeaders()
-      })
-    }
+    const userId = getUserIdFromPayload(payload)
 
     // 2) Leer el archivo del form-data
     const formData = await req.formData()
@@ -61,7 +78,6 @@ export async function POST (req: NextRequest) {
     const originalName = file.name || 'avatar.jpg'
     const ext = originalName.includes('.') ? originalName.split('.').pop() : 'jpg'
 
-    // 👉 Un solo avatar por usuario, siempre en la misma ruta:
     // bucket: avatars
     // path:   user-<id>/avatar.<ext>
     const storagePath = `user-${userId}/avatar.${ext}`
@@ -71,7 +87,7 @@ export async function POST (req: NextRequest) {
 
     // 5) Subir a Supabase Storage (bucket "avatars")
     const { error: uploadError } = await supabaseAdmin.storage
-      .from('avatars') // 👈 bucket definido por vos
+      .from('avatars')
       .upload(storagePath, buffer, {
         contentType: file.type || 'image/jpeg',
         upsert: true // sobreescribe el avatar anterior del usuario
