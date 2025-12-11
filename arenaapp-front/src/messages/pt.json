@@ -1,0 +1,13 @@
+{
+  "Common": {
+    "language.spanish": "Espanhol",
+    "language.english": "Inglês",
+    "language.portuguese": "Português"
+  },
+  "Restaurantes": {
+    "title": "Restaurantes",
+    "subtitle": "Descubra os melhores lugares para comer",
+    "seeDetails": "Ver detalhes",
+    "noResults": "Não há restaurantes disponíveis."
+  }
+}

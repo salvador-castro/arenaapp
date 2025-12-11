@@ -1,3 +1,4 @@
+///Users/salvacastro/Desktop/arenaapp/arenaapp-front/src/app/page.tsx
 'use client'
 
 import TopNav from '@/components/TopNav'
@@ -13,45 +14,45 @@ import HotelesDestacados from '@/components/destacados/Hoteles'
 import ShoppingDestacados from '@/components/destacados/Shopping'
 import { useAuth } from '@/context/AuthContext'
 
-export default function HomePage() {
+export default function HomePage () {
   const { user, isLoading }: any = useAuth()
   const isLoggedIn = !isLoading && !!user
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-50">
+    <div className='min-h-screen flex flex-col bg-slate-950 text-slate-50'>
       {/* NAV SUPERIOR */}
       <TopNav isLoggedIn={isLoggedIn} />
 
-      <main className="flex-1 pb-32">
+      <main className='flex-1 pb-32'>
         <HeroCarousel isLoggedIn={isLoggedIn} />
 
         {!isLoggedIn && (
-          <section className="px-4 pt-6">
+          <section className='px-4 pt-6'>
             <PromoBanner />
           </section>
         )}
 
-        <section className="px-4 pt-6">
+        <section className='px-4 pt-6'>
           <RestaurantesDestacados isLoggedIn={isLoggedIn} />
         </section>
 
-        <section className="px-4 pt-6">
+        <section className='px-4 pt-6'>
           <BaresDestacados isLoggedIn={isLoggedIn} />
         </section>
 
-        <section className="px-4 pt-6 pb-4">
+        <section className='px-4 pt-6 pb-4'>
           <EventosDestacados isLoggedIn={isLoggedIn} />
         </section>
 
-        <section className="px-4 pt-6 pb-4">
+        <section className='px-4 pt-6 pb-4'>
           <GaleriasDestacadas isLoggedIn={isLoggedIn} />
         </section>
 
-        <section className="px-4 pt-6 pb-4">
+        <section className='px-4 pt-6 pb-4'>
           <HotelesDestacados isLoggedIn={isLoggedIn} />
         </section>
 
-        <section className="px-4 pt-6 pb-4">
+        <section className='px-4 pt-6 pb-4'>
           <ShoppingDestacados isLoggedIn={isLoggedIn} />
         </section>
 
