@@ -1,8 +1,10 @@
+// C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-front\src\app\(private)\galerias\page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useLocale } from '@/context/LocaleContext' // 👈 NUEVO
 import Image from 'next/image'
 import { SlidersHorizontal, ChevronDown, MapPin } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
@@ -41,7 +43,7 @@ const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/galerias/public`
 const FAVORITOS_GALERIAS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
 const PAGE_SIZE = 12
 
-function normalizeText(value: string | null | undefined): string {
+function normalizeText (value: string | null | undefined): string {
   if (!value) return ''
   return value
     .normalize('NFD')
@@ -49,13 +51,162 @@ function normalizeText(value: string | null | undefined): string {
     .toLowerCase()
 }
 
-export default function GaleriasPage() {
+/* ---------------- i18n simple (es, en, pt) ---------------- */
+
+const GALERIAS_TEXTS = {
+  es: {
+    pageTitle: 'Galerías de arte',
+    pageSubtitle: 'Espacios culturales, galerías y salas de exposición.',
+    loadingPage: 'Cargando...',
+    loadingList: 'Cargando galerías...',
+    errorDefault: 'Error al cargar galerías.',
+    emptyList: 'No se encontraron galerías con los filtros actuales.',
+    filters: {
+      title: 'Filtros',
+      show: 'Mostrar filtros',
+      hide: 'Ocultar filtros',
+      searchLabel: 'Buscar',
+      searchPlaceholder: 'Nombre, zona, ciudad...',
+      zoneLabel: 'Zona',
+      zoneAll: 'Todas',
+    },
+    zoneFallback: 'Zona no especificada',
+    pagination: {
+      prev: 'Anterior',
+      next: 'Siguiente',
+      page: 'Página',
+      of: 'de',
+    },
+    card: {
+      moreInfo: 'Más info',
+    },
+    modal: {
+      review: 'Reseña',
+      address: 'Dirección',
+      website: 'Sitio web',
+      entry: 'Entrada',
+      reservation: 'Reserva',
+      entryFree: 'Entrada gratuita',
+      entryPaid: 'Entrada paga o a confirmar',
+      reservationRequired: 'Requiere reserva previa',
+      reservationNotRequired: 'Sin reserva obligatoria',
+      foundedIn: 'Fundada en',
+      close: 'Cerrar',
+      noData: '-',
+    },
+    favorite: {
+      add: 'Guardar como favorito',
+      remove: 'Quitar de favoritos',
+    },
+  },
+  en: {
+    pageTitle: 'Art galleries',
+    pageSubtitle: 'Cultural spaces, galleries and exhibition rooms.',
+    loadingPage: 'Loading...',
+    loadingList: 'Loading galleries...',
+    errorDefault: 'Error loading galleries.',
+    emptyList: 'No galleries found with the current filters.',
+    filters: {
+      title: 'Filters',
+      show: 'Show filters',
+      hide: 'Hide filters',
+      searchLabel: 'Search',
+      searchPlaceholder: 'Name, area, city...',
+      zoneLabel: 'Area',
+      zoneAll: 'All',
+    },
+    zoneFallback: 'Area not specified',
+    pagination: {
+      prev: 'Previous',
+      next: 'Next',
+      page: 'Page',
+      of: 'of',
+    },
+    card: {
+      moreInfo: 'More info',
+    },
+    modal: {
+      review: 'Review',
+      address: 'Address',
+      website: 'Website',
+      entry: 'Entry',
+      reservation: 'Reservation',
+      entryFree: 'Free entry',
+      entryPaid: 'Paid entry or to be confirmed',
+      reservationRequired: 'Reservation required',
+      reservationNotRequired: 'No mandatory reservation',
+      foundedIn: 'Founded in',
+      close: 'Close',
+      noData: '-',
+    },
+    favorite: {
+      add: 'Save as favorite',
+      remove: 'Remove from favorites',
+    },
+  },
+  pt: {
+    pageTitle: 'Galerias de arte',
+    pageSubtitle: 'Espaços culturais, galerias e salas de exposição.',
+    loadingPage: 'Carregando...',
+    loadingList: 'Carregando galerias...',
+    errorDefault: 'Erro ao carregar galerias.',
+    emptyList: 'Nenhuma galeria encontrada com os filtros atuais.',
+    filters: {
+      title: 'Filtros',
+      show: 'Mostrar filtros',
+      hide: 'Ocultar filtros',
+      searchLabel: 'Buscar',
+      searchPlaceholder: 'Nome, zona, cidade...',
+      zoneLabel: 'Zona',
+      zoneAll: 'Todas',
+    },
+    zoneFallback: 'Zona não especificada',
+    pagination: {
+      prev: 'Anterior',
+      next: 'Próxima',
+      page: 'Página',
+      of: 'de',
+    },
+    card: {
+      moreInfo: 'Ver mais',
+    },
+    modal: {
+      review: 'Resenha',
+      address: 'Endereço',
+      website: 'Site',
+      entry: 'Entrada',
+      reservation: 'Reserva',
+      entryFree: 'Entrada gratuita',
+      entryPaid: 'Entrada paga ou a confirmar',
+      reservationRequired: 'Requer reserva prévia',
+      reservationNotRequired: 'Sem reserva obrigatória',
+      foundedIn: 'Fundada em',
+      close: 'Fechar',
+      noData: '-',
+    },
+    favorite: {
+      add: 'Salvar como favorito',
+      remove: 'Remover dos favoritos',
+    },
+  },
+} as const
+
+type Lang = keyof typeof GALERIAS_TEXTS
+
+/* ---------------------------------------------------------- */
+
+export default function GaleriasPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
   const isLoggedIn = !isLoading && !!user
+
+  const { locale } = useLocale()
+  const currentLang: Lang =
+    locale === 'en' || locale === 'pt' || locale === 'es' ? locale : 'es'
+  const t = GALERIAS_TEXTS[currentLang]
 
   const galeriaIdParam = searchParams.get('galeriaId')
   const galeriaId = galeriaIdParam ? Number(galeriaIdParam) : null
@@ -114,7 +265,7 @@ export default function GaleriasPage() {
         setGalerias(data)
       } catch (err: any) {
         console.error('Error cargando galerías públicas', err)
-        setError(err?.message ?? 'Error al cargar galerías')
+        setError(err?.message ?? GALERIAS_TEXTS.es.errorDefault)
       } finally {
         setLoading(false)
       }
@@ -151,8 +302,8 @@ export default function GaleriasPage() {
         const data: any[] = await res.json()
         // query devuelve: favorito_id, galeria_id, g.*
         const ids = data
-          .map((row) => Number(row.galeria_id ?? row.id ?? row.item_id))
-          .filter((id) => !Number.isNaN(id))
+          .map(row => Number(row.galeria_id ?? row.id ?? row.item_id))
+          .filter(id => !Number.isNaN(id))
 
         setFavoriteGaleriaIds(new Set(ids))
       } catch (err) {
@@ -168,7 +319,7 @@ export default function GaleriasPage() {
     if (!galerias.length) return
     if (!galeriaId) return
 
-    const found = galerias.find((g) => Number(g.id) === Number(galeriaId))
+    const found = galerias.find(g => Number(g.id) === Number(galeriaId))
     if (found) {
       setSelectedGaleria(found)
       setIsModalOpen(true)
@@ -193,7 +344,7 @@ export default function GaleriasPage() {
       Array.from(
         new Set(
           galerias
-            .map((g) => g.zona)
+            .map(g => g.zona)
             .filter((z): z is string => !!z && z.trim().length > 0)
         )
       ).sort(),
@@ -206,7 +357,7 @@ export default function GaleriasPage() {
 
     const term = normalizeText(search.trim())
     if (term) {
-      result = result.filter((g) => {
+      result = result.filter(g => {
         const nombre = normalizeText(g.nombre)
         const zona = normalizeText(g.zona)
         const ciudad = normalizeText(g.ciudad)
@@ -221,10 +372,9 @@ export default function GaleriasPage() {
     }
 
     if (zonaFilter) {
-      result = result.filter((g) => g.zona === zonaFilter)
+      result = result.filter(g => g.zona === zonaFilter)
     }
 
-    // Podés ordenar por nombre y, si tenés, por algún flag de destacado
     result.sort((a, b) => a.nombre.localeCompare(b.nombre))
 
     return result
@@ -276,7 +426,7 @@ export default function GaleriasPage() {
         return
       }
 
-      setFavoriteGaleriaIds((prev) => {
+      setFavoriteGaleriaIds(prev => {
         const next = new Set(prev)
         if (isFavorite) {
           next.delete(galeriaIdNumeric)
@@ -294,38 +444,36 @@ export default function GaleriasPage() {
 
   if (isLoading || (!user && !error)) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-        <p className="text-sm text-slate-400">Cargando...</p>
+      <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
+        <p className='text-sm text-slate-400'>{t.loadingPage}</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+    <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
       <TopNav isLoggedIn={isLoggedIn} />
 
-      <main className="max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4">
+      <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
         {/* Título */}
-        <header className="flex flex-col gap-1 mb-1">
-          <h1 className="text-lg font-semibold">Galerías de arte</h1>
-          <p className="text-xs text-slate-400">
-            Espacios culturales, galerías y salas de exposición.
-          </p>
+        <header className='flex flex-col gap-1 mb-1'>
+          <h1 className='text-lg font-semibold'>{t.pageTitle}</h1>
+          <p className='text-xs text-slate-400'>{t.pageSubtitle}</p>
         </header>
 
         {/* Filtros */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3">
+        <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
           <button
-            type="button"
-            onClick={() => setFiltersOpen((open) => !open)}
-            className="w-full flex items-center justify-between gap-2 text-sm font-semibold text-slate-100"
+            type='button'
+            onClick={() => setFiltersOpen(open => !open)}
+            className='w-full flex items-center justify-between gap-2 text-sm font-semibold text-slate-100'
           >
-            <span className="flex items-center gap-2">
+            <span className='flex items-center gap-2'>
               <SlidersHorizontal size={14} />
-              <span>Filtros</span>
+              <span>{t.filters.title}</span>
             </span>
-            <span className="flex items-center gap-1 text-[11px] text-emerald-400">
-              {filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+            <span className='flex items-center gap-1 text-[11px] text-emerald-400'>
+              {filtersOpen ? t.filters.hide : t.filters.show}
               <ChevronDown
                 size={14}
                 className={`transition-transform ${
@@ -336,33 +484,33 @@ export default function GaleriasPage() {
           </button>
 
           {filtersOpen && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
               {/* Buscador */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                  Buscar
+                <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  {t.filters.searchLabel}
                 </label>
                 <input
-                  type="text"
+                  type='text'
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Nombre, zona, ciudad..."
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder={t.filters.searchPlaceholder}
+                  className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
                 />
               </div>
 
               {/* Zona */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                  Zona
+                <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  {t.filters.zoneLabel}
                 </label>
                 <select
                   value={zonaFilter}
-                  onChange={(e) => setZonaFilter(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  onChange={e => setZonaFilter(e.target.value)}
+                  className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
                 >
-                  <option value="">Todas</option>
-                  {zonas.map((z) => (
+                  <option value=''>{t.filters.zoneAll}</option>
+                  {zonas.map(z => (
                     <option key={z} value={z}>
                       {z}
                     </option>
@@ -374,29 +522,25 @@ export default function GaleriasPage() {
         </section>
 
         {/* Estado carga/error */}
-        {loading && (
-          <p className="text-xs text-slate-400">Cargando galerías...</p>
-        )}
+        {loading && <p className='text-xs text-slate-400'>{t.loadingList}</p>}
 
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className='text-xs text-red-400'>{error}</p>}
 
         {/* Listado */}
         {!loading && !error && filteredGalerias.length === 0 && (
-          <p className="text-xs text-slate-400">
-            No se encontraron galerías con los filtros actuales.
-          </p>
+          <p className='text-xs text-slate-400'>{t.emptyList}</p>
         )}
 
         {!loading && !error && filteredGalerias.length > 0 && (
           <>
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {paginatedGalerias.map((g) => (
+            <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+              {paginatedGalerias.map(g => (
                 <div
                   key={g.id}
-                  className="rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden"
+                  className='rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
                 >
                   <div
-                    className="relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer"
+                    className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer'
                     onClick={() => openModalFromCard(g)}
                   >
                     <Image
@@ -407,39 +551,39 @@ export default function GaleriasPage() {
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 25vw"
+                      className='object-cover'
+                      sizes='(max-width: 768px) 100vw, 25vw'
                     />
                   </div>
 
-                  <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
-                    <p className="text-[10px] uppercase font-semibold text-emerald-400">
-                      {g.zona || 'Zona no especificada'}
+                  <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
+                    <p className='text-[10px] uppercase font-semibold text-emerald-400'>
+                      {g.zona || t.zoneFallback}
                     </p>
-                    <h3 className="text-sm font-semibold line-clamp-1">
+                    <h3 className='text-sm font-semibold line-clamp-1'>
                       {g.nombre}
                     </h3>
 
                     {g.descripcion_corta && (
-                      <p className="text-slate-400 line-clamp-2">
+                      <p className='text-slate-400 line-clamp-2'>
                         {g.descripcion_corta}
                       </p>
                     )}
 
                     {g.direccion && (
-                      <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-500 line-clamp-1">
+                      <div className='mt-1 flex items-center gap-1 text-[10px] text-slate-500 line-clamp-1'>
                         <MapPin size={11} />
                         <span>{g.direccion}</span>
                       </div>
                     )}
 
-                    <div className="mt-2 flex justify-end">
+                    <div className='mt-2 flex justify-end'>
                       <button
-                        type="button"
+                        type='button'
                         onClick={() => openModalFromCard(g)}
-                        className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                        className='rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors'
                       >
-                        Más info
+                        {t.card.moreInfo}
                       </button>
                     </div>
                   </div>
@@ -449,27 +593,28 @@ export default function GaleriasPage() {
 
             {/* Paginación */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 pt-2">
+              <div className='flex items-center justify-center gap-3 pt-2'>
                 <button
-                  type="button"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  type='button'
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
+                  className='px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70'
                 >
-                  Anterior
+                  {t.pagination.prev}
                 </button>
-                <span className="text-[11px] text-slate-400">
-                  Página {currentPage} de {totalPages}
+                <span className='text-[11px] text-slate-400'>
+                  {t.pagination.page} {currentPage} {t.pagination.of}{' '}
+                  {totalPages}
                 </span>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    setCurrentPage(p => Math.min(totalPages, p + 1))
                   }
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
+                  className='px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70'
                 >
-                  Siguiente
+                  {t.pagination.next}
                 </button>
               </div>
             )}
@@ -479,28 +624,28 @@ export default function GaleriasPage() {
         {/* MODAL detalle */}
         {isModalOpen && selectedGaleria && (
           <div
-            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4"
+            className='fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4'
             onClick={closeModal}
           >
             <div
-              className="relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl"
-              onClick={(e) => e.stopPropagation()}
+              className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
+              onClick={e => e.stopPropagation()}
             >
               {/* Botón cerrar arriba a la derecha */}
               <button
-                type="button"
+                type='button'
                 onClick={closeModal}
-                className="absolute top-3 right-3 z-20
+                className='absolute top-3 right-3 z-20
                            flex h-8 w-8 items-center justify-center
                            rounded-full bg-slate-900/80 border border-slate-700
-                           text-sm text-slate-200 hover:bg-slate-800 transition"
+                           text-sm text-slate-200 hover:bg-slate-800 transition'
               >
                 ✕
               </button>
 
-              <div className="px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800">
+              <div className='px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4'>
+                <div className='flex flex-col sm:flex-row gap-4'>
+                  <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
                     <Image
                       alt={selectedGaleria.nombre}
                       src={
@@ -509,95 +654,95 @@ export default function GaleriasPage() {
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, 160px"
+                      className='object-cover'
+                      sizes='(max-width: 640px) 100vw, 160px'
                     />
                   </div>
 
-                  <div className="flex-1 space-y-1">
-                    <p className="text-[11px] uppercase font-semibold text-emerald-400">
-                      {selectedGaleria.zona || 'Zona no especificada'}
+                  <div className='flex-1 space-y-1'>
+                    <p className='text-[11px] uppercase font-semibold text-emerald-400'>
+                      {selectedGaleria.zona || t.zoneFallback}
                     </p>
-                    <h3 className="text-lg font-semibold">
+                    <h3 className='text-lg font-semibold'>
                       {selectedGaleria.nombre}
                     </h3>
 
                     {selectedGaleria.anio_fundacion && (
-                      <p className="text-[11px] text-slate-400">
-                        Fundada en {selectedGaleria.anio_fundacion}
+                      <p className='text-[11px] text-slate-400'>
+                        {t.modal.foundedIn} {selectedGaleria.anio_fundacion}
                       </p>
                     )}
                   </div>
                 </div>
 
                 {selectedGaleria.resena && (
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold">Reseña</h4>
-                    <p className="text-[12px] text-slate-300 whitespace-pre-line">
+                  <div className='space-y-1'>
+                    <h4 className='text-sm font-semibold'>{t.modal.review}</h4>
+                    <p className='text-[12px] text-slate-300 whitespace-pre-line'>
                       {selectedGaleria.resena}
                     </p>
                   </div>
                 )}
 
-                <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      Dirección
+                <div className='grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]'>
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      {t.modal.address}
                     </p>
-                    <p className="text-slate-400">
-                      {selectedGaleria.direccion || '-'}
+                    <p className='text-slate-400'>
+                      {selectedGaleria.direccion || t.modal.noData}
                     </p>
                   </div>
 
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      Sitio web
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      {t.modal.website}
                     </p>
                     {selectedGaleria.sitio_web ? (
                       <a
                         href={selectedGaleria.sitio_web}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
+                        target='_blank'
+                        rel='noreferrer'
+                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
                       >
                         {selectedGaleria.sitio_web}
                       </a>
                     ) : (
-                      <p className="text-slate-400">-</p>
+                      <p className='text-slate-400'>{t.modal.noData}</p>
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      Entrada
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      {t.modal.entry}
                     </p>
-                    <p className="text-slate-400">
+                    <p className='text-slate-400'>
                       {selectedGaleria.tiene_entrada_gratuita
-                        ? 'Entrada gratuita'
-                        : 'Entrada paga o a confirmar'}
+                        ? t.modal.entryFree
+                        : t.modal.entryPaid}
                     </p>
                   </div>
 
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      Reserva
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      {t.modal.reservation}
                     </p>
-                    <p className="text-slate-400">
+                    <p className='text-slate-400'>
                       {selectedGaleria.requiere_reserva
-                        ? 'Requiere reserva previa'
-                        : 'Sin reserva obligatoria'}
+                        ? t.modal.reservationRequired
+                        : t.modal.reservationNotRequired}
                     </p>
                   </div>
                 </div>
 
                 {/* Botones cierre + favorito */}
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2">
+                <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
                   <button
-                    type="button"
+                    type='button'
                     onClick={closeModal}
-                    className="rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
+                    className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
                   >
-                    Cerrar
+                    {t.modal.close}
                   </button>
 
                   {(() => {
@@ -605,9 +750,13 @@ export default function GaleriasPage() {
                       Number(selectedGaleria.id)
                     )
 
+                    const label = isFavorite
+                      ? t.favorite.remove
+                      : t.favorite.add
+
                     return (
                       <button
-                        type="button"
+                        type='button'
                         disabled={favoriteLoading}
                         onClick={() => handleToggleFavorite(selectedGaleria)}
                         className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
@@ -616,11 +765,10 @@ export default function GaleriasPage() {
                               ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
                               : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
                           }
+                          ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
                         `}
                       >
-                        {isFavorite
-                          ? 'Quitar de favoritos'
-                          : 'Guardar como favorito'}
+                        {label}
                       </button>
                     )
                   })()}
