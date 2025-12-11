@@ -4,7 +4,7 @@ import { verifyAuth } from '@/lib/auth'
 import type { JwtPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
-const FAVORITO_TIPO_EVENTO = 'EVENTO' as const // 👈 clave
+const FAVORITO_TIPO_EVENTO = 'EVENTO' as const
 
 function corsBaseHeaders() {
   return {
@@ -71,11 +71,8 @@ export async function GET(req: NextRequest) {
         e.url_entradas,
         e.estado,
         e.resena,
-        -- 👇 acá el cambio
         e.imagen_principal AS url_imagen,
-        e.imagen_principal,
-        e.created_at,
-        e.updated_at
+        e.imagen_principal
       FROM favoritos f
       JOIN eventos e ON e.id = f.item_id
       WHERE f.usuario_id = $1
@@ -134,7 +131,7 @@ export async function POST(req: NextRequest) {
       status: 204,
       headers: corsBaseHeaders(),
     })
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error POST /favoritos/eventos', err)
     return new NextResponse('Error interno', {
       status: 500,
@@ -180,7 +177,7 @@ export async function DELETE(req: NextRequest) {
       status: 204,
       headers: corsBaseHeaders(),
     })
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error DELETE /favoritos/eventos', err)
     return new NextResponse('Error interno', {
       status: 500,
