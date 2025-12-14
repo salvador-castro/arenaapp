@@ -240,6 +240,8 @@ export default function BaresPage () {
 
   const { locale } = useLocale()
   const t = BARES_TEXTS[locale as keyof typeof BARES_TEXTS] ?? BARES_TEXTS.es
+  const apiLang: 'es' | 'en' | 'pt' =
+    locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
 
   const barIdParam = searchParams.get('barId')
   const barId = barIdParam ? Number(barIdParam) : null
@@ -283,7 +285,7 @@ export default function BaresPage () {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(PUBLIC_ENDPOINT, {
+        const res = await fetch(`${PUBLIC_ENDPOINT}?lang=${apiLang}`, {
           method: 'GET',
         })
 
@@ -302,7 +304,7 @@ export default function BaresPage () {
     }
 
     fetchBars()
-  }, [user])
+  }, [user, apiLang])
 
   // 3) Traer favoritos de bares del usuario
   useEffect(() => {
@@ -333,7 +335,7 @@ export default function BaresPage () {
     }
 
     fetchFavoritos()
-  }, [user])
+  }, [user, apiLang])
 
   // 4) Abrir modal si viene ?barId=
   useEffect(() => {
