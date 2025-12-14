@@ -22,6 +22,20 @@ export function OPTIONS() {
   })
 }
 
+// Helper para elegir traducción según lang
+function pickTranslated(row: any, base: string, lang: 'es' | 'en' | 'pt') {
+  if (lang === 'en') {
+    const v = row[`${base}_en`]
+    if (v != null && v !== '') return v
+  }
+  if (lang === 'pt') {
+    const v = row[`${base}_pt`]
+    if (v != null && v !== '') return v
+  }
+  // fallback: español original
+  return row[base]
+}
+
 // GET /api/admin/eventos/public  (público)
 // Solo eventos PUBLICADOS y PUBLICO
 export async function GET(req: NextRequest) {
@@ -30,6 +44,10 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const search = (searchParams.get('search') || '').trim().toLowerCase()
+
+    const langParam = (searchParams.get('lang') || 'es').toLowerCase()
+    const lang: 'es' | 'en' | 'pt' =
+      langParam === 'en' || langParam === 'pt' ? langParam : 'es'
 
     let rows: any[] = []
 
@@ -40,8 +58,12 @@ export async function GET(req: NextRequest) {
         SELECT
           id,
           titulo,
+          titulo_en,
+          titulo_pt,
           slug,
           categoria,
+          categoria_en,
+          categoria_pt,
           es_destacado,
           fecha_inicio,
           fecha_fin,
@@ -55,7 +77,21 @@ export async function GET(req: NextRequest) {
           estado,
           visibilidad,
           resena,
-          imagen_principal
+          resena_en,
+          resena_pt,
+          descripcion_corta,
+          descripcion_corta_en,
+          descripcion_corta_pt,
+          descripcion_larga,
+          descripcion_larga_en,
+          descripcion_larga_pt,
+          imagen_principal,
+          meta_title,
+          meta_title_en,
+          meta_title_pt,
+          meta_description,
+          meta_description_en,
+          meta_description_pt
         FROM eventos
         WHERE
           estado = 'PUBLICADO'
@@ -79,8 +115,12 @@ export async function GET(req: NextRequest) {
         SELECT
           id,
           titulo,
+          titulo_en,
+          titulo_pt,
           slug,
           categoria,
+          categoria_en,
+          categoria_pt,
           es_destacado,
           fecha_inicio,
           fecha_fin,
@@ -94,7 +134,21 @@ export async function GET(req: NextRequest) {
           estado,
           visibilidad,
           resena,
-          imagen_principal
+          resena_en,
+          resena_pt,
+          descripcion_corta,
+          descripcion_corta_en,
+          descripcion_corta_pt,
+          descripcion_larga,
+          descripcion_larga_en,
+          descripcion_larga_pt,
+          imagen_principal,
+          meta_title,
+          meta_title_en,
+          meta_title_pt,
+          meta_description,
+          meta_description_en,
+          meta_description_pt
         FROM eventos
         WHERE
           estado = 'PUBLICADO'
@@ -108,7 +162,32 @@ export async function GET(req: NextRequest) {
       rows = result.rows
     }
 
-    return new NextResponse(JSON.stringify(rows), {
+    const data = rows.map((row) => ({
+      id: row.id,
+      // 👇 estos campos salen ya traducidos según lang
+      titulo: pickTranslated(row, 'titulo', lang),
+      slug: row.slug,
+      categoria: pickTranslated(row, 'categoria', lang),
+      es_destacado: row.es_destacado,
+      fecha_inicio: row.fecha_inicio,
+      fecha_fin: row.fecha_fin,
+      es_todo_el_dia: row.es_todo_el_dia,
+      zona: row.zona,
+      direccion: row.direccion,
+      es_gratuito: row.es_gratuito,
+      precio_desde: row.precio_desde,
+      moneda: row.moneda,
+      url_entradas: row.url_entradas,
+      estado: row.estado,
+      resena: pickTranslated(row, 'resena', lang),
+      descripcion_corta: pickTranslated(row, 'descripcion_corta', lang),
+      descripcion_larga: pickTranslated(row, 'descripcion_larga', lang),
+      imagen_principal: row.imagen_principal,
+      meta_title: pickTranslated(row, 'meta_title', lang),
+      meta_description: pickTranslated(row, 'meta_description', lang),
+    }))
+
+    return new NextResponse(JSON.stringify(data), {
       status: 200,
       headers: {
         ...corsBaseHeaders(),

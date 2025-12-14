@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
+import { autoTranslate } from '@/lib/translateHelper'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
@@ -239,6 +240,13 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
     )
 
     const bar = result.rows[0]
+
+    // ✨ Traducir automáticamente en background
+    if (bar?.id) {
+      autoTranslate('bares', Number(bar.id)).catch(err => {
+        console.error('[PUT /bares/:id] Error auto-traducción:', err)
+      })
+    }
 
     return new NextResponse(JSON.stringify(bar), {
       status: 200,

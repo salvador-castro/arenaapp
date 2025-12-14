@@ -11,6 +11,9 @@ import {
   CalendarDays,
   Ticket,
   MapPin,
+  Heart,
+  HeartOff,
+  Loader2,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
@@ -268,6 +271,8 @@ export default function EventosPage () {
   const { locale } = useLocale()
   const t =
     EVENTOS_TEXTS[locale as keyof typeof EVENTOS_TEXTS] ?? EVENTOS_TEXTS.es
+  const apiLang: 'es' | 'en' | 'pt' =
+    locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
   const eventLocaleKey: SupportedLocale = (
     ['es', 'en', 'pt'] as const
   ).includes(locale as any)
@@ -320,7 +325,7 @@ export default function EventosPage () {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(PUBLIC_ENDPOINT, {
+        const res = await fetch(`${PUBLIC_ENDPOINT}?lang=${apiLang}`, {
           method: 'GET',
         })
 
@@ -339,7 +344,7 @@ export default function EventosPage () {
     }
 
     fetchEventos()
-  }, [user])
+  }, [user, apiLang])
 
   // 3) Traer favoritos de eventos del usuario
   useEffect(() => {
@@ -874,45 +879,57 @@ export default function EventosPage () {
                   </div>
                 </div>
 
-                {selectedEvento && (
-                  <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
-                    <button
-                      type='button'
-                      onClick={closeModal}
-                      className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
-                    >
-                      {t.modal.close}
-                    </button>
+                {/* Botones cierre + favorito */}
+                <div className='flex flex-col sm:flex-row sm:justify-end gap-2 pt-2'>
+                  {/* BOTÓN CERRAR */}
+                  <button
+                    type='button'
+                    onClick={closeModal}
+                    className='w-full max-w-[200px] self-center sm:self-auto
+               rounded-full border border-slate-700 
+               px-3 py-1.5 text-[11px] font-medium text-slate-300 
+               hover:bg-slate-800 transition'
+                  >
+                    {t.modal.close}
+                  </button>
 
-                    {(() => {
-                      const isFavorite = favoriteEventIds.has(
-                        Number(selectedEvento.id)
-                      )
+                  {/* BOTÓN FAVORITO */}
+                  {(() => {
+                    const isFavorite = favoriteEventIds.has(
+                      Number(selectedEvento.id)
+                    )
+                    const label = isFavorite
+                      ? t.favorite.remove
+                      : t.favorite.add
 
-                      const label = isFavorite
-                        ? t.favorite.remove
-                        : t.favorite.add
-
-                      return (
-                        <button
-                          type='button'
-                          disabled={favoriteLoading}
-                          onClick={() => handleToggleFavorite(selectedEvento)}
-                          className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
-                            ${
-                              isFavorite
-                                ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
-                                : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
-                            }
-                            ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
-                          `}
-                        >
-                          <span>{label}</span>
-                        </button>
-                      )
-                    })()}
-                  </div>
-                )}
+                    return (
+                      <button
+                        type='button'
+                        disabled={favoriteLoading}
+                        onClick={() => handleToggleFavorite(selectedEvento)}
+                        className={`w-full max-w-[230px] self-center sm:self-auto
+          inline-flex items-center justify-center gap-2
+          rounded-full px-3 py-1.5 text-[11px] font-semibold transition
+          ${
+            isFavorite
+              ? 'bg-emerald-500 text-slate-900 hover:bg-emerald-400'
+              : 'bg-slate-900 text-slate-100 border border-slate-700 hover:border-emerald-400 hover:bg-slate-800'
+          }
+          ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
+        `}
+                      >
+                        {favoriteLoading ? (
+                          <Loader2 size={14} className='animate-spin' />
+                        ) : isFavorite ? (
+                          <HeartOff size={14} />
+                        ) : (
+                          <Heart size={14} className='fill-emerald-500/70' />
+                        )}
+                        <span>{label}</span>
+                      </button>
+                    )
+                  })()}
+                </div>
               </div>
             </div>
           </div>
