@@ -55,43 +55,7 @@ export async function GET(req: NextRequest) {
       const like = `%${search}%`
       const result = await db.query(
         `
-        SELECT
-          id,
-          titulo,
-          titulo_en,
-          titulo_pt,
-          slug,
-          categoria,
-          categoria_en,
-          categoria_pt,
-          es_destacado,
-          fecha_inicio,
-          fecha_fin,
-          es_todo_el_dia,
-          zona,
-          direccion,
-          es_gratuito,
-          precio_desde,
-          moneda,
-          url_entradas,
-          estado,
-          visibilidad,
-          resena,
-          resena_en,
-          resena_pt,
-          descripcion_corta,
-          descripcion_corta_en,
-          descripcion_corta_pt,
-          descripcion_larga,
-          descripcion_larga_en,
-          descripcion_larga_pt,
-          imagen_principal,
-          meta_title,
-          meta_title_en,
-          meta_title_pt,
-          meta_description,
-          meta_description_en,
-          meta_description_pt
+        SELECT *
         FROM eventos
         WHERE
           estado = 'PUBLICADO'
@@ -112,43 +76,7 @@ export async function GET(req: NextRequest) {
     } else {
       const result = await db.query(
         `
-        SELECT
-          id,
-          titulo,
-          titulo_en,
-          titulo_pt,
-          slug,
-          categoria,
-          categoria_en,
-          categoria_pt,
-          es_destacado,
-          fecha_inicio,
-          fecha_fin,
-          es_todo_el_dia,
-          zona,
-          direccion,
-          es_gratuito,
-          precio_desde,
-          moneda,
-          url_entradas,
-          estado,
-          visibilidad,
-          resena,
-          resena_en,
-          resena_pt,
-          descripcion_corta,
-          descripcion_corta_en,
-          descripcion_corta_pt,
-          descripcion_larga,
-          descripcion_larga_en,
-          descripcion_larga_pt,
-          imagen_principal,
-          meta_title,
-          meta_title_en,
-          meta_title_pt,
-          meta_description,
-          meta_description_en,
-          meta_description_pt
+        SELECT *
         FROM eventos
         WHERE
           estado = 'PUBLICADO'

@@ -63,8 +63,9 @@ export async function autoTranslate(
     try {
       parsed = JSON.parse(content)
     } catch (e) {
-      console.error('[autoTranslate] Error parseando JSON de OpenAI:', content)
-      return
+      const error = `Error parseando JSON de OpenAI: ${content.substring(0, 200)}`
+      console.error('[autoTranslate]', error)
+      throw new Error(error)
     }
 
     const en = parsed.en ?? {}
@@ -76,7 +77,8 @@ export async function autoTranslate(
     console.log(`[autoTranslate] ✅ ${entity} id=${id} traducido exitosamente`)
   } catch (err) {
     console.error(`[autoTranslate] ❌ Error traduciendo ${entity} id=${id}:`, err)
-    // No lanzamos el error para no bloquear la operación principal
+    // Lanzar el error para que el endpoint lo pueda reportar
+    throw err
   }
 }
 
@@ -107,26 +109,22 @@ function getFieldsForEntity(entity: TranslatableEntity) {
         'titulo',
         'categoria',
         'resena',
-        'descripcion_corta',
-        'descripcion_larga',
         'meta_title',
         'meta_description',
       ],
       selectFields:
-        'titulo, categoria, resena, descripcion_corta, descripcion_larga, meta_title, meta_description',
+        'titulo, categoria, resena, meta_title, meta_description',
     },
     galerias: {
       fields: [
         'nombre',
         'descripcion_corta',
-        'descripcion_larga',
         'resena',
-        'tipo',
         'meta_title',
         'meta_description',
       ],
       selectFields:
-        'nombre, descripcion_corta, descripcion_larga, resena, tipo, meta_title, meta_description',
+        'nombre, descripcion_corta, resena, meta_title, meta_description',
     },
     hoteles: {
       fields: [

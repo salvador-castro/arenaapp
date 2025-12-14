@@ -207,6 +207,8 @@ export default function GaleriasPage () {
   const currentLang: Lang =
     locale === 'en' || locale === 'pt' || locale === 'es' ? locale : 'es'
   const t = GALERIAS_TEXTS[currentLang]
+  const apiLang: 'es' | 'en' | 'pt' =
+    locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
 
   const galeriaIdParam = searchParams.get('galeriaId')
   const galeriaId = galeriaIdParam ? Number(galeriaIdParam) : null
@@ -253,7 +255,7 @@ export default function GaleriasPage () {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(PUBLIC_ENDPOINT, {
+        const res = await fetch(`${PUBLIC_ENDPOINT}?lang=${apiLang}`, {
           method: 'GET',
         })
 
@@ -272,7 +274,7 @@ export default function GaleriasPage () {
     }
 
     fetchGalerias()
-  }, [user])
+  }, [user, apiLang])
 
   // 3) Traer favoritos de galerías del usuario
   useEffect(() => {
