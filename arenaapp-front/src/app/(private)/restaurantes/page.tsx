@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useLocale } from '@/context/LocaleContext'
 import Image from 'next/image'
 import { Instagram, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
@@ -81,6 +82,10 @@ export default function RestaurantesPage() {
   const user = ctxUser || auth?.user || null
   const isLoggedIn = !isLoading && !!user
 
+  const { locale } = useLocale()
+  const apiLang: 'es' | 'en' | 'pt' =
+    locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
+
   const restauranteIdParam = searchParams.get('restauranteId')
   const restauranteId = restauranteIdParam ? Number(restauranteIdParam) : null
 
@@ -129,7 +134,7 @@ export default function RestaurantesPage() {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(PUBLIC_ENDPOINT, {
+        const res = await fetch(`${PUBLIC_ENDPOINT}?lang=${apiLang}`, {
           method: 'GET',
         })
 
@@ -148,7 +153,7 @@ export default function RestaurantesPage() {
     }
 
     fetchRestaurants()
-  }, [user])
+  }, [user, apiLang])
 
   // Traer restaurantes favoritos del usuario
   useEffect(() => {

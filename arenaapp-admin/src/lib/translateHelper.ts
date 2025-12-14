@@ -132,12 +132,12 @@ function getFieldsForEntity(entity: TranslatableEntity) {
         'descripcion_corta',
         'descripcion_larga',
         'resena',
-        'tipo',
+        'horario_text',
         'meta_title',
         'meta_description',
       ],
       selectFields:
-        'nombre, descripcion_corta, descripcion_larga, resena, tipo, meta_title, meta_description',
+        'nombre, descripcion_corta, descripcion_larga, resena, horario_text, meta_title, meta_description',
     },
     restaurantes: {
       fields: [
@@ -159,12 +159,12 @@ function getFieldsForEntity(entity: TranslatableEntity) {
         'descripcion_corta',
         'descripcion_larga',
         'resena',
-        'tipo',
+        'horario_text',
         'meta_title',
         'meta_description',
       ],
       selectFields:
-        'nombre, descripcion_corta, descripcion_larga, resena, tipo, meta_title, meta_description',
+        'nombre, descripcion_corta, descripcion_larga, resena, horario_text, meta_title, meta_description',
     },
   }
 
