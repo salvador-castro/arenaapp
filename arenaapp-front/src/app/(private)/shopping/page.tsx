@@ -270,6 +270,8 @@ export default function ShoppingPage () {
   const currentLang: Lang =
     locale === 'en' || locale === 'pt' || locale === 'es' ? locale : 'es'
   const t = SHOPPING_TEXTS[currentLang]
+  const apiLang: 'es' | 'en' | 'pt' =
+    locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
 
   const shoppingIdParam = searchParams.get('shoppingId')
   const shoppingId = shoppingIdParam ? Number(shoppingIdParam) : null
@@ -323,7 +325,7 @@ export default function ShoppingPage () {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(PUBLIC_ENDPOINT, {
+        const res = await fetch(`${PUBLIC_ENDPOINT}?lang=${apiLang}`, {
           method: 'GET',
         })
 
@@ -342,7 +344,7 @@ export default function ShoppingPage () {
     }
 
     fetchShoppings()
-  }, [user])
+  }, [user, apiLang])
 
   // Traer shoppings favoritos del usuario
   useEffect(() => {
