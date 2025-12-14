@@ -1,5 +1,5 @@
 // src/lib/translateHelper.ts
-import { openai, OPENAI_MODEL } from './openaiClient'
+import { getOpenAIClient, OPENAI_MODEL } from './openaiClient'
 import { getDb } from './db'
 
 export type TranslatableEntity =
@@ -41,7 +41,8 @@ export async function autoTranslate(
     const prompt = buildTranslationPrompt(entity, item, fieldConfig.fields)
 
     // 4) Llamar a OpenAI
-    const completion = await openai.chat.completions.create({
+    const client = getOpenAIClient()
+    const completion = await client.chat.completions.create({
       model: OPENAI_MODEL,
       messages: [
         {
