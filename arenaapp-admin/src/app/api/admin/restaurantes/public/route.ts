@@ -22,6 +22,20 @@ export function OPTIONS() {
   })
 }
 
+// Helper para elegir traducción según lang
+function pickTranslated(row: any, base: string, lang: 'es' | 'en' | 'pt') {
+  if (lang === 'en') {
+    const v = row[`${base}_en`]
+    if (v != null && v !== '') return v
+  }
+  if (lang === 'pt') {
+    const v = row[`${base}_pt`]
+    if (v != null && v !== '') return v
+  }
+  // fallback: español original
+  return row[base]
+}
+
 // GET /api/admin/restaurantes/public  (público, solo PUBLICADO)
 export async function GET(req: NextRequest) {
   try {
@@ -30,36 +44,17 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const search = (searchParams.get('search') || '').trim().toLowerCase()
 
+    const langParam = (searchParams.get('lang') || 'es').toLowerCase()
+    const lang: 'es' | 'en' | 'pt' =
+      langParam === 'en' || langParam === 'pt' ? langParam : 'es'
+
     let rows: any[] = []
 
     if (search) {
       const like = `%${search}%`
       const result = await db.query(
         `
-        SELECT
-          id,
-          nombre,
-          tipo_comida,
-          slug,
-          descripcion_corta,
-          descripcion_larga,
-          direccion,
-          url_maps,
-          horario_text,
-          ciudad,
-          provincia,
-          zona,
-          pais,
-          sitio_web,
-          rango_precios,
-          estrellas,
-          moneda,
-          es_destacado,
-          url_reservas,
-          url_reserva,
-          url_instagram,
-          url_imagen,
-          resena
+        SELECT *
         FROM restaurantes
         WHERE
           estado = 'PUBLICADO'
@@ -81,30 +76,7 @@ export async function GET(req: NextRequest) {
     } else {
       const result = await db.query(
         `
-        SELECT
-          id,
-          nombre,
-          tipo_comida,
-          slug,
-          descripcion_corta,
-          descripcion_larga,
-          direccion,
-          url_maps,
-          horario_text,
-          ciudad,
-          provincia,
-          zona,
-          pais,
-          sitio_web,
-          rango_precios,
-          estrellas,
-          moneda,
-          es_destacado,
-          url_reservas,
-          url_reserva,
-          url_instagram,
-          url_imagen,
-          resena
+        SELECT *
         FROM restaurantes
         WHERE estado = 'PUBLICADO'
         ORDER BY
@@ -117,7 +89,35 @@ export async function GET(req: NextRequest) {
       rows = result.rows
     }
 
-    return new NextResponse(JSON.stringify(rows), {
+    const data = rows.map((row) => ({
+      id: row.id,
+      nombre: pickTranslated(row, 'nombre', lang),
+      tipo_comida: pickTranslated(row, 'tipo_comida', lang),
+      slug: row.slug,
+      descripcion_corta: pickTranslated(row, 'descripcion_corta', lang),
+      descripcion_larga: pickTranslated(row, 'descripcion_larga', lang),
+      direccion: row.direccion,
+      url_maps: row.url_maps,
+      horario_text: pickTranslated(row, 'horario_text', lang),
+      ciudad: row.ciudad,
+      provincia: row.provincia,
+      zona: row.zona,
+      pais: row.pais,
+      sitio_web: row.sitio_web,
+      rango_precios: row.rango_precios,
+      estrellas: row.estrellas,
+      moneda: row.moneda,
+      es_destacado: row.es_destacado,
+      url_reservas: row.url_reservas,
+      url_reserva: row.url_reserva,
+      url_instagram: row.url_instagram,
+      url_imagen: row.url_imagen,
+      resena: pickTranslated(row, 'resena', lang),
+      meta_title: pickTranslated(row, 'meta_title', lang),
+      meta_description: pickTranslated(row, 'meta_description', lang),
+    }))
+
+    return new NextResponse(JSON.stringify(data), {
       status: 200,
       headers: {
         ...corsBaseHeaders(),

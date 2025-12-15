@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
+import { autoTranslate } from '@/lib/translateHelper'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
@@ -286,6 +287,13 @@ export async function POST(req: NextRequest) {
     )
 
     const galeria = insertResult.rows[0]
+
+    // ✨ Traducir automáticamente en background
+    if (galeria?.id) {
+      autoTranslate('galerias', galeria.id).catch(err => {
+        console.error('[POST /galerias] Error auto-traducción:', err)
+      })
+    }
 
     return new NextResponse(JSON.stringify(galeria), {
       status: 201,

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { AdminHotel, AdminHotelPayload, HotelDetalle } from '@/types/hotel'
+import { autoTranslate } from '@/lib/translateHelper'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
@@ -195,6 +196,13 @@ export async function PUT(
     const result: AdminHotel = {
       ...(updated as any),
       detalle: newDetalle,
+    }
+
+    // ✨ Traducir automáticamente en background
+    if (updated?.id) {
+      autoTranslate('hoteles', updated.id).catch(err => {
+        console.error('[PUT /hoteles/:id] Error auto-traducción:', err)
+      })
     }
 
     return NextResponse.json(result, { headers: corsBaseHeaders() })

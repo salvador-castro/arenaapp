@@ -22,6 +22,20 @@ export function OPTIONS() {
   })
 }
 
+// Helper para elegir traducción según lang
+function pickTranslated(row: any, base: string, lang: 'es' | 'en' | 'pt') {
+  if (lang === 'en') {
+    const v = row[`${base}_en`]
+    if (v != null && v !== '') return v
+  }
+  if (lang === 'pt') {
+    const v = row[`${base}_pt`]
+    if (v != null && v !== '') return v
+  }
+  // fallback: español original
+  return row[base]
+}
+
 // GET /api/admin/galerias/public  (público, solo PUBLICADO)
 export async function GET(req: NextRequest) {
   try {
@@ -30,40 +44,17 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const search = (searchParams.get('search') || '').trim().toLowerCase()
 
+    const langParam = (searchParams.get('lang') || 'es').toLowerCase()
+    const lang: 'es' | 'en' | 'pt' =
+      langParam === 'en' || langParam === 'pt' ? langParam : 'es'
+
     let rows: any[] = []
 
     if (search) {
       const like = `%${search}%`
       const result = await db.query(
         `
-        SELECT
-          id,
-          nombre,
-          slug,
-          descripcion_corta,
-          resena,
-          direccion,
-          ciudad,
-          provincia,
-          pais,
-          zona,
-          lat,
-          lng,
-          telefono,
-          email_contacto,
-          sitio_web,
-          instagram,
-          facebook,
-          anio_fundacion,
-          tiene_entrada_gratuita,
-          requiere_reserva,
-          horario_desde,
-          horario_hasta,
-          url_imagen,
-          es_destacado,
-          estado,
-          created_at,
-          updated_at
+        SELECT *
         FROM galerias
         WHERE
           estado = 'PUBLICADO'
@@ -83,34 +74,7 @@ export async function GET(req: NextRequest) {
     } else {
       const result = await db.query(
         `
-        SELECT
-          id,
-          nombre,
-          slug,
-          descripcion_corta,
-          resena,
-          direccion,
-          ciudad,
-          provincia,
-          pais,
-          zona,
-          lat,
-          lng,
-          telefono,
-          email_contacto,
-          sitio_web,
-          instagram,
-          facebook,
-          anio_fundacion,
-          tiene_entrada_gratuita,
-          requiere_reserva,
-          horario_desde,
-          horario_hasta,
-          url_imagen,
-          es_destacado,
-          estado,
-          created_at,
-          updated_at
+        SELECT *
         FROM galerias
         WHERE estado = 'PUBLICADO'
         ORDER BY
@@ -121,7 +85,39 @@ export async function GET(req: NextRequest) {
       rows = result.rows
     }
 
-    return new NextResponse(JSON.stringify(rows), {
+    const data = rows.map((row) => ({
+      id: row.id,
+      nombre: pickTranslated(row, 'nombre', lang),
+      slug: row.slug,
+      descripcion_corta: pickTranslated(row, 'descripcion_corta', lang),
+      resena: pickTranslated(row, 'resena', lang),
+      direccion: row.direccion,
+      ciudad: row.ciudad,
+      provincia: row.provincia,
+      pais: row.pais,
+      zona: row.zona,
+      lat: row.lat,
+      lng: row.lng,
+      telefono: row.telefono,
+      email_contacto: row.email_contacto,
+      sitio_web: row.sitio_web,
+      instagram: row.instagram,
+      facebook: row.facebook,
+      anio_fundacion: row.anio_fundacion,
+      tiene_entrada_gratuita: row.tiene_entrada_gratuita,
+      requiere_reserva: row.requiere_reserva,
+      horario_desde: row.horario_desde,
+      horario_hasta: row.horario_hasta,
+      url_imagen: row.url_imagen,
+      es_destacado: row.es_destacado,
+      estado: row.estado,
+      meta_title: pickTranslated(row, 'meta_title', lang),
+      meta_description: pickTranslated(row, 'meta_description', lang),
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    }))
+
+    return new NextResponse(JSON.stringify(data), {
       status: 200,
       headers: {
         ...corsBaseHeaders(),

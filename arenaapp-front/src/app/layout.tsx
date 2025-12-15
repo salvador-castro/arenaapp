@@ -3,12 +3,15 @@ import type { ReactNode } from 'react'
 import './globals.css'
 import Providers from './Providers'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { LocaleProvider } from '@/context/LocaleContext'
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout ({ children }: { children: ReactNode }) {
   return (
-    <html lang="es">
+    <html lang='es'>
       <body>
-        <Providers>{children}</Providers>
+        <LocaleProvider>
+          <Providers>{children}</Providers>
+        </LocaleProvider>
         <SpeedInsights />
       </body>
     </html>

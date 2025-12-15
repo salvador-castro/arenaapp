@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { AdminHotel, AdminHotelPayload, HotelDetalle } from '@/types/hotel'
+import { autoTranslate } from '@/lib/translateHelper'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
@@ -202,6 +203,13 @@ export async function POST(req: NextRequest) {
     const result: AdminHotel = {
       ...(inserted as any),
       detalle: detalleInsertado,
+    }
+
+    // ✨ Traducir automáticamente en background
+    if (inserted?.id) {
+      autoTranslate('hoteles', inserted.id).catch(err => {
+        console.error('[POST /hoteles] Error auto-traducción:', err)
+      })
     }
 
     return NextResponse.json(result, {

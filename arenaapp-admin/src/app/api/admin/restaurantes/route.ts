@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
+import { autoTranslate } from '@/lib/translateHelper'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
@@ -327,6 +328,13 @@ export async function POST(req: NextRequest) {
     )
 
     const restaurant = insertResult.rows[0] || null
+
+    // ✨ Traducir automáticamente en background
+    if (restaurant?.id) {
+      autoTranslate('restaurantes', restaurant.id).catch(err => {
+        console.error('[POST /restaurantes] Error auto-traducción:', err)
+      })
+    }
 
     return new NextResponse(JSON.stringify(restaurant), {
       status: 201,

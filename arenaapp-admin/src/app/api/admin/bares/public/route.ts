@@ -22,6 +22,20 @@ export function OPTIONS() {
   })
 }
 
+// Helper para elegir traducción según lang
+function pickTranslated(row: any, base: string, lang: 'es' | 'en' | 'pt') {
+  if (lang === 'en') {
+    const v = row[`${base}_en`]
+    if (v != null && v !== '') return v
+  }
+  if (lang === 'pt') {
+    const v = row[`${base}_pt`]
+    if (v != null && v !== '') return v
+  }
+  // fallback: español original
+  return row[base]
+}
+
 // GET /api/admin/bares/public  (público, solo estado = PUBLICADO)
 export async function GET(req: NextRequest) {
   try {
@@ -29,6 +43,10 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const search = (searchParams.get('search') || '').trim().toLowerCase()
+
+    const langParam = (searchParams.get('lang') || 'es').toLowerCase()
+    const lang: 'es' | 'en' | 'pt' =
+      langParam === 'en' || langParam === 'pt' ? langParam : 'es'
 
     let rows: any[] = []
 
@@ -40,15 +58,23 @@ export async function GET(req: NextRequest) {
         SELECT
           id,
           nombre,
+          nombre_en,
+          nombre_pt,
           slug,
           descripcion_corta,
+          descripcion_corta_en,
+          descripcion_corta_pt,
           descripcion_larga,
+          descripcion_larga_en,
+          descripcion_larga_pt,
           direccion,
           ciudad,
           provincia,
           pais,
           zona,
           tipo_comida,
+          tipo_comida_en,
+          tipo_comida_pt,
           rango_precios,
           estrellas,
           moneda,
@@ -61,7 +87,17 @@ export async function GET(req: NextRequest) {
           url_reserva,
           url_maps,
           horario_text,
+          horario_text_en,
+          horario_text_pt,
           resena,
+          resena_en,
+          resena_pt,
+          meta_title,
+          meta_title_en,
+          meta_title_pt,
+          meta_description,
+          meta_description_en,
+          meta_description_pt,
           tiene_terraza,
           tiene_musica_vivo,
           tiene_happy_hour
@@ -90,15 +126,23 @@ export async function GET(req: NextRequest) {
         SELECT
           id,
           nombre,
+          nombre_en,
+          nombre_pt,
           slug,
           descripcion_corta,
+          descripcion_corta_en,
+          descripcion_corta_pt,
           descripcion_larga,
+          descripcion_larga_en,
+          descripcion_larga_pt,
           direccion,
           ciudad,
           provincia,
           pais,
           zona,
           tipo_comida,
+          tipo_comida_en,
+          tipo_comida_pt,
           rango_precios,
           estrellas,
           moneda,
@@ -111,7 +155,17 @@ export async function GET(req: NextRequest) {
           url_reserva,
           url_maps,
           horario_text,
+          horario_text_en,
+          horario_text_pt,
           resena,
+          resena_en,
+          resena_pt,
+          meta_title,
+          meta_title_en,
+          meta_title_pt,
+          meta_description,
+          meta_description_en,
+          meta_description_pt,
           tiene_terraza,
           tiene_musica_vivo,
           tiene_happy_hour
@@ -128,7 +182,40 @@ export async function GET(req: NextRequest) {
       rows = result.rows
     }
 
-    return new NextResponse(JSON.stringify(rows), {
+    const data = rows.map((row) => ({
+      id: row.id,
+      // 👇 estos campos salen ya traducidos según lang
+      nombre: pickTranslated(row, 'nombre', lang),
+      slug: row.slug,
+      descripcion_corta: pickTranslated(row, 'descripcion_corta', lang),
+      descripcion_larga: pickTranslated(row, 'descripcion_larga', lang),
+      direccion: row.direccion,
+      ciudad: row.ciudad,
+      provincia: row.provincia,
+      pais: row.pais,
+      zona: row.zona,
+      tipo_comida: pickTranslated(row, 'tipo_comida', lang),
+      rango_precios: row.rango_precios,
+      estrellas: row.estrellas,
+      moneda: row.moneda,
+      es_destacado: row.es_destacado,
+      sitio_web: row.sitio_web,
+      instagram: row.instagram,
+      facebook: row.facebook,
+      url_imagen: row.url_imagen || row.imagen_principal,
+      imagen_principal: row.imagen_principal,
+      url_reserva: row.url_reserva,
+      url_maps: row.url_maps,
+      horario_text: pickTranslated(row, 'horario_text', lang),
+      resena: pickTranslated(row, 'resena', lang),
+      meta_title: pickTranslated(row, 'meta_title', lang),
+      meta_description: pickTranslated(row, 'meta_description', lang),
+      tiene_terraza: row.tiene_terraza,
+      tiene_musica_vivo: row.tiene_musica_vivo,
+      tiene_happy_hour: row.tiene_happy_hour,
+    }))
+
+    return new NextResponse(JSON.stringify(data), {
       status: 200,
       headers: {
         ...corsBaseHeaders(),

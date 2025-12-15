@@ -1,3 +1,4 @@
+// /Users/salvacastro/Desktop/arenaapp/arenaapp-front/src/app/(private)/eventos/page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -10,9 +11,13 @@ import {
   CalendarDays,
   Ticket,
   MapPin,
+  Heart,
+  HeartOff,
+  Loader2,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
+import { useLocale } from '@/context/LocaleContext'
 
 interface Evento {
   id: number | string
@@ -41,7 +46,162 @@ const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/eventos/public`
 const FAVORITOS_EVENTOS_ENDPOINT = `${API_BASE}/api/admin/favoritos/eventos`
 const PAGE_SIZE = 12
 
-function normalizeText(value: string | null | undefined): string {
+const EVENTOS_TEXTS = {
+  es: {
+    pageTitle: 'Eventos',
+    pageSubtitle: 'Descubrí qué está pasando en la ciudad.',
+    loadingPage: 'Cargando...',
+    loadingList: 'Cargando eventos...',
+    errorDefault: 'Error al cargar eventos.',
+    emptyList: 'No se encontraron eventos con los filtros actuales.',
+    filters: {
+      title: 'Filtros',
+      show: 'Mostrar filtros',
+      hide: 'Ocultar filtros',
+      searchLabel: 'Buscar',
+      searchPlaceholder: 'Título, zona, categoría...',
+      zoneLabel: 'Zona',
+      zoneAll: 'Todas',
+      categoryLabel: 'Categoría',
+      categoryAll: 'Todas',
+    },
+    zoneFallback: 'Zona no especificada',
+    price: {
+      free: 'Gratuito',
+      from: 'Desde',
+      consult: 'Consultar precio',
+    },
+    pagination: {
+      prev: 'Anterior',
+      next: 'Siguiente',
+      page: 'Página',
+      of: 'de',
+    },
+    modal: {
+      review: 'Reseña',
+      address: 'Dirección',
+      tickets: 'Entradas',
+      ticketsCta: 'Comprar entradas',
+      ticketsUnavailable: 'No disponible',
+      close: 'Cerrar',
+      noData: '-',
+    },
+    date: {
+      allDayLabel: 'todo el día',
+    },
+    favorite: {
+      add: 'Guardar como favorito',
+      remove: 'Quitar de favoritos',
+    },
+    moreInfo: 'Más info',
+  },
+  en: {
+    pageTitle: 'Events',
+    pageSubtitle: 'Discover what’s happening in the city.',
+    loadingPage: 'Loading...',
+    loadingList: 'Loading events...',
+    errorDefault: 'Error loading events.',
+    emptyList: 'No events found with the current filters.',
+    filters: {
+      title: 'Filters',
+      show: 'Show filters',
+      hide: 'Hide filters',
+      searchLabel: 'Search',
+      searchPlaceholder: 'Title, area, category...',
+      zoneLabel: 'Area',
+      zoneAll: 'All',
+      categoryLabel: 'Category',
+      categoryAll: 'All',
+    },
+    zoneFallback: 'Area not specified',
+    price: {
+      free: 'Free',
+      from: 'From',
+      consult: 'Check price',
+    },
+    pagination: {
+      prev: 'Previous',
+      next: 'Next',
+      page: 'Page',
+      of: 'of',
+    },
+    modal: {
+      review: 'Review',
+      address: 'Address',
+      tickets: 'Tickets',
+      ticketsCta: 'Buy tickets',
+      ticketsUnavailable: 'Not available',
+      close: 'Close',
+      noData: '-',
+    },
+    date: {
+      allDayLabel: 'all day',
+    },
+    favorite: {
+      add: 'Save as favorite',
+      remove: 'Remove from favorites',
+    },
+    moreInfo: 'More info',
+  },
+  pt: {
+    pageTitle: 'Eventos',
+    pageSubtitle: 'Descubra o que está acontecendo na cidade.',
+    loadingPage: 'Carregando...',
+    loadingList: 'Carregando eventos...',
+    errorDefault: 'Erro ao carregar eventos.',
+    emptyList: 'Nenhum evento encontrado com os filtros atuais.',
+    filters: {
+      title: 'Filtros',
+      show: 'Mostrar filtros',
+      hide: 'Ocultar filtros',
+      searchLabel: 'Buscar',
+      searchPlaceholder: 'Título, zona, categoria...',
+      zoneLabel: 'Zona',
+      zoneAll: 'Todas',
+      categoryLabel: 'Categoria',
+      categoryAll: 'Todas',
+    },
+    zoneFallback: 'Zona não especificada',
+    price: {
+      free: 'Gratuito',
+      from: 'Desde',
+      consult: 'Consultar preço',
+    },
+    pagination: {
+      prev: 'Anterior',
+      next: 'Próxima',
+      page: 'Página',
+      of: 'de',
+    },
+    modal: {
+      review: 'Resenha',
+      address: 'Endereço',
+      tickets: 'Ingressos',
+      ticketsCta: 'Comprar ingressos',
+      ticketsUnavailable: 'Não disponível',
+      close: 'Fechar',
+      noData: '-',
+    },
+    date: {
+      allDayLabel: 'o dia todo',
+    },
+    favorite: {
+      add: 'Salvar como favorito',
+      remove: 'Remover dos favoritos',
+    },
+    moreInfo: 'Ver mais',
+  },
+} as const
+
+const DATE_LOCALES = {
+  es: 'es-AR',
+  en: 'en-US',
+  pt: 'pt-BR',
+} as const
+
+type SupportedLocale = keyof typeof DATE_LOCALES
+
+function normalizeText (value: string | null | undefined): string {
   if (!value) return ''
   return value
     .normalize('NFD')
@@ -49,15 +209,19 @@ function normalizeText(value: string | null | undefined): string {
     .toLowerCase()
 }
 
-function formatEventDateRange(
+function formatEventDateRange (
   inicio: string | null,
   fin: string | null,
-  todoElDia: boolean
+  todoElDia: boolean,
+  localeKey: SupportedLocale,
+  allDayLabel: string
 ): string {
   if (!inicio) return '-'
 
   const start = new Date(inicio)
   const end = fin ? new Date(fin) : null
+
+  const localeCode = DATE_LOCALES[localeKey]
 
   const dateOptions: Intl.DateTimeFormatOptions = {
     day: '2-digit',
@@ -70,25 +234,25 @@ function formatEventDateRange(
     minute: '2-digit',
   }
 
-  const dateStr = start.toLocaleDateString('es-AR', dateOptions)
+  const dateStr = start.toLocaleDateString(localeCode, dateOptions)
 
   if (todoElDia) {
     if (end && end.toDateString() !== start.toDateString()) {
-      const endDateStr = end.toLocaleDateString('es-AR', dateOptions)
-      return `${dateStr} - ${endDateStr} (todo el día)`
+      const endDateStr = end.toLocaleDateString(localeCode, dateOptions)
+      return `${dateStr} - ${endDateStr} (${allDayLabel})`
     }
-    return `${dateStr} (todo el día)`
+    return `${dateStr} (${allDayLabel})`
   }
 
-  const startTimeStr = start.toLocaleTimeString('es-AR', timeOptions)
+  const startTimeStr = start.toLocaleTimeString(localeCode, timeOptions)
 
   if (end) {
     const sameDay = start.toDateString() === end.toDateString()
-    const endTimeStr = end.toLocaleTimeString('es-AR', timeOptions)
+    const endTimeStr = end.toLocaleTimeString(localeCode, timeOptions)
     if (sameDay) {
       return `${dateStr} ${startTimeStr} - ${endTimeStr}`
     } else {
-      const endDateStr = end.toLocaleDateString('es-AR', dateOptions)
+      const endDateStr = end.toLocaleDateString(localeCode, dateOptions)
       return `${dateStr} ${startTimeStr} - ${endDateStr} ${endTimeStr}`
     }
   }
@@ -96,13 +260,24 @@ function formatEventDateRange(
   return `${dateStr} ${startTimeStr}`
 }
 
-export default function EventosPage() {
+export default function EventosPage () {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const { user: ctxUser, auth, isLoading }: any = useAuth()
   const user = ctxUser || auth?.user || null
   const isLoggedIn = !isLoading && !!user
+
+  const { locale } = useLocale()
+  const t =
+    EVENTOS_TEXTS[locale as keyof typeof EVENTOS_TEXTS] ?? EVENTOS_TEXTS.es
+  const apiLang: 'es' | 'en' | 'pt' =
+    locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
+  const eventLocaleKey: SupportedLocale = (
+    ['es', 'en', 'pt'] as const
+  ).includes(locale as any)
+    ? (locale as SupportedLocale)
+    : 'es'
 
   const eventoIdParam = searchParams.get('eventoId')
   const eventoId = eventoIdParam ? Number(eventoIdParam) : null
@@ -150,7 +325,7 @@ export default function EventosPage() {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(PUBLIC_ENDPOINT, {
+        const res = await fetch(`${PUBLIC_ENDPOINT}?lang=${apiLang}`, {
           method: 'GET',
         })
 
@@ -162,14 +337,14 @@ export default function EventosPage() {
         setEventos(data)
       } catch (err: any) {
         console.error('Error cargando eventos públicos', err)
-        setError(err?.message ?? 'Error al cargar eventos')
+        setError(err?.message ?? EVENTOS_TEXTS.es.errorDefault)
       } finally {
         setLoading(false)
       }
     }
 
     fetchEventos()
-  }, [user])
+  }, [user, apiLang])
 
   // 3) Traer favoritos de eventos del usuario
   useEffect(() => {
@@ -195,8 +370,8 @@ export default function EventosPage() {
 
         const data: any[] = await res.json()
         const ids = data
-          .map((row) => Number(row.evento_id))
-          .filter((id) => !Number.isNaN(id))
+          .map(row => Number(row.evento_id))
+          .filter(id => !Number.isNaN(id))
 
         setFavoriteEventIds(new Set(ids))
       } catch (err) {
@@ -212,7 +387,7 @@ export default function EventosPage() {
     if (!eventos.length) return
     if (!eventoId) return
 
-    const found = eventos.find((e) => Number(e.id) === Number(eventoId))
+    const found = eventos.find(e => Number(e.id) === Number(eventoId))
     if (found) {
       setSelectedEvento(found)
       setIsModalOpen(true)
@@ -237,7 +412,7 @@ export default function EventosPage() {
       Array.from(
         new Set(
           eventos
-            .map((e) => e.zona)
+            .map(e => e.zona)
             .filter((z): z is string => !!z && z.trim().length > 0)
         )
       ).sort(),
@@ -249,7 +424,7 @@ export default function EventosPage() {
       Array.from(
         new Set(
           eventos
-            .map((e) => e.categoria)
+            .map(e => e.categoria)
             .filter((c): c is string => !!c && c.trim().length > 0)
         )
       ).sort(),
@@ -262,7 +437,7 @@ export default function EventosPage() {
 
     const term = normalizeText(search.trim())
     if (term) {
-      result = result.filter((e) => {
+      result = result.filter(e => {
         const titulo = normalizeText(e.titulo)
         const zona = normalizeText(e.zona)
         const categoria = normalizeText(e.categoria)
@@ -275,11 +450,11 @@ export default function EventosPage() {
     }
 
     if (zonaFilter) {
-      result = result.filter((e) => e.zona === zonaFilter)
+      result = result.filter(e => e.zona === zonaFilter)
     }
 
     if (categoriaFilter) {
-      result = result.filter((e) => e.categoria === categoriaFilter)
+      result = result.filter(e => e.categoria === categoriaFilter)
     }
 
     // orden: destacados primero, luego por fecha de inicio asc
@@ -340,7 +515,7 @@ export default function EventosPage() {
         return
       }
 
-      setFavoriteEventIds((prev) => {
+      setFavoriteEventIds(prev => {
         const next = new Set(prev)
         if (isFavorite) {
           next.delete(eventoId)
@@ -358,39 +533,37 @@ export default function EventosPage() {
 
   if (isLoading || (!user && !error)) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-        <p className="text-sm text-slate-400">Cargando...</p>
+      <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
+        <p className='text-sm text-slate-400'>{t.loadingPage}</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+    <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
       {/* Navbar reutilizable: logo + UserDropdown */}
       <TopNav isLoggedIn={isLoggedIn} />
 
-      <main className="max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4">
+      <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
         {/* Título de la página */}
-        <header className="flex flex-col gap-1 mb-1">
-          <h1 className="text-lg font-semibold">Eventos</h1>
-          <p className="text-xs text-slate-400">
-            Descubrí qué está pasando en la ciudad.
-          </p>
+        <header className='flex flex-col gap-1 mb-1'>
+          <h1 className='text-lg font-semibold'>{t.pageTitle}</h1>
+          <p className='text-xs text-slate-400'>{t.pageSubtitle}</p>
         </header>
 
         {/* Filtros colapsables */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3">
+        <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
           <button
-            type="button"
-            onClick={() => setFiltersOpen((open) => !open)}
-            className="w-full flex items-center justify-between gap-2 text-sm font-semibold text-slate-100"
+            type='button'
+            onClick={() => setFiltersOpen(open => !open)}
+            className='w-full flex items-center justify-between gap-2 text-sm font-semibold text-slate-100'
           >
-            <span className="flex items-center gap-2">
+            <span className='flex items-center gap-2'>
               <SlidersHorizontal size={14} />
-              <span>Filtros</span>
+              <span>{t.filters.title}</span>
             </span>
-            <span className="flex items-center gap-1 text-[11px] text-emerald-400">
-              {filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+            <span className='flex items-center gap-1 text-[11px] text-emerald-400'>
+              {filtersOpen ? t.filters.hide : t.filters.show}
               <ChevronDown
                 size={14}
                 className={`transition-transform ${
@@ -402,33 +575,33 @@ export default function EventosPage() {
 
           {filtersOpen && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
                 {/* Buscador */}
-                <div className="sm:col-span-1">
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                    Buscar
+                <div className='sm:col-span-1'>
+                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                    {t.filters.searchLabel}
                   </label>
                   <input
-                    type="text"
+                    type='text'
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Título, zona, categoría..."
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder={t.filters.searchPlaceholder}
+                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
                   />
                 </div>
 
                 {/* Zona */}
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                    Zona
+                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                    {t.filters.zoneLabel}
                   </label>
                   <select
                     value={zonaFilter}
-                    onChange={(e) => setZonaFilter(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    onChange={e => setZonaFilter(e.target.value)}
+                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
                   >
-                    <option value="">Todas</option>
-                    {zonas.map((z) => (
+                    <option value=''>{t.filters.zoneAll}</option>
+                    {zonas.map(z => (
                       <option key={z} value={z}>
                         {z}
                       </option>
@@ -438,16 +611,16 @@ export default function EventosPage() {
 
                 {/* Categoría */}
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                    Categoría
+                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                    {t.filters.categoryLabel}
                   </label>
                   <select
                     value={categoriaFilter}
-                    onChange={(e) => setCategoriaFilter(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    onChange={e => setCategoriaFilter(e.target.value)}
+                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
                   >
-                    <option value="">Todas</option>
-                    {categorias.map((c) => (
+                    <option value=''>{t.filters.categoryAll}</option>
+                    {categorias.map(c => (
                       <option key={c} value={c}>
                         {c}
                       </option>
@@ -460,28 +633,24 @@ export default function EventosPage() {
         </section>
 
         {/* Estado de carga / error */}
-        {loading && (
-          <p className="text-xs text-slate-400">Cargando eventos...</p>
-        )}
+        {loading && <p className='text-xs text-slate-400'>{t.loadingList}</p>}
 
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className='text-xs text-red-400'>{error}</p>}
 
         {/* Listado */}
         {!loading && !error && filteredEventos.length === 0 && (
-          <p className="text-xs text-slate-400">
-            No se encontraron eventos con los filtros actuales.
-          </p>
+          <p className='text-xs text-slate-400'>{t.emptyList}</p>
         )}
 
         {!loading && !error && filteredEventos.length > 0 && (
           <>
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {paginatedEventos.map((ev) => (
+            <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+              {paginatedEventos.map(ev => (
                 <div
                   key={ev.id}
-                  className="rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden"
+                  className='rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
                 >
-                  <div className="relative w-full h-36 sm:h-40 md:h-44 bg-slate-800">
+                  <div className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800'>
                     <Image
                       alt={ev.titulo}
                       src={
@@ -489,62 +658,66 @@ export default function EventosPage() {
                         '/images/placeholders/evento-placeholder.jpg'
                       }
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 25vw"
+                      className='object-cover'
+                      sizes='(max-width: 768px) 100vw, 25vw'
                     />
                   </div>
 
-                  <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
-                    <p className="text-[10px] uppercase font-semibold text-emerald-400">
-                      {ev.zona || 'Zona no especificada'}
+                  <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
+                    <p className='text-[10px] uppercase font-semibold text-emerald-400'>
+                      {ev.zona || t.zoneFallback}
                     </p>
-                    <h3 className="text-sm font-semibold line-clamp-1">
+                    <h3 className='text-sm font-semibold line-clamp-1'>
                       {ev.titulo}
                     </h3>
 
-                    <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-300">
-                      <CalendarDays size={12} className="shrink-0" />
-                      <span className="line-clamp-2">
+                    <div className='mt-1 flex items-center gap-1 text-[11px] text-slate-300'>
+                      <CalendarDays size={12} className='shrink-0' />
+                      <span className='line-clamp-2'>
                         {formatEventDateRange(
                           ev.fecha_inicio,
                           ev.fecha_fin,
-                          ev.es_todo_el_dia
+                          ev.es_todo_el_dia,
+                          eventLocaleKey,
+                          t.date.allDayLabel
                         )}
                       </span>
                     </div>
 
                     {ev.direccion && (
-                      <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-500 line-clamp-1">
+                      <div className='mt-1 flex items-center gap-1 text-[10px] text-slate-500 line-clamp-1'>
                         <MapPin size={11} />
                         <span>{ev.direccion}</span>
                       </div>
                     )}
 
-                    <div className="mt-1 flex items-center gap-2 text-[11px]">
-                      <Ticket size={12} className="text-emerald-400" />
+                    <div className='mt-1 flex items-center gap-2 text-[11px]'>
+                      <Ticket size={12} className='text-emerald-400' />
                       {ev.es_gratuito ? (
-                        <span className="text-emerald-300 font-medium">
-                          Gratuito
+                        <span className='text-emerald-300 font-medium'>
+                          {t.price.free}
                         </span>
                       ) : ev.precio_desde != null ? (
-                        <span className="text-slate-300">
-                          Desde{' '}
-                          <span className="font-medium">
+                        <span className='text-slate-300'>
+                          {t.price.from}{' '}
+                          <span className='font-medium'>
                             {ev.moneda || ''} {ev.precio_desde}
                           </span>
                         </span>
                       ) : (
-                        <span className="text-slate-400">Consultar precio</span>
+                        <span className='text-slate-400'>
+                          {t.price.consult}
+                        </span>
                       )}
                     </div>
 
-                    <div className="mt-2 flex justify-end">
+                    <div className='mt-2 flex justify-end'>
                       <button
-                        type="button"
+                        type='button'
                         onClick={() => openModalFromCard(ev)}
-                        className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                        className='rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors'
                       >
-                        Más info
+                        {t.moreInfo}
                       </button>
                     </div>
                   </div>
@@ -554,27 +727,28 @@ export default function EventosPage() {
 
             {/* Paginación */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 pt-2">
+              <div className='flex items-center justify-center gap-3 pt-2'>
                 <button
-                  type="button"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  type='button'
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
+                  className='px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70'
                 >
-                  Anterior
+                  {t.pagination.prev}
                 </button>
-                <span className="text-[11px] text-slate-400">
-                  Página {currentPage} de {totalPages}
+                <span className='text-[11px] text-slate-400'>
+                  {t.pagination.page} {currentPage} {t.pagination.of}{' '}
+                  {totalPages}
                 </span>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    setCurrentPage(p => Math.min(totalPages, p + 1))
                   }
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
+                  className='px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70'
                 >
-                  Siguiente
+                  {t.pagination.next}
                 </button>
               </div>
             )}
@@ -584,28 +758,28 @@ export default function EventosPage() {
         {/* MODAL detalle */}
         {isModalOpen && selectedEvento && (
           <div
-            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4"
+            className='fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4'
             onClick={closeModal}
           >
             <div
-              className="relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl"
-              onClick={(e) => e.stopPropagation()} // evita cerrar si clickeás dentro
+              className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
+              onClick={e => e.stopPropagation()} // evita cerrar si clickeás dentro
             >
-              {/* Botón cerrar arriba a la derecha, sin superponerse con la imagen */}
+              {/* Botón cerrar arriba a la derecha */}
               <button
-                type="button"
+                type='button'
                 onClick={closeModal}
-                className="absolute top-3 right-3 z-20
+                className='absolute top-3 right-3 z-20
                            flex h-8 w-8 items-center justify-center
                            rounded-full bg-slate-900/80 border border-slate-700
-                           text-sm text-slate-200 hover:bg-slate-800 transition"
+                           text-sm text-slate-200 hover:bg-slate-800 transition'
               >
                 ✕
               </button>
 
-              <div className="px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800">
+              <div className='px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4'>
+                <div className='flex flex-col sm:flex-row gap-4'>
+                  <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
                     <Image
                       alt={selectedEvento.titulo}
                       src={
@@ -613,128 +787,149 @@ export default function EventosPage() {
                         '/images/placeholders/evento-placeholder.jpg'
                       }
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, 160px"
+                      className='object-cover'
+                      sizes='(max-width: 640px) 100vw, 160px'
                     />
                   </div>
 
-                  <div className="flex-1 space-y-1">
-                    <p className="text-[11px] uppercase font-semibold text-emerald-400">
-                      {selectedEvento.zona || 'Zona no especificada'}
+                  <div className='flex-1 space-y-1'>
+                    <p className='text-[11px] uppercase font-semibold text-emerald-400'>
+                      {selectedEvento.zona || t.zoneFallback}
                     </p>
-                    <h3 className="text-lg font-semibold">
+                    <h3 className='text-lg font-semibold'>
                       {selectedEvento.titulo}
                     </h3>
-                    <p className="text-[11px] text-slate-300">
+                    <p className='text-[11px] text-slate-300'>
                       {selectedEvento.categoria}
                     </p>
 
-                    <div className="mt-1 flex items-start gap-2 text-[12px] text-slate-200">
-                      <CalendarDays size={14} className="mt-[2px] shrink-0" />
+                    <div className='mt-1 flex items-start gap-2 text-[12px] text-slate-200'>
+                      <CalendarDays size={14} className='mt-[2px] shrink-0' />
                       <span>
                         {formatEventDateRange(
                           selectedEvento.fecha_inicio,
                           selectedEvento.fecha_fin,
-                          selectedEvento.es_todo_el_dia
+                          selectedEvento.es_todo_el_dia,
+                          eventLocaleKey,
+                          t.date.allDayLabel
                         )}
                       </span>
                     </div>
 
-                    <div className="mt-1 flex items-center gap-2 text-[12px]">
-                      <Ticket size={14} className="text-emerald-400" />
+                    <div className='mt-1 flex items-center gap-2 text-[12px]'>
+                      <Ticket size={14} className='text-emerald-400' />
                       {selectedEvento.es_gratuito ? (
-                        <span className="text-emerald-300 font-medium">
-                          Gratuito
+                        <span className='text-emerald-300 font-medium'>
+                          {t.price.free}
                         </span>
                       ) : selectedEvento.precio_desde != null ? (
-                        <span className="text-slate-200">
-                          Desde{' '}
-                          <span className="font-semibold">
+                        <span className='text-slate-200'>
+                          {t.price.from}{' '}
+                          <span className='font-semibold'>
                             {selectedEvento.moneda || ''}{' '}
                             {selectedEvento.precio_desde}
                           </span>
                         </span>
                       ) : (
-                        <span className="text-slate-400">Consultar precio</span>
+                        <span className='text-slate-400'>
+                          {t.price.consult}
+                        </span>
                       )}
                     </div>
                   </div>
                 </div>
 
                 {selectedEvento.resena && (
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold">Reseña</h4>
-                    <p className="text-[12px] text-slate-300 whitespace-pre-line">
+                  <div className='space-y-1'>
+                    <h4 className='text-sm font-semibold'>{t.modal.review}</h4>
+                    <p className='text-[12px] text-slate-300 whitespace-pre-line'>
                       {selectedEvento.resena}
                     </p>
                   </div>
                 )}
 
-                <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      Dirección
+                <div className='grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]'>
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      {t.modal.address}
                     </p>
-                    <p className="text-slate-400">
-                      {selectedEvento.direccion || '-'}
+                    <p className='text-slate-400'>
+                      {selectedEvento.direccion || t.modal.noData}
                     </p>
                   </div>
 
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      Entradas
+                  <div className='space-y-1'>
+                    <p className='text-xs font-semibold text-slate-300'>
+                      {t.modal.tickets}
                     </p>
                     {selectedEvento.url_entradas ? (
                       <a
                         href={selectedEvento.url_entradas}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
+                        target='_blank'
+                        rel='noreferrer'
+                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
                       >
-                        Comprar entradas
+                        {t.modal.ticketsCta}
                       </a>
                     ) : (
-                      <p className="text-slate-400">No disponible</p>
+                      <p className='text-slate-400'>
+                        {t.modal.ticketsUnavailable}
+                      </p>
                     )}
                   </div>
                 </div>
 
-                {selectedEvento && (
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
-                    >
-                      Cerrar
-                    </button>
+                {/* Botones cierre + favorito */}
+                <div className='flex flex-col sm:flex-row sm:justify-end gap-2 pt-2'>
+                  {/* BOTÓN CERRAR */}
+                  <button
+                    type='button'
+                    onClick={closeModal}
+                    className='w-full max-w-[200px] self-center sm:self-auto
+               rounded-full border border-slate-700 
+               px-3 py-1.5 text-[11px] font-medium text-slate-300 
+               hover:bg-slate-800 transition'
+                  >
+                    {t.modal.close}
+                  </button>
 
-                    {(() => {
-                      const isFavorite = favoriteEventIds.has(
-                        Number(selectedEvento.id)
-                      )
+                  {/* BOTÓN FAVORITO */}
+                  {(() => {
+                    const isFavorite = favoriteEventIds.has(
+                      Number(selectedEvento.id)
+                    )
+                    const label = isFavorite
+                      ? t.favorite.remove
+                      : t.favorite.add
 
-                      return (
-                        <button
-                          type="button"
-                          disabled={favoriteLoading}
-                          onClick={() => handleToggleFavorite(selectedEvento)}
-                          className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
-                            ${
-                              isFavorite
-                                ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
-                                : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
-                            }
-                          `}
-                        >
-                          {isFavorite
-                            ? 'Quitar de favoritos'
-                            : 'Guardar como favorito'}
-                        </button>
-                      )
-                    })()}
-                  </div>
-                )}
+                    return (
+                      <button
+                        type='button'
+                        disabled={favoriteLoading}
+                        onClick={() => handleToggleFavorite(selectedEvento)}
+                        className={`w-full max-w-[230px] self-center sm:self-auto
+          inline-flex items-center justify-center gap-2
+          rounded-full px-3 py-1.5 text-[11px] font-semibold transition
+          ${
+            isFavorite
+              ? 'bg-emerald-500 text-slate-900 hover:bg-emerald-400'
+              : 'bg-slate-900 text-slate-100 border border-slate-700 hover:border-emerald-400 hover:bg-slate-800'
+          }
+          ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
+        `}
+                      >
+                        {favoriteLoading ? (
+                          <Loader2 size={14} className='animate-spin' />
+                        ) : isFavorite ? (
+                          <HeartOff size={14} />
+                        ) : (
+                          <Heart size={14} className='fill-emerald-500/70' />
+                        )}
+                        <span>{label}</span>
+                      </button>
+                    )
+                  })()}
+                </div>
               </div>
             </div>
           </div>
