@@ -549,8 +549,8 @@ export default function BuscarPage() {
     if (starsFilter) {
       const starsNum = Number(starsFilter)
       results = results.filter((r) => {
-        // Solo aplicar filtro de estrellas a resultados que tengan estrellas en sus badges
-        return r.badges.some((badge) => badge === '★'.repeat(starsNum))
+        // Comparar directamente con el campo stars del resultado
+        return r.stars === starsNum
       })
     }
 
