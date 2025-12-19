@@ -29,6 +29,7 @@ interface Evento {
   visibilidad: string
   resena: string | null
   imagen_principal: string | null
+  estrellas: number | null
 }
 
 const API_BASE = (
@@ -42,6 +43,12 @@ const localeMap: Record<'es' | 'en' | 'pt', string> = {
   es: 'es-AR',
   en: 'en-US',
   pt: 'pt-BR',
+}
+
+function formatStars (estrellas: number | null): string {
+  if (!estrellas || estrellas < 1) return '-'
+  const value = Math.min(Math.max(estrellas, 1), 5)
+  return '★'.repeat(value)
 }
 
 function formatDateRange (
@@ -270,12 +277,19 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
                   {formatDateRange(ev.fecha_inicio, ev.fecha_fin, locale)}
                 </p>
 
-                <div className='mt-1 text-[11px] text-slate-300'>
-                  {ev.es_gratuito
-                    ? t.freeEntry
-                    : ev.precio_desde
-                    ? `${t.fromLabel} ${ev.precio_desde} ${ev.moneda || ''}`
-                    : t.checkPrices}
+                <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
+                  {ev.estrellas && ev.estrellas > 0 && (
+                    <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                      {formatStars(ev.estrellas)}
+                    </span>
+                  )}
+                  <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                    {ev.es_gratuito
+                      ? t.freeEntry
+                      : ev.precio_desde
+                      ? `${t.fromLabel} ${ev.precio_desde} ${ev.moneda || ''}`
+                      : t.checkPrices}
+                  </span>
                 </div>
 
                 <div className='mt-2 flex justify-end'>
@@ -330,15 +344,22 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
                     )}
                   </p>
 
-                  <p className='text-[12px] text-slate-400'>
-                    {selectedEvento.es_gratuito
-                      ? t.freeEntry
-                      : selectedEvento.precio_desde
-                      ? `${t.fromLabel} ${selectedEvento.precio_desde} ${
-                          selectedEvento.moneda || ''
-                        }`
-                      : t.checkPrices}
-                  </p>
+                  <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
+                    {selectedEvento.estrellas && selectedEvento.estrellas > 0 && (
+                      <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                        {formatStars(selectedEvento.estrellas)}
+                      </span>
+                    )}
+                    <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                      {selectedEvento.es_gratuito
+                        ? t.freeEntry
+                        : selectedEvento.precio_desde
+                        ? `${t.fromLabel} ${selectedEvento.precio_desde} ${
+                            selectedEvento.moneda || ''
+                          }`
+                        : t.checkPrices}
+                    </span>
+                  </div>
                 </div>
               </div>
 

@@ -214,20 +214,23 @@ export default function BaresDestacados ({ isLoggedIn }: Props) {
                 </p>
               )}
 
-              <div className='flex items-center gap-2 mt-1'>
-                <span className='text-amber-400'>
-                  {renderStars(bar.estrellas)}
-                </span>
-                <span className='text-slate-400'>
-                  {renderPriceRange(bar.rango_precios)}
-                </span>
+              <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
+                {bar.estrellas && bar.estrellas > 0 && (
+                  <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                    {renderStars(bar.estrellas)}
+                  </span>
+                )}
+                {bar.rango_precios && bar.rango_precios > 0 && (
+                  <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                    {renderPriceRange(bar.rango_precios)}
+                  </span>
+                )}
+                {bar.tipo_comida && (
+                  <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                    {bar.tipo_comida}
+                  </span>
+                )}
               </div>
-
-              {bar.tipo_comida && (
-                <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
-                  {bar.tipo_comida}
-                </span>
-              )}
 
               <div className='mt-2 flex justify-end'>
                 <span className='text-[11px] font-medium text-emerald-300 group-hover:text-emerald-200'>

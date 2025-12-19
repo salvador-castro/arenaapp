@@ -71,11 +71,24 @@ export async function GET(req: NextRequest) {
       headers: corsBaseHeaders(),
     })
   } catch (err: any) {
-    console.error('Error GET /favoritos/restaurantes', err)
-    return new NextResponse('Error interno', {
-      status: 500,
-      headers: corsBaseHeaders(),
+    console.error('Error GET /favoritos/restaurantes', {
+      message: err?.message,
+      stack: err?.stack,
+      error: err,
     })
+    return new NextResponse(
+      JSON.stringify({
+        error: 'Error interno',
+        message: err?.message || 'Error desconocido',
+      }),
+      {
+        status: 500,
+        headers: {
+          ...corsBaseHeaders(),
+          'Content-Type': 'application/json',
+        },
+      }
+    )
   }
 }
 

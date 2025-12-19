@@ -36,6 +36,7 @@ interface Evento {
   estado: string
   resena: string | null
   imagen_principal: string | null
+  estrellas?: number | null
 }
 
 const API_BASE = (
@@ -207,6 +208,12 @@ function normalizeText (value: string | null | undefined): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+}
+
+function renderStars (estrellas: number | null | undefined): string {
+  if (!estrellas || estrellas < 1) return '-'
+  const value = Math.min(Math.max(estrellas, 1), 5)
+  return '★'.repeat(value)
 }
 
 function formatEventDateRange (
@@ -802,6 +809,14 @@ export default function EventosPage () {
                     <p className='text-[11px] text-slate-300'>
                       {selectedEvento.categoria}
                     </p>
+
+                    {selectedEvento.estrellas && selectedEvento.estrellas > 0 && (
+                      <div className='flex items-center gap-2 mt-1'>
+                        <span className='text-amber-400 text-[12px]'>
+                          {renderStars(selectedEvento.estrellas)}
+                        </span>
+                      </div>
+                    )}
 
                     <div className='mt-1 flex items-start gap-2 text-[12px] text-slate-200'>
                       <CalendarDays size={14} className='mt-[2px] shrink-0' />

@@ -63,6 +63,12 @@ function formatPriceRange (n: number | null): string {
   return '$'.repeat(n)
 }
 
+function formatStars (estrellas: number | null): string {
+  if (!estrellas || estrellas < 1) return '-'
+  const value = Math.min(Math.max(estrellas, 1), 5)
+  return '★'.repeat(value)
+}
+
 export default function ShoppingDestacados ({ isLoggedIn }: Props) {
   const { goTo } = useAuthRedirect(isLoggedIn)
   const { auth }: any = useAuth()
@@ -269,9 +275,9 @@ export default function ShoppingDestacados ({ isLoggedIn }: Props) {
                 )}
 
                 <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
-                  {place.rango_precios != null && (
-                    <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px]'>
-                      {formatPriceRange(place.rango_precios)}
+                  {place.estrellas && place.estrellas > 0 && (
+                    <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                      {formatStars(place.estrellas)}
                     </span>
                   )}
                   {place.es_outlet && (
@@ -360,6 +366,11 @@ export default function ShoppingDestacados ({ isLoggedIn }: Props) {
                   )}
 
                   <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
+                    {selectedPlace.estrellas && selectedPlace.estrellas > 0 && (
+                      <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                        {formatStars(selectedPlace.estrellas)}
+                      </span>
+                    )}
                     {selectedPlace.rango_precios != null && (
                       <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px]'>
                         {formatPriceRange(selectedPlace.rango_precios)}

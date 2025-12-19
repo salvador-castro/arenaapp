@@ -871,6 +871,7 @@ export default function ShoppingPage () {
                       {selectedShopping.nombre}
                     </h3>
 
+
                     {selectedShopping.instagram && (
                       <a
                         href={selectedShopping.instagram}
@@ -885,17 +886,20 @@ export default function ShoppingPage () {
                       </a>
                     )}
 
-                    <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
+                    <div className='flex flex-wrap items-center gap-2 mt-2 text-[12px]'>
+                      {selectedShopping.estrellas != null && selectedShopping.estrellas > 0 && (
+                        <span className='text-amber-400'>
+                          {formatStars(selectedShopping.estrellas).replace(/☆/g, '')}
+                       </span>
+                      )}
                       {selectedShopping.rango_precios != null && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px]'>
+                        <span className='text-slate-400'>
                           {formatPriceRange(selectedShopping.rango_precios)}
                         </span>
                       )}
-                      {selectedShopping.estrellas != null && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px]'>
-                          {formatStars(selectedShopping.estrellas)}
-                        </span>
-                      )}
+                    </div>
+
+                    <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
                       {selectedShopping.es_outlet && (
                         <span className='inline-flex rounded-full border border-emerald-500/60 px-2 py-[2px] text-[10px] text-emerald-300'>
                           {t.chips.outlet}

@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
         anio_fundacion,
         tiene_entrada_gratuita,
         requiere_reserva,
+        estrellas,
         es_destacado,
         estado,
         created_at,
@@ -174,6 +175,7 @@ export async function POST(req: NextRequest) {
       meta_description,
       es_destacado,
       estado,
+      estrellas,
     } = body
 
     // Obligatorios: nombre, dirección, reseña, imagen
@@ -215,7 +217,8 @@ export async function POST(req: NextRequest) {
         meta_title,
         meta_description,
         es_destacado,
-        estado
+        estado,
+        estrellas
       )
       VALUES (
         $1, $2, $3, $4, $5,
@@ -223,7 +226,7 @@ export async function POST(req: NextRequest) {
         $11, $12, $13, $14, $15,
         $16, $17, $18, $19, $20,
         $21, $22, $23, $24, $25,
-        $26
+        $26, $27
       )
       RETURNING
         id,
@@ -249,6 +252,7 @@ export async function POST(req: NextRequest) {
         horario_desde,
         horario_hasta,
         url_imagen,
+        estrellas,
         meta_title,
         meta_description,
         es_destacado,
@@ -283,6 +287,7 @@ export async function POST(req: NextRequest) {
         meta_description || null, // $24
         !!es_destacado, // $25
         estado || 'PUBLICADO', // $26
+        estrellas ? Number(estrellas) : null, // $27
       ]
     )
 

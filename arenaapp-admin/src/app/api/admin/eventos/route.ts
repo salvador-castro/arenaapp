@@ -92,6 +92,7 @@ export async function GET(req: NextRequest) {
           visibilidad,
           resena,
           imagen_principal,
+          estrellas,
           created_at,
           updated_at
         FROM eventos
@@ -134,6 +135,7 @@ export async function GET(req: NextRequest) {
           visibilidad,
           resena,
           imagen_principal,
+          estrellas,
           created_at,
           updated_at
         FROM eventos
@@ -214,6 +216,7 @@ export async function POST(req: NextRequest) {
       es_destacado,
       resena,
       imagen_principal,
+      estrellas,
     } = body
 
     // ===== Validaciones de obligatorios =====
@@ -320,7 +323,8 @@ export async function POST(req: NextRequest) {
         url_entradas,
         estado,
         resena,
-        imagen_principal
+        imagen_principal,
+        estrellas
       )
       VALUES (
         $1, $2, $3, $4,
@@ -328,7 +332,7 @@ export async function POST(req: NextRequest) {
         $8, $9,
         $10, $11, $12,
         $13, $14,
-        $15, $16
+        $15, $16, $17
       )
       RETURNING
         id,
@@ -349,6 +353,7 @@ export async function POST(req: NextRequest) {
         visibilidad,
         resena,
         imagen_principal,
+        estrellas,
         created_at,
         updated_at
       `,
@@ -369,6 +374,7 @@ export async function POST(req: NextRequest) {
         estadoValue, // 14
         resena || null, // 15
         imagen_principal || null, // 16
+        estrellas ? Number(estrellas) : null, // 17
       ]
     )
 

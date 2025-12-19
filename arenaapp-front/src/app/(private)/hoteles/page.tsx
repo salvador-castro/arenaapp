@@ -74,6 +74,12 @@ function normalizeText (value: string | null | undefined): string {
     .toLowerCase()
 }
 
+function renderStars (estrellas: number | null | undefined): string {
+  if (!estrellas || estrellas < 1) return '-'
+  const value = Math.min(Math.max(estrellas, 1), 5)
+  return '★'.repeat(value)
+}
+
 /* ---------------- i18n simple (es, en, pt) ---------------- */
 
 const HOTELES_TEXTS = {
@@ -771,13 +777,12 @@ export default function HotelesPage () {
                       </a>
                     )}
 
-                    <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
-                      {typeof selectedHotel.estrellas === 'number' &&
-                        selectedHotel.estrellas > 0 && (
-                          <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
-                            {selectedHotel.estrellas}★
-                          </span>
-                        )}
+                    <div className='flex flex-wrap items-center gap-2 mt-2 text-[12px]'>
+                      {selectedHotel.estrellas && selectedHotel.estrellas > 0 && (
+                        <span className='text-amber-400'>
+                          {renderStars(selectedHotel.estrellas)}
+                        </span>
+                      )}
                       {typeof selectedHotel.precio_noche_desde === 'number' &&
                         selectedHotel.precio_noche_desde > 0 && (
                           <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>

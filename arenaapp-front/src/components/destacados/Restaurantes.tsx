@@ -263,20 +263,23 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
                   </p>
                 )}
 
-                <div className='flex items-center gap-2 mt-1'>
-                  <span className='text-amber-400'>
-                    {renderStars(place.estrellas)}
-                  </span>
-                  <span className='text-slate-400'>
-                    {renderPriceRange(place.rango_precios)}
-                  </span>
+                <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
+                  {place.estrellas && place.estrellas > 0 && (
+                    <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                      {renderStars(place.estrellas)}
+                    </span>
+                  )}
+                  {place.rango_precios && place.rango_precios > 0 && (
+                    <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                      {renderPriceRange(place.rango_precios)}
+                    </span>
+                  )}
+                  {place.tipo_comida && (
+                    <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                      {place.tipo_comida}
+                    </span>
+                  )}
                 </div>
-
-                {place.tipo_comida && (
-                  <span className='mt-1 inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
-                    {place.tipo_comida}
-                  </span>
-                )}
 
                 <div className='mt-2 flex justify-end'>
                   <span className='text-[11px] font-medium text-emerald-300 group-hover:text-emerald-200'>
@@ -323,13 +326,17 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
                   <h3 className='text-lg font-semibold'>
                     {selectedPlace.nombre}
                   </h3>
-                  <div className='flex flex-wrap items-center gap-2 text-[12px]'>
-                    <span className='text-amber-400'>
-                      {renderStars(selectedPlace.estrellas)}
-                    </span>
-                    <span className='text-slate-400'>
-                      {renderPriceRange(selectedPlace.rango_precios)}
-                    </span>
+                  <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
+                    {selectedPlace.estrellas && selectedPlace.estrellas > 0 && (
+                      <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                        {renderStars(selectedPlace.estrellas)}
+                      </span>
+                    )}
+                    {selectedPlace.rango_precios && selectedPlace.rango_precios > 0 && (
+                      <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        {renderPriceRange(selectedPlace.rango_precios)}
+                      </span>
+                    )}
                     {selectedPlace.tipo_comida && (
                       <span className='rounded-full border border-slate-700 px-2 py-[2px] text-[11px] text-slate-300'>
                         {selectedPlace.tipo_comida}

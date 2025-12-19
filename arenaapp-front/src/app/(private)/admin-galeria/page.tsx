@@ -46,6 +46,7 @@ interface AdminGallery {
 
   lat?: number | null
   lng?: number | null
+  estrellas?: number | null
 }
 
 interface FormValues {
@@ -61,6 +62,7 @@ interface FormValues {
   resena: string
   url_imagen: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
+  estrellas: number | ''
 }
 
 export default function GaleriasPage() {
@@ -92,6 +94,7 @@ export default function GaleriasPage() {
     resena: '',
     url_imagen: '',
     estado: 'PUBLICADO',
+    estrellas: '',
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -176,6 +179,7 @@ export default function GaleriasPage() {
       resena: '',
       url_imagen: '',
       estado: 'PUBLICADO',
+      estrellas: '',
     })
     setIsFormOpen(true)
   }
@@ -223,6 +227,7 @@ export default function GaleriasPage() {
       resena: g.resena ?? '',
       url_imagen: g.url_imagen ?? '', // 👈 importante
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO',
+      estrellas: typeof g.estrellas === 'number' ? g.estrellas : '',
     })
 
     setIsFormOpen(true)
@@ -243,6 +248,14 @@ export default function GaleriasPage() {
       setFormValues((prev) => ({
         ...prev,
         [name]: target.checked,
+      }))
+      return
+    }
+
+    if (name === 'estrellas') {
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: value === '' ? '' : Number(value),
       }))
       return
     }
@@ -280,6 +293,7 @@ export default function GaleriasPage() {
       const payload: any = {
         ...formValues,
         zona: formValues.zona.length > 0 ? formValues.zona.join(', ') : null,
+        estrellas: formValues.estrellas === '' ? null : Number(formValues.estrellas),
       }
 
       const isEdit = !!editing && editing.id != null
@@ -574,6 +588,27 @@ export default function GaleriasPage() {
                       className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
+                </div>
+
+                {/* Estrellas */}
+                <div>
+                  <label className="block text-xs mb-1 text-slate-300">
+                    Estrellas *
+                  </label>
+                  <select
+                    name="estrellas"
+                    value={formValues.estrellas}
+                    onChange={handleChange}
+                    required
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                  >
+                    <option value="">Seleccionar</option>
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                    <option value={4}>4</option>
+                    <option value={5}>5</option>
+                  </select>
                 </div>
 
                 {/* Zonas */}

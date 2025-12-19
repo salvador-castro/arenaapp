@@ -109,6 +109,7 @@ export async function GET(req: NextRequest) {
       horario_desde: row.horario_desde,
       horario_hasta: row.horario_hasta,
       url_imagen: row.url_imagen,
+      estrellas: row.estrellas,
       es_destacado: row.es_destacado,
       estado: row.estado,
       meta_title: pickTranslated(row, 'meta_title', lang),

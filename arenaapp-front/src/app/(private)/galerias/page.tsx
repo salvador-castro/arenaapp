@@ -33,6 +33,7 @@ interface Galeria {
   horario_hasta?: string | null
   url_imagen: string | null
   imagen_principal?: string | null
+  estrellas?: number | null
 }
 
 const API_BASE = (
@@ -49,6 +50,12 @@ function normalizeText (value: string | null | undefined): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+}
+
+function renderStars (estrellas: number | null | undefined): string {
+  if (!estrellas || estrellas < 1) return '-'
+  const value = Math.min(Math.max(estrellas, 1), 5)
+  return '★'.repeat(value)
 }
 
 /* ---------------- i18n simple (es, en, pt) ---------------- */
@@ -669,10 +676,19 @@ export default function GaleriasPage () {
                       {selectedGaleria.nombre}
                     </h3>
 
-                    {selectedGaleria.anio_fundacion && (
-                      <p className='text-[11px] text-slate-400'>
-                        {t.modal.foundedIn} {selectedGaleria.anio_fundacion}
-                      </p>
+                    {(selectedGaleria.estrellas || selectedGaleria.anio_fundacion) && (
+                      <div className='flex items-center gap-2 mt-1 text-[12px]'>
+                        {selectedGaleria.estrellas && selectedGaleria.estrellas > 0 && (
+                          <span className='text-amber-400'>
+                            {renderStars(selectedGaleria.estrellas)}
+                          </span>
+                        )}
+                        {selectedGaleria.anio_fundacion && (
+                          <span className='text-slate-400'>
+                            {t.modal.foundedIn} {selectedGaleria.anio_fundacion}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

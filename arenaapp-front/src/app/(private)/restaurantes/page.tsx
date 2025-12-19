@@ -42,6 +42,124 @@ const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/restaurantes/public`
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
 const PAGE_SIZE = 12
 
+
+const RESTAURANTES_TEXTS = {
+  es: {
+    pageTitle: 'Restaurantes',
+    pageSubtitle: 'Explorá los lugares recomendados.',
+    loadingPage: 'Cargando...',
+    loadingList: 'Cargando restaurantes...',
+    errorDefault: 'Error al cargar restaurantes.',
+    emptyList: 'No se encontraron restaurantes con los filtros actuales.',
+    zoneFallback: 'Zona no especificada',
+    filters: {
+      title: 'Filtros',
+      show: 'Mostrar filtros',
+      hide: 'Ocultar filtros',
+      searchLabel: 'Buscar',
+      searchPlaceholder: 'Nombre, zona, ciudad...',
+      zoneLabel: 'Zona',
+      zoneAll: 'Todas',
+      priceLabel: 'Rango de precios',
+      priceAll: 'Todos',
+      typeLabel: 'Tipo de comida',
+    },
+    pagination: { prev: 'Anterior', next: 'Siguiente', page: 'Página', of: 'de' },
+    modal: {
+      review: 'Reseña',
+      address: 'Dirección',
+      howToGet: 'Cómo llegar',
+      schedule: 'Horario',
+      website: 'Sitio web',
+      reservations: 'Reservas',
+      reservationsCta: 'Hacer reserva',
+      close: 'Cerrar',
+      noData: '-',
+      moreInfo: 'Más info',
+    },
+    favorite: {
+      add: 'Guardar como favorito',
+      remove: 'Quitar de favoritos',
+    },
+  },
+  en: {
+    pageTitle: 'Restaurants',
+    pageSubtitle: 'Explore recommended places.',
+    loadingPage: 'Loading...',
+    loadingList: 'Loading restaurants...',
+    errorDefault: 'Error loading restaurants.',
+    emptyList: 'No restaurants found with the current filters.',
+    zoneFallback: 'Area not specified',
+    filters: {
+      title: 'Filters',
+      show: 'Show filters',
+      hide: 'Hide filters',
+      searchLabel: 'Search',
+      searchPlaceholder: 'Name, area, city...',
+      zoneLabel: 'Area',
+      zoneAll: 'All',
+      priceLabel: 'Price range',
+      priceAll: 'All',
+      typeLabel: 'Cuisine type',
+    },
+    pagination: { prev: 'Previous', next: 'Next', page: 'Page', of: 'of' },
+    modal: {
+      review: 'Review',
+      address: 'Address',
+      howToGet: 'How to get there',
+      schedule: 'Opening hours',
+      website: 'Website',
+      reservations: 'Bookings',
+      reservationsCta: 'Book a table',
+      close: 'Close',
+      noData: '-',
+      moreInfo: 'More info',
+    },
+    favorite: {
+      add: 'Save as favorite',
+      remove: 'Remove from favorites',
+    },
+  },
+  pt: {
+    pageTitle: 'Restaurantes',
+    pageSubtitle: 'Explore lugares recomendados.',
+    loadingPage: 'Carregando...',
+    loadingList: 'Carregando restaurantes...',
+    errorDefault: 'Erro ao carregar restaurantes.',
+    emptyList: 'Nenhum restaurante encontrado com os filtros atuais.',
+    zoneFallback: 'Zona não especificada',
+    filters: {
+      title: 'Filtros',
+      show: 'Mostrar filtros',
+      hide: 'Ocultar filtros',
+      searchLabel: 'Buscar',
+      searchPlaceholder: 'Nome, zona, cidade...',
+      zoneLabel: 'Zona',
+      zoneAll: 'Todas',
+      priceLabel: 'Faixa de preço',
+      priceAll: 'Todos',
+      typeLabel: 'Tipo de comida',
+    },
+    pagination: { prev: 'Anterior', next: 'Próxima', page: 'Página', of: 'de' },
+    modal: {
+      review: 'Resenha',
+      address: 'Endereço',
+      howToGet: 'Como chegar',
+      schedule: 'Horário',
+      website: 'Site',
+      reservations: 'Reservas',
+      reservationsCta: 'Fazer reserva',
+      close: 'Fechar',
+      noData: '-',
+      moreInfo: 'Ver mais',
+    },
+    favorite: {
+      add: 'Salvar como favorito',
+      remove: 'Remover dos favoritos',
+    },
+  },
+} as const
+
 function renderPriceRange(rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
   const value = Math.min(Math.max(rango, 1), 5)
@@ -83,6 +201,7 @@ export default function RestaurantesPage() {
   const isLoggedIn = !isLoading && !!user
 
   const { locale } = useLocale()
+  const t = RESTAURANTES_TEXTS[locale as keyof typeof RESTAURANTES_TEXTS] ?? RESTAURANTES_TEXTS.es
   const apiLang: 'es' | 'en' | 'pt' =
     locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
 
@@ -379,7 +498,8 @@ export default function RestaurantesPage() {
   if (isLoading || (!user && !error)) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-        <p className="text-sm text-slate-400">Cargando...</p>
+        <h1 className="text-lg font-semibold">{t.pageTitle}</h1>
+<p className="text-xs text-slate-400">{t.pageSubtitle}</p>
       </div>
     )
   }
@@ -391,9 +511,9 @@ export default function RestaurantesPage() {
       <main className="max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4">
         {/* Título */}
         <header className="flex flex-col gap-1 mb-1">
-          <h1 className="text-lg font-semibold">Restaurantes</h1>
+          <h1 className="text-lg font-semibold">{t.pageTitle}</h1>
           <p className="text-xs text-slate-400">
-            Explorá los lugares recomendados.
+            {t.pageSubtitle}
           </p>
         </header>
 
@@ -406,10 +526,10 @@ export default function RestaurantesPage() {
           >
             <span className="flex items-center gap-2">
               <SlidersHorizontal size={14} />
-              <span>Filtros</span>
+              <span>{t.filters.title}</span>
             </span>
             <span className="flex items-center gap-1 text-[11px] text-emerald-400">
-              {filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+              {filtersOpen ? t.filters.hide : t.filters.show}
               <ChevronDown
                 size={14}
                 className={`transition-transform ${
@@ -425,13 +545,13 @@ export default function RestaurantesPage() {
                 {/* Buscador */}
                 <div className="sm:col-span-1">
                   <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                    Buscar
+                    {t.filters.searchLabel}
                   </label>
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Nombre, zona, ciudad..."
+                    placeholder={t.filters.searchPlaceholder}
                     className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
@@ -439,14 +559,14 @@ export default function RestaurantesPage() {
                 {/* Zona */}
                 <div>
                   <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                    Zona
+                    {t.filters.zoneLabel}
                   </label>
                   <select
                     value={zonaFilter}
                     onChange={(e) => setZonaFilter(e.target.value)}
                     className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="">Todas</option>
+                    <option value="">{t.filters.zoneAll}</option>
                     {zonas.map((z) => (
                       <option key={z} value={z}>
                         {z}
@@ -458,14 +578,14 @@ export default function RestaurantesPage() {
                 {/* Rango de precios */}
                 <div>
                   <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                    Rango de precios
+                    {t.filters.priceLabel}
                   </label>
                   <select
                     value={priceFilter}
                     onChange={(e) => setPriceFilter(e.target.value)}
                     className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="">Todos</option>
+                    <option value="">{t.filters.priceAll}</option>
                     {precios.map((p) => (
                       <option key={p} value={p}>
                         {renderPriceRange(p)}
@@ -479,7 +599,7 @@ export default function RestaurantesPage() {
               {tiposComida.length > 0 && (
                 <div className="space-y-1">
                   <p className="text-[11px] font-medium text-slate-300">
-                    Tipo de comida
+                    {t.filters.typeLabel}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {tiposComida.map((tipo) => {
@@ -508,7 +628,7 @@ export default function RestaurantesPage() {
 
         {/* Estado */}
         {loading && (
-          <p className="text-xs text-slate-400">Cargando restaurantes...</p>
+          <p className="text-xs text-slate-400">{t.loadingList}</p>
         )}
 
         {error && <p className="text-xs text-red-400">{error}</p>}
@@ -516,7 +636,7 @@ export default function RestaurantesPage() {
         {/* Listado */}
         {!loading && !error && filteredRestaurants.length === 0 && (
           <p className="text-xs text-slate-400">
-            No se encontraron restaurantes con los filtros actuales.
+            {t.emptyList}
           </p>
         )}
 
@@ -543,7 +663,8 @@ export default function RestaurantesPage() {
 
                   <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
                     <p className="text-[10px] uppercase font-semibold text-emerald-400">
-                      {place.zona || 'Zona no especificada'}
+                      {place.zona || t.zoneFallback}
+
                     </p>
                     <h3 className="text-sm font-semibold line-clamp-1">
                       {place.nombre}
@@ -582,7 +703,7 @@ export default function RestaurantesPage() {
                         onClick={() => openModalFromCard(place)}
                         className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors"
                       >
-                        Más info
+                       {t.modal.moreInfo}
                       </button>
                     </div>
                   </div>
@@ -599,10 +720,10 @@ export default function RestaurantesPage() {
                   disabled={currentPage === 1}
                   className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
                 >
-                  Anterior
+                  {t.pagination.prev}
                 </button>
                 <span className="text-[11px] text-slate-400">
-                  Página {currentPage} de {totalPages}
+                  {t.pagination.page} {currentPage} {t.pagination.of} {totalPages}
                 </span>
                 <button
                   type="button"
@@ -612,7 +733,7 @@ export default function RestaurantesPage() {
                   disabled={currentPage === totalPages}
                   className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
                 >
-                  Siguiente
+                  {t.pagination.next}
                 </button>
               </div>
             )}
@@ -658,7 +779,7 @@ export default function RestaurantesPage() {
 
                   <div className="flex-1 space-y-1">
                     <p className="text-[11px] uppercase font-semibold text-emerald-400">
-                      {selectedRestaurant.zona || 'Zona no especificada'}
+                      {selectedRestaurant.zona || t.zoneFallback}
                     </p>
                     <h3 className="text-lg font-semibold">
                       {selectedRestaurant.nombre}
@@ -696,7 +817,7 @@ export default function RestaurantesPage() {
 
                 {selectedRestaurant.resena && (
                   <div className="space-y-1">
-                    <h4 className="text-sm font-semibold">Reseña</h4>
+                    <h4 className="text-sm font-semibold">{t.modal.review}</h4>
                     <p className="text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left">
                       {selectedRestaurant.resena}
                     </p>
@@ -706,10 +827,10 @@ export default function RestaurantesPage() {
                 <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-slate-300">
-                      Dirección
+                      {t.modal.address}
                     </p>
                     <p className="text-slate-400">
-                      {selectedRestaurant.direccion || '-'}
+                      {selectedRestaurant.direccion || t.modal.noData}
                     </p>
                     {selectedRestaurant.url_maps && (
                       <a
@@ -718,23 +839,23 @@ export default function RestaurantesPage() {
                         rel="noreferrer"
                         className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 mt-1 inline-block"
                       >
-                        Cómo llegar
+                        {t.modal.howToGet}
                       </a>
                     )}
                   </div>
 
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-slate-300">
-                      Horario
+                      {t.modal.schedule}
                     </p>
                     <p className="text-slate-400">
-                      {selectedRestaurant.horario_text || '-'}
+                      {selectedRestaurant.horario_text || t.modal.noData}
                     </p>
                   </div>
 
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-slate-300">
-                      Sitio web
+                      {t.modal.website}
                     </p>
                     {selectedRestaurant.sitio_web ? (
                       <a
@@ -746,13 +867,13 @@ export default function RestaurantesPage() {
                         {selectedRestaurant.sitio_web}
                       </a>
                     ) : (
-                      <p className="text-slate-400">-</p>
+                      <p className="text-slate-400">{t.modal.noData}</p>
                     )}
                   </div>
 
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-slate-300">
-                      Reservas
+                      {t.modal.reservations}
                     </p>
                     {selectedRestaurant.url_reservas ||
                     selectedRestaurant.url_reserva ? (
@@ -766,10 +887,10 @@ export default function RestaurantesPage() {
                         rel="noreferrer"
                         className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
                       >
-                        Hacer reserva
+                        {t.modal.reservationsCta}
                       </a>
                     ) : (
-                      <p className="text-slate-400">-</p>
+                      <p className="text-slate-400">{t.modal.noData}</p>
                     )}
                   </div>
                 </div>
@@ -781,7 +902,7 @@ export default function RestaurantesPage() {
                       onClick={closeModal}
                       className="rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
                     >
-                      Cerrar
+                      {t.modal.close}
                     </button>
 
                     {(() => {
@@ -805,8 +926,8 @@ export default function RestaurantesPage() {
                           `}
                         >
                           {isFavorite
-                            ? 'Quitar de favoritos'
-                            : 'Guardar como favorito'}
+                            ? t.favorite.remove
+                            : t.favorite.add}
                         </button>
                       )
                     })()}

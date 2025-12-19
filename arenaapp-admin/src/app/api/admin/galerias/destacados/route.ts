@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
         horario_desde,
         horario_hasta,
         url_imagen,
+        estrellas,
         es_destacado,
         estado,
         created_at,

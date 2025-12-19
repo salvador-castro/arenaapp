@@ -57,6 +57,7 @@ export async function GET(req: NextRequest, context: ContextWithId) {
         visibilidad,
         resena,
         imagen_principal,
+        estrellas,
         created_at,
         updated_at
       FROM eventos
@@ -126,6 +127,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       es_destacado,
       resena,
       imagen_principal,
+      estrellas,
     } = body
 
     if (!titulo || !categoria || !direccion || !fecha_inicio) {
@@ -208,8 +210,9 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         estado          = $13,
         resena          = $14,
         imagen_principal = $15,
+        estrellas       = $16,
         updated_at      = NOW()
-      WHERE id = $16
+      WHERE id = $17
       `,
       [
         titulo,
@@ -227,6 +230,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         estadoValue,
         resena || null,
         imagen_principal || null,
+        estrellas ? Number(estrellas) : null,
         id,
       ]
     )
@@ -252,6 +256,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         visibilidad,
         resena,
         imagen_principal,
+        estrellas,
         created_at,
         updated_at
       FROM eventos

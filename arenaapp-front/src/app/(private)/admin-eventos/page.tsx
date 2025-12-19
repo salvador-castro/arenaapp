@@ -34,6 +34,7 @@ interface AdminEvento {
   visibilidad?: string
   resena: string | null
   imagen_principal: string | null
+  estrellas?: number | null
   created_at?: string | null
   updated_at?: string | null
 }
@@ -54,6 +55,7 @@ interface FormValuesEvento {
   es_destacado: boolean
   resena: string
   imagen_principal: string
+  estrellas: number | ''
 }
 
 const CATEGORIAS_EVENTO = [
@@ -97,6 +99,7 @@ export default function AdminEventosPage() {
     es_destacado: false,
     resena: '',
     imagen_principal: '',
+    estrellas: '',
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -182,6 +185,7 @@ export default function AdminEventosPage() {
       es_destacado: false,
       resena: '',
       imagen_principal: '',
+      estrellas: '',
     })
     setIsFormOpen(true)
   }
@@ -209,6 +213,7 @@ export default function AdminEventosPage() {
       es_destacado: !!e.es_destacado,
       resena: e.resena ?? '',
       imagen_principal: e.imagen_principal ?? '',
+      estrellas: typeof e.estrellas === 'number' && e.estrellas >= 1 && e.estrellas <= 5 ? e.estrellas : '',
     })
     setIsFormOpen(true)
   }
@@ -233,6 +238,14 @@ export default function AdminEventosPage() {
     }
 
     if (name === 'precio_desde') {
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: value === '' ? '' : Number(value),
+      }))
+      return
+    }
+
+    if (name === 'estrellas') {
       setFormValues((prev) => ({
         ...prev,
         [name]: value === '' ? '' : Number(value),
@@ -289,6 +302,7 @@ export default function AdminEventosPage() {
         moneda: formValues.moneda || 'URU',
         fecha_inicio: formValues.fecha_inicio,
         fecha_fin: formValues.fecha_fin || null,
+        estrellas: formValues.estrellas === '' ? null : Number(formValues.estrellas),
       }
 
       const isEdit = !!editing && editing.id != null
@@ -591,6 +605,26 @@ export default function AdminEventosPage() {
                       ))}
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs mb-1 text-slate-300">
+                    Estrellas *
+                  </label>
+                  <select
+                    name="estrellas"
+                    value={formValues.estrellas}
+                    onChange={handleChange}
+                    required
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                  >
+                    <option value="">Seleccionar</option>
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                    <option value={4}>4</option>
+                    <option value={5}>5</option>
+                  </select>
                 </div>
 
                 <ZonasLugares

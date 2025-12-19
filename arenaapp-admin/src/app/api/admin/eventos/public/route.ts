@@ -113,6 +113,7 @@ export async function GET(req: NextRequest) {
       imagen_principal: row.imagen_principal,
       meta_title: pickTranslated(row, 'meta_title', lang),
       meta_description: pickTranslated(row, 'meta_description', lang),
+      estrellas: row.estrellas,
     }))
 
     return new NextResponse(JSON.stringify(data), {

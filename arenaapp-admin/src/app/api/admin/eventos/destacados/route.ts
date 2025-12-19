@@ -47,7 +47,8 @@ export async function GET(req: NextRequest) {
         estado,
         visibilidad,
         resena,
-        imagen_principal
+        imagen_principal,
+        estrellas
       FROM eventos
       WHERE
         es_destacado = TRUE

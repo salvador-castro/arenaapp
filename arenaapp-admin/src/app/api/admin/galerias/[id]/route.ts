@@ -122,6 +122,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       meta_description,
       es_destacado,
       estado,
+      estrellas,
     } = body
 
     // Obligatorios
@@ -163,8 +164,9 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         meta_description = $23,
         es_destacado = $24,
         estado = $25,
+        estrellas = $26,
         updated_at = now()
-      WHERE id = $26
+      WHERE id = $27
       `,
       [
         nombre, // $1
@@ -192,7 +194,8 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         meta_description || null, // $23
         !!es_destacado, // $24
         estado || 'PUBLICADO', // $25
-        id, // $26
+        estrellas ? Number(estrellas) : null, // $26
+        id, // $27
       ]
     )
 
@@ -222,6 +225,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         horario_desde,
         horario_hasta,
         url_imagen,
+        estrellas,
         meta_title,
         meta_description,
         es_destacado,
