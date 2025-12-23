@@ -677,9 +677,11 @@ export default function RestaurantesPage() {
                     )}
 
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-amber-400">
-                        {renderStars(place.estrellas)}
-                      </span>
+                      {typeof place.estrellas === 'number' && place.estrellas > 0 && (
+                        <span className="inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300">
+                          {place.estrellas}★
+                        </span>
+                      )}
                       <span className="text-slate-400">
                         {renderPriceRange(place.rango_precios)}
                       </span>

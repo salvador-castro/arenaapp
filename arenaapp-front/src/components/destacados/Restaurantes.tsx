@@ -266,7 +266,7 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
                 <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
                   {place.estrellas && place.estrellas > 0 && (
                     <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
-                      {renderStars(place.estrellas)}
+                      {place.estrellas}★
                     </span>
                   )}
                   {place.rango_precios && place.rango_precios > 0 && (
@@ -329,7 +329,7 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
                   <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
                     {selectedPlace.estrellas && selectedPlace.estrellas > 0 && (
                       <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
-                        {renderStars(selectedPlace.estrellas)}
+                        {selectedPlace.estrellas}★
                       </span>
                     )}
                     {selectedPlace.rango_precios && selectedPlace.rango_precios > 0 && (

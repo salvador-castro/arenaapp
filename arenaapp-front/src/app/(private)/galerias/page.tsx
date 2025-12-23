@@ -579,6 +579,14 @@ export default function GaleriasPage () {
                       </p>
                     )}
 
+                    {typeof g.estrellas === 'number' && g.estrellas > 0 && (
+                      <div className='mt-1'>
+                        <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                          {g.estrellas}★
+                        </span>
+                      </div>
+                    )}
+
                     {g.direccion && (
                       <div className='mt-1 flex items-center gap-1 text-[10px] text-slate-500 line-clamp-1'>
                         <MapPin size={11} />

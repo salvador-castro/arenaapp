@@ -81,10 +81,10 @@ function formatPriceRange (n: number | null): string {
   return '$'.repeat(n)
 }
 
-function formatStars (n: number | null): string {
+function renderStars (n: number | null): string {
   if (n == null || n <= 0) return '-'
-  if (n > 5) n = 5
-  return '★'.repeat(n) + '☆'.repeat(5 - n)
+  const value = Math.min(Math.max(n, 1), 5)
+  return '★'.repeat(value)
 }
 
 /* -------------------- i18n simple (es, en, pt) -------------------- */
@@ -739,14 +739,14 @@ export default function ShoppingPage () {
                     )}
 
                     <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
+                      {typeof shopping.estrellas === 'number' && shopping.estrellas > 0 && (
+                        <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                          {shopping.estrellas}★
+                        </span>
+                      )}
                       {shopping.rango_precios != null && (
                         <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px]'>
                           {formatPriceRange(shopping.rango_precios)}
-                        </span>
-                      )}
-                      {shopping.estrellas != null && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px]'>
-                          {formatStars(shopping.estrellas)}
                         </span>
                       )}
                       {shopping.es_outlet && (
@@ -889,7 +889,7 @@ export default function ShoppingPage () {
                     <div className='flex flex-wrap items-center gap-2 mt-2 text-[12px]'>
                       {selectedShopping.estrellas != null && selectedShopping.estrellas > 0 && (
                         <span className='text-amber-400'>
-                          {formatStars(selectedShopping.estrellas).replace(/☆/g, '')}
+                          {renderStars(selectedShopping.estrellas)}
                        </span>
                       )}
                       {selectedShopping.rango_precios != null && (

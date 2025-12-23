@@ -217,7 +217,7 @@ export default function BaresDestacados ({ isLoggedIn }: Props) {
               <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
                 {bar.estrellas && bar.estrellas > 0 && (
                   <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
-                    {renderStars(bar.estrellas)}
+                    {bar.estrellas}★
                   </span>
                 )}
                 {bar.rango_precios && bar.rango_precios > 0 && (

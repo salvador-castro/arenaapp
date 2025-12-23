@@ -280,7 +280,7 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
                 <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
                   {ev.estrellas && ev.estrellas > 0 && (
                     <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
-                      {formatStars(ev.estrellas)}
+                      {ev.estrellas}★
                     </span>
                   )}
                   <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
@@ -347,7 +347,7 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
                   <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
                     {selectedEvento.estrellas && selectedEvento.estrellas > 0 && (
                       <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
-                        {formatStars(selectedEvento.estrellas)}
+                        {selectedEvento.estrellas}★
                       </span>
                     )}
                     <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
