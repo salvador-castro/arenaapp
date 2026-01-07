@@ -231,7 +231,13 @@ export default function DashboardPage () {
               </div>
             </button>
 
-            <p className='text-xs text-slate-400'>{t.proximamente}</p>
+            <div className="col-span-full flex items-center gap-3 my-2">
+              <div className="flex-1 h-px bg-slate-700/60" />
+              <p className="text-xs text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                {t.proximamente}
+              </p>
+              <div className="flex-1 h-px bg-slate-700/60" />
+            </div>
 
             {/* Galerías */}
             <button
