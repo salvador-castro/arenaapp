@@ -45,7 +45,7 @@ const PAGE_SIZE = 12
 
 const RESTAURANTES_TEXTS = {
   es: {
-    pageTitle: 'Restaurantes',
+    pageTitle: 'Ruta Foodie',
     pageSubtitle: 'Explorá los lugares recomendados.',
     loadingPage: 'Cargando...',
     loadingList: 'Cargando restaurantes...',
@@ -83,7 +83,7 @@ const RESTAURANTES_TEXTS = {
     },
   },
   en: {
-    pageTitle: 'Restaurants',
+    pageTitle: 'Foodie Route',
     pageSubtitle: 'Explore recommended places.',
     loadingPage: 'Loading...',
     loadingList: 'Loading restaurants...',
@@ -121,7 +121,7 @@ const RESTAURANTES_TEXTS = {
     },
   },
   pt: {
-    pageTitle: 'Restaurantes',
+    pageTitle: 'Rota Foodie',
     pageSubtitle: 'Explore lugares recomendados.',
     loadingPage: 'Carregando...',
     loadingList: 'Carregando restaurantes...',

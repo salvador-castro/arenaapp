@@ -23,7 +23,7 @@ const DASHBOARD_TEXTS = {
       },
       restaurantes: {
         tag: 'Comer',
-        title: 'Restaurantes',
+        title: 'Ruta Foodie',
         desc: 'Cocina local, internacional y más.',
       },
       galerias: {
