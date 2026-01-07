@@ -81,7 +81,6 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
   const [selectedPlace, setSelectedPlace] = useState<Restaurant | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // 🔥 Diccionario de textos
   const t = {
     es: {
       sectionTitle: 'Restaurantes destacados',
@@ -209,12 +208,23 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
         </div>
 
         <button
-          type='button'
-          className='text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2'
-          onClick={() => goTo('/restaurantes')}
-        >
-          {t.seeAll}
-        </button>
+  type='button'
+  onClick={() => goTo('/restaurantes')}
+  className='
+    inline-flex items-center gap-1
+    rounded-full
+    border border-emerald-500/60
+    bg-emerald-500/10
+    px-4 py-1.5
+    text-xs font-semibold text-emerald-300
+    hover:bg-emerald-500/20 hover:border-emerald-400
+    transition-colors
+  '
+>
+  {t.seeAll}
+  <span aria-hidden>→</span>
+</button>
+
       </div>
 
       {loading && <p className='text-xs text-slate-400'>{t.loading}</p>}
