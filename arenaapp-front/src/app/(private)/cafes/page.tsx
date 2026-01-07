@@ -292,8 +292,14 @@ export default function CafesPage () {
 
     const fetchFavoritos = async () => {
       try {
+        const headers: HeadersInit = {}
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
+
         const res = await fetch(FAVORITOS_CAFES_ENDPOINT, {
           method: 'GET',
+          headers,
           credentials: 'include',
         })
 
@@ -315,7 +321,7 @@ export default function CafesPage () {
     }
 
     fetchFavoritos()
-  }, [user, apiLang])
+  }, [user, apiLang, auth?.token])
 
   // 4) Abrir modal si viene ?cafeId=
   useEffect(() => {
@@ -354,12 +360,17 @@ export default function CafesPage () {
     try {
       const isFavorite = favoriteCafeIds.has(cafeIdNumeric)
 
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+      if (auth?.token) {
+        headers['Authorization'] = `Bearer ${auth.token}`
+      }
+
       const res = await fetch(FAVORITOS_CAFES_ENDPOINT, {
         method: isFavorite ? 'DELETE' : 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({ cafeId: cafeIdNumeric }),
       })
 
