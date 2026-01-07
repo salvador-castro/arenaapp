@@ -32,7 +32,7 @@ const slidesByLocale = {
     }, */
     {
       id: 3,
-      title: 'Gastronomía gourmet',
+      title: 'Ruta Foodie',
       description: 'Restaurantes destacados para disfrutar.',
       cta: 'Ver restaurantes',
       image:
@@ -62,7 +62,7 @@ const slidesByLocale = {
     }, */
     {
       id: 3,
-      title: 'Gourmet cuisine',
+      title: 'Foodie Route',
       description: 'Featured restaurants to enjoy.',
       cta: 'See restaurants',
       image:
@@ -92,7 +92,7 @@ const slidesByLocale = {
     }, */
     {
       id: 3,
-      title: 'Gastronomia gourmet',
+      title: 'Rota Foodie',
       description: 'Restaurantes em destaque para aproveitar.',
       cta: 'Ver restaurantes',
       image:
