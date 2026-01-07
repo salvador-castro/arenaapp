@@ -26,6 +26,11 @@ const DASHBOARD_TEXTS = {
         title: 'Ruta Foodie',
         desc: 'Cocina local, internacional y más.',
       },
+      cafes: {
+        tag: 'Cafés',
+        title: 'Cafés',
+        desc: 'Cafés, bares y más.',
+      },
       galerias: {
         tag: 'Arte',
         title: 'Galerías & Museos',
@@ -70,6 +75,11 @@ const DASHBOARD_TEXTS = {
         title: 'Restaurants',
         desc: 'Local, international and more.',
       },
+      cafes: {
+        tag: 'Coffee',
+        title: 'Coffee',
+        desc: 'Coffee, tea and more.',
+      },
       galerias: {
         tag: 'Art',
         title: 'Galleries & Museums',
@@ -113,6 +123,11 @@ const DASHBOARD_TEXTS = {
         tag: 'Comer',
         title: 'Restaurantes',
         desc: 'Cozinha local, internacional e muito mais.',
+      },
+      cafes: {
+        tag: 'Cafés',
+        title: 'Cafés',
+        desc: 'Cafés, bares y más.',
       },
       galerias: {
         tag: 'Arte',
@@ -230,6 +245,32 @@ export default function DashboardPage () {
                 </p>
               </div>
             </button>
+
+            {/* Cafes */}
+            <button
+              type='button'
+              onClick={() => handleGoToSection('/cafes')}
+              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/bars.png?v=2 ')",
+              }}
+            >
+              <div className='absolute inset-0 bg-slate-950/60' />
+              <div className='relative px-3 py-4 text-left'>
+                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+                  {t.cards.cafes.tag}
+                </p>
+                <p className='text-sm font-semibold text-white'>
+                  {t.cards.cafes.title}
+                </p>
+                <p className='text-[11px] text-slate-200 mt-1'>
+                  {t.cards.cafes.desc}
+                </p>
+              </div>
+            </button>
+
+            {/* Proximamente */}
 
             <div className="col-span-full flex items-center gap-3 my-2">
               <div className="flex-1 h-px bg-slate-700/60" />

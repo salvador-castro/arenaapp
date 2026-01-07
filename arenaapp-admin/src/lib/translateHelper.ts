@@ -4,6 +4,7 @@ import { getDb } from './db'
 
 export type TranslatableEntity =
   | 'bares'
+  | 'cafes'
   | 'eventos'
   | 'galerias'
   | 'hoteles'
@@ -92,6 +93,20 @@ function getFieldsForEntity(entity: TranslatableEntity) {
     { fields: string[]; selectFields: string }
   > = {
     bares: {
+      fields: [
+        'nombre',
+        'descripcion_corta',
+        'descripcion_larga',
+        'resena',
+        'horario_text',
+        'tipo_comida',
+        'meta_title',
+        'meta_description',
+      ],
+      selectFields:
+        'nombre, descripcion_corta, descripcion_larga, resena, horario_text, tipo_comida, meta_title, meta_description',
+    },
+    cafes: {
       fields: [
         'nombre',
         'descripcion_corta',
