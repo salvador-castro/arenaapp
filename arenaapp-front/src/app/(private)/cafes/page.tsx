@@ -653,6 +653,24 @@ export default function CafesPage () {
                       className='object-cover'
                       sizes='(max-width: 768px) 100vw, 25vw'
                     />
+                    <button
+                      onClick={e => {
+                        e.stopPropagation()
+                        handleToggleFavoriteCafe(place)
+                      }}
+                      className='absolute top-2 right-2 z-10 p-1.5 rounded-full bg-slate-900/50 text-slate-100 backdrop-blur-sm transition hover:bg-slate-900/70 hover:scale-105'
+                      title={
+                        favoriteCafeIds.has(Number(place.id))
+                          ? t.favorite.remove
+                          : t.favorite.add
+                      }
+                    >
+                      {favoriteCafeIds.has(Number(place.id)) ? (
+                        <Heart className='fill-red-500 text-red-500' size={16} />
+                      ) : (
+                        <Heart className='text-slate-100' size={16} />
+                      )}
+                    </button>
                   </div>
 
                   <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
@@ -832,17 +850,14 @@ export default function CafesPage () {
                     </div>
                   )}
 
-                  {selectedCafe.resena && (
-                     <div className='mt-2 space-y-1'>
-                        <h4 className='text-xs font-semibold text-slate-400 uppercase tracking-wider'>{t.modal.review}</h4>
-                        <div className='bg-slate-900/40 p-3 rounded-xl border border-slate-800/50'>
-                            <p className='whitespace-pre-line text-xs leading-relaxed text-slate-300'>
-                            {selectedCafe.resena}
-                            </p>
-                        </div>
-                    </div>
-                  )}
-
+                   {selectedCafe.resena && (
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-semibold">{t.modal.review}</h4>
+                    <p className="text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left">
+                      {selectedCafe.resena}
+                    </p>
+                  </div>
+                )}
                   {!selectedCafe.descripcion_larga && selectedCafe.descripcion_corta && (
                     <p className='text-xs italic text-slate-400'>
                       {selectedCafe.descripcion_corta}

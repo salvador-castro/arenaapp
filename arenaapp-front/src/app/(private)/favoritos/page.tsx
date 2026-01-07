@@ -12,6 +12,7 @@ import TopNav from '@/components/TopNav'
 type FavoriteTipo =
   | 'RESTAURANTE'
   | 'BAR'
+  | 'CAFE'
   | 'HOTEL'
   | 'GALERIA'
   | 'SHOPPING'
@@ -41,6 +42,7 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
+const FAVORITOS_CAFES_ENDPOINT = `${API_BASE}/api/admin/favoritos/cafes`
 const FAVORITOS_BARES_ENDPOINT = `${API_BASE}/api/admin/favoritos/bares`
 const FAVORITOS_HOTELES_ENDPOINT = `${API_BASE}/api/admin/favoritos/hoteles`
 const FAVORITOS_GALERIAS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
@@ -71,6 +73,7 @@ const TEXTS = {
     typeLabels: {
       RESTAURANTE: 'Restaurante',
       BAR: 'Bar',
+      CAFE: 'Café',
       HOTEL: 'Hotel',
       GALERIA: 'Galería',
       SHOPPING: 'Shopping / Outlet',
@@ -90,6 +93,7 @@ const TEXTS = {
     typeLabels: {
       RESTAURANTE: 'Restaurant',
       BAR: 'Bar',
+      CAFE: 'Cafe',
       HOTEL: 'Hotel',
       GALERIA: 'Gallery',
       SHOPPING: 'Mall / Outlet',
@@ -109,6 +113,7 @@ const TEXTS = {
     typeLabels: {
       RESTAURANTE: 'Restaurante',
       BAR: 'Bar',
+      CAFE: 'Café',
       HOTEL: 'Hotel',
       GALERIA: 'Galeria',
       SHOPPING: 'Shopping / Outlet',
@@ -170,6 +175,7 @@ export default function FavoritosPage () {
         const [
           resRest,
           resBares,
+          resCafes,
           resHoteles,
           resGalerias,
           resShopping,
@@ -177,6 +183,7 @@ export default function FavoritosPage () {
         ] = await Promise.all([
           fetch(FAVORITOS_RESTAURANTES_ENDPOINT, commonOptions),
           fetch(FAVORITOS_BARES_ENDPOINT, commonOptions),
+          fetch(FAVORITOS_CAFES_ENDPOINT, commonOptions),
           fetch(FAVORITOS_HOTELES_ENDPOINT, commonOptions),
           fetch(FAVORITOS_GALERIAS_ENDPOINT, commonOptions),
           fetch(FAVORITOS_SHOPPING_ENDPOINT, commonOptions),
@@ -192,6 +199,13 @@ export default function FavoritosPage () {
 
         const dataRest: any[] = await resRest.json()
         const dataBares: any[] = await resBares.json()
+
+        let dataCafes: any[] = []
+        if (resCafes.ok) {
+          dataCafes = await resCafes.json()
+        } else {
+          console.warn('No se pudieron cargar favoritos cafes:', resCafes.status)
+        }
 
         let dataHoteles: any[] = []
         let dataGalerias: any[] = []
@@ -260,6 +274,27 @@ export default function FavoritosPage () {
             favorito_id: Number(row.favorito_id ?? row.id),
             item_id: Number(row.bar_id ?? row.id),
             tipo: 'BAR' as const,
+            nombre: row.nombre,
+            tipo_comida: row.tipo_comida,
+            slug: row.slug,
+            descripcion_corta: row.descripcion_corta,
+            direccion: row.direccion,
+            ciudad: row.ciudad,
+            provincia: row.provincia,
+            zona: row.zona,
+            pais: row.pais,
+            sitio_web: row.sitio_web,
+            rango_precios: row.rango_precios,
+            estrellas: row.estrellas,
+            url_imagen: row.url_imagen ?? row.imagen_principal,
+          }))
+          .filter(f => !Number.isNaN(f.item_id))
+
+        const mappedCafes: FavoriteItem[] = dataCafes
+          .map(row => ({
+            favorito_id: Number(row.favorito_id ?? row.id),
+            item_id: Number(row.cafe_id ?? row.id),
+            tipo: 'CAFE' as const,
             nombre: row.nombre,
             tipo_comida: row.tipo_comida,
             slug: row.slug,
@@ -363,6 +398,7 @@ export default function FavoritosPage () {
         const combined = [
           ...mappedRest,
           ...mappedBares,
+          ...mappedCafes,
           ...mappedHoteles,
           ...mappedGalerias,
           ...mappedShopping,
@@ -401,6 +437,10 @@ export default function FavoritosPage () {
         case 'BAR':
           endpoint = FAVORITOS_BARES_ENDPOINT
           body = { barId: item_id }
+          break
+        case 'CAFE':
+          endpoint = FAVORITOS_CAFES_ENDPOINT
+          body = { cafeId: item_id }
           break
         case 'HOTEL':
           endpoint = FAVORITOS_HOTELES_ENDPOINT
@@ -456,6 +496,9 @@ export default function FavoritosPage () {
         break
       case 'BAR':
         router.push(`/bares?barId=${item.item_id}`)
+        break
+      case 'CAFE':
+        router.push(`/cafes?cafeId=${item.item_id}`)
         break
       case 'HOTEL':
         router.push(`/hoteles?hotelId=${item.item_id}`)
