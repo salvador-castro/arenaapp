@@ -4,7 +4,7 @@ import { verifyAuth } from '@/lib/auth'
 import type { JwtPayload } from '@/lib/auth'
 
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
-const FAVORITO_TIPO_cafes = 'cafes' as const // 👈 clave
+const FAVORITO_TIPO_CAFE = 'CAFE' as const
 
 function corsBaseHeaders() {
     return {
@@ -37,7 +37,7 @@ function getUserIdFromAuth(payload: JwtPayload): number {
     return parsed
 }
 
-// GET → lista favoritos de cafes para el usuario logueado
+// GET → lista favoritos de CAFES para el usuario logueado
 export async function GET(req: NextRequest) {
     try {
         const payload = await verifyAuth(req)
@@ -55,15 +55,15 @@ export async function GET(req: NextRequest) {
             `
       SELECT
         f.id AS favorito_id,
-        b.id AS cafes_id,
-        b.*
+        c.id AS cafe_id,
+        c.*
       FROM favoritos f
-      JOIN cafes b ON b.id = f.item_id
+      JOIN cafes c ON c.id = f.item_id
       WHERE f.usuario_id = $1
         AND f.tipo = $2
       ORDER BY f.id DESC
       `,
-            [userId, FAVORITO_TIPO_cafes]
+            [userId, FAVORITO_TIPO_CAFE]
         )
 
         return NextResponse.json(rows, {
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-// POST → marca un cafes como favorito
+// POST → marca un cafe como favorito
 export async function POST(req: NextRequest) {
     try {
         const payload = await verifyAuth(req)
@@ -94,9 +94,9 @@ export async function POST(req: NextRequest) {
         const db = await getDb()
         const body = await req.json()
 
-        const cafesId = Number(body.cafesId ?? body.cafes_id ?? body.id)
-        if (!cafesId || Number.isNaN(cafesId)) {
-            return new NextResponse('cafesId inválido', {
+        const cafeId = Number(body.cafeId ?? body.cafe_id ?? body.id)
+        if (!cafeId || Number.isNaN(cafeId)) {
+            return new NextResponse('cafeId inválido', {
                 status: 400,
                 headers: corsBaseHeaders(),
             })
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       VALUES ($1, $2, $3)
       ON CONFLICT (usuario_id, tipo, item_id) DO NOTHING
       `,
-            [userId, FAVORITO_TIPO_cafes, cafesId]
+            [userId, FAVORITO_TIPO_CAFE, cafeId]
         )
 
         return new NextResponse(null, {
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
-// DELETE → quita un cafes de favoritos
+// DELETE → quita un cafe de favoritos
 export async function DELETE(req: NextRequest) {
     try {
         const payload = await verifyAuth(req)
@@ -139,9 +139,9 @@ export async function DELETE(req: NextRequest) {
         const db = await getDb()
         const body = await req.json()
 
-        const cafesId = Number(body.cafesId ?? body.cafes_id ?? body.id)
-        if (!cafesId || Number.isNaN(cafesId)) {
-            return new NextResponse('cafesId inválido', {
+        const cafeId = Number(body.cafeId ?? body.cafe_id ?? body.id)
+        if (!cafeId || Number.isNaN(cafeId)) {
+            return new NextResponse('cafeId inválido', {
                 status: 400,
                 headers: corsBaseHeaders(),
             })
@@ -154,7 +154,7 @@ export async function DELETE(req: NextRequest) {
         AND tipo = $2
         AND item_id = $3
       `,
-            [userId, FAVORITO_TIPO_cafes, cafesId]
+            [userId, FAVORITO_TIPO_CAFE, cafeId]
         )
 
         return new NextResponse(null, {
