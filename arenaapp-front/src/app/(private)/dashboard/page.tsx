@@ -116,7 +116,7 @@ const DASHBOARD_TEXTS = {
       },
       galerias: {
         tag: 'Arte',
-        title: 'Galerias & Museos',
+        title: 'Galerias & Museus',
         desc: 'Exposições, mostras e cultura visual.',
       },
       hoteles: {
