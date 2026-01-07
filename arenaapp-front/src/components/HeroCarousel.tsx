@@ -21,7 +21,7 @@ const slidesByLocale = {
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/bars.jpg',
       target: '/bares',
     },
-    {
+    /* {
       id: 2,
       title: 'Eventos y actividades',
       description: 'Lo mejor que está pasando en la ciudad hoy.',
@@ -29,7 +29,7 @@ const slidesByLocale = {
       image:
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/eventos.jpg',
       target: '/eventos',
-    },
+    }, */
     {
       id: 3,
       title: 'Gastronomía gourmet',
@@ -50,7 +50,7 @@ const slidesByLocale = {
       image:
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/bars.jpg',
       target: '/bares',
-    },
+    },/* 
     {
       id: 2,
       title: 'Events and activities',
@@ -59,7 +59,7 @@ const slidesByLocale = {
       image:
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/eventos.jpg',
       target: '/eventos',
-    },
+    }, */
     {
       id: 3,
       title: 'Gourmet cuisine',
@@ -80,7 +80,7 @@ const slidesByLocale = {
       image:
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/bars.jpg',
       target: '/bares',
-    },
+    },/* 
     {
       id: 2,
       title: 'Eventos e atividades',
@@ -89,7 +89,7 @@ const slidesByLocale = {
       image:
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/eventos.jpg',
       target: '/eventos',
-    },
+    }, */
     {
       id: 3,
       title: 'Gastronomia gourmet',

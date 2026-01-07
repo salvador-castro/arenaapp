@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 import { useLocale } from '@/context/LocaleContext'
+import { describe } from 'node:test'
 
 const DASHBOARD_TEXTS = {
   es: {
@@ -13,6 +14,7 @@ const DASHBOARD_TEXTS = {
     subtitle: '¿Qué te gustaría explorar hoy?',
     sectionTitle: 'Explorá por categoría',
     sectionSubtitle: 'Entrá directo a la sección que quieras descubrir.',
+    proximamente: 'Proximamente',
     cards: {
       favoritos: {
         tag: 'Tus listas',
@@ -26,7 +28,7 @@ const DASHBOARD_TEXTS = {
       },
       galerias: {
         tag: 'Arte',
-        title: 'Galerías',
+        title: 'Galerías & Museos',
         desc: 'Exhibiciones, muestras y cultura visual.',
       },
       hoteles: {
@@ -56,6 +58,7 @@ const DASHBOARD_TEXTS = {
     subtitle: 'What would you like to explore today?',
     sectionTitle: 'Explore by category',
     sectionSubtitle: 'Jump straight into the section you want to discover.',
+    proximamente: 'Coming soon',
     cards: {
       favoritos: {
         tag: 'Your lists',
@@ -69,7 +72,7 @@ const DASHBOARD_TEXTS = {
       },
       galerias: {
         tag: 'Art',
-        title: 'Galleries',
+        title: 'Galleries & Museums',
         desc: 'Exhibitions, shows and visual culture.',
       },
       hoteles: {
@@ -99,6 +102,7 @@ const DASHBOARD_TEXTS = {
     subtitle: 'O que você gostaria de explorar hoje?',
     sectionTitle: 'Explore por categoria',
     sectionSubtitle: 'Vá direto para a seção que quer conhecer.',
+    proximamente: 'Proximamente',
     cards: {
       favoritos: {
         tag: 'Suas listas',
@@ -112,7 +116,7 @@ const DASHBOARD_TEXTS = {
       },
       galerias: {
         tag: 'Arte',
-        title: 'Galerias',
+        title: 'Galerias & Museos',
         desc: 'Exposições, mostras e cultura visual.',
       },
       hoteles: {
@@ -227,10 +231,12 @@ export default function DashboardPage () {
               </div>
             </button>
 
+            <p className='text-xs text-slate-400'>{t.proximamente}</p>
+
             {/* Galerías */}
             <button
               type='button'
-              onClick={() => handleGoToSection('/galerias')}
+              /* onClick={() => handleGoToSection('/galerias-museos')} */
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
@@ -254,7 +260,7 @@ export default function DashboardPage () {
             {/* Hoteles */}
             <button
               type='button'
-              onClick={() => handleGoToSection('/hoteles')}
+              /* onClick={() => handleGoToSection('/hoteles')} */
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
@@ -278,7 +284,7 @@ export default function DashboardPage () {
             {/* Shopping */}
             <button
               type='button'
-              onClick={() => handleGoToSection('/shopping')}
+              /* onClick={() => handleGoToSection('/shopping')} */
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
@@ -302,7 +308,7 @@ export default function DashboardPage () {
             {/* Eventos */}
             <button
               type='button'
-              onClick={() => handleGoToSection('/eventos')}
+              /* onClick={() => handleGoToSection('/eventos')} */
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:
@@ -326,7 +332,7 @@ export default function DashboardPage () {
             {/* Bares */}
             <button
               type='button'
-              onClick={() => handleGoToSection('/bares')}
+              /* onClick={() => handleGoToSection('/bares')} */
               className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
               style={{
                 backgroundImage:

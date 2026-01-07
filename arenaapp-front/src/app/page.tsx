@@ -35,7 +35,7 @@ export default function HomePage () {
         <section className='px-4 pt-6'>
           <RestaurantesDestacados isLoggedIn={isLoggedIn} />
         </section>
-
+{/* 
         <section className='px-4 pt-6'>
           <BaresDestacados isLoggedIn={isLoggedIn} />
         </section>
@@ -47,7 +47,7 @@ export default function HomePage () {
         <section className='px-4 pt-6 pb-4'>
           <GaleriasDestacadas isLoggedIn={isLoggedIn} />
         </section>
-
+        
         <section className='px-4 pt-6 pb-4'>
           <HotelesDestacados isLoggedIn={isLoggedIn} />
         </section>
@@ -56,7 +56,7 @@ export default function HomePage () {
           <ShoppingDestacados isLoggedIn={isLoggedIn} />
         </section>
 
-        <AdBanner />
+        <AdBanner /> */}
       </main>
 
       <BottomNav />
