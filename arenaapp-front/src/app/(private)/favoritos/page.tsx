@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { useLocale } from '@/context/LocaleContext' // 👈 NUEVO
+import { useLocale } from '@/context/LocaleContext'
 import Image from 'next/image'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
@@ -139,7 +139,6 @@ export default function FavoritosPage () {
   const { user, isLoading }: any = useAuth()
   const isLoggedIn = !isLoading && !!user
 
-  // 👇 idioma desde el contexto global, igual que en /bares y /eventos
   const { locale } = useLocale()
   const currentLang: Lang =
     locale === 'en' || locale === 'pt' || locale === 'es' ? locale : 'es'

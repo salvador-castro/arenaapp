@@ -42,7 +42,6 @@ export async function GET(req: NextRequest) {
     try {
         const payload = await verifyAuth(req)
         if (!payload) {
-            console.log('GET Unauthorized: No payload')
             return new NextResponse('No autorizado', {
                 status: 401,
                 headers: corsBaseHeaders(),
@@ -50,7 +49,6 @@ export async function GET(req: NextRequest) {
         }
 
         const userId = getUserIdFromAuth(payload)
-        console.log(`GET Request for userId: ${userId} requesting type ${FAVORITO_TIPO_CAFE}`)
         const db = await getDb()
 
         const { rows } = await db.query(
@@ -68,14 +66,12 @@ export async function GET(req: NextRequest) {
             [userId, FAVORITO_TIPO_CAFE]
         )
 
-        console.log(`GET Success: Found ${rows.length} rows`)
-
         return NextResponse.json(rows, {
             status: 200,
             headers: corsBaseHeaders(),
         })
     } catch (err: any) {
-        console.error('GET Error', err)
+        console.error('Error GET /favoritos/cafes', err)
         return new NextResponse('Error interno', {
             status: 500,
             headers: corsBaseHeaders(),
@@ -88,7 +84,6 @@ export async function POST(req: NextRequest) {
     try {
         const payload = await verifyAuth(req)
         if (!payload) {
-            console.log('POST Unauthorized: No payload')
             return new NextResponse('No autorizado', {
                 status: 401,
                 headers: corsBaseHeaders(),
@@ -99,11 +94,8 @@ export async function POST(req: NextRequest) {
         const db = await getDb()
         const body = await req.json()
 
-        console.log(`POST Request for userId: ${userId}`, body)
-
         const cafeId = Number(body.cafeId ?? body.cafe_id ?? body.id)
         if (!cafeId || Number.isNaN(cafeId)) {
-            console.log('POST Invalid cafeId', { body })
             return new NextResponse('cafeId inválido', {
                 status: 400,
                 headers: corsBaseHeaders(),
@@ -119,15 +111,13 @@ export async function POST(req: NextRequest) {
             [userId, FAVORITO_TIPO_CAFE, cafeId]
         )
 
-        console.log('POST Success')
-
-        return NextResponse.json({ success: true }, {
-            status: 200,
+        return new NextResponse(null, {
+            status: 204,
             headers: corsBaseHeaders(),
         })
     } catch (err: any) {
-        console.error('POST Error', err)
-        return new NextResponse(JSON.stringify({ error: err.message }), {
+        console.error('Error POST /favoritos/cafes', err)
+        return new NextResponse('Error interno', {
             status: 500,
             headers: corsBaseHeaders(),
         })
