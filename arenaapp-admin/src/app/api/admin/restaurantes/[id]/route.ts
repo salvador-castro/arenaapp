@@ -236,7 +236,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
 
     // ✨ Traducir automáticamente en background
     if (restaurant?.id) {
-      autoTranslate('restaurantes', Number(restaurant.id)).catch(err => {
+      autoTranslate('restaurantes', Number(restaurant.id)).catch((err) => {
         console.error('[PUT /restaurantes/:id] Error auto-traducción:', err)
       })
     }

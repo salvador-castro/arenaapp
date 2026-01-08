@@ -5,56 +5,56 @@ import { getDb } from '@/lib/db'
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
 function corsBaseHeaders() {
-    return {
-        'Access-Control-Allow-Origin': FRONT_ORIGIN,
-        'Access-Control-Allow-Credentials': 'true',
-    }
+  return {
+    'Access-Control-Allow-Origin': FRONT_ORIGIN,
+    'Access-Control-Allow-Credentials': 'true',
+  }
 }
 
 export function OPTIONS() {
-    return new NextResponse(null, {
-        status: 204,
-        headers: {
-            ...corsBaseHeaders(),
-            'Access-Control-Allow-Methods': 'GET,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        },
-    })
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      ...corsBaseHeaders(),
+      'Access-Control-Allow-Methods': 'GET,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }
 
 // Helper para elegir traducción según lang
 function pickTranslated(row: any, base: string, lang: 'es' | 'en' | 'pt') {
-    if (lang === 'en') {
-        const v = row[`${base}_en`]
-        if (v != null && v !== '') return v
-    }
-    if (lang === 'pt') {
-        const v = row[`${base}_pt`]
-        if (v != null && v !== '') return v
-    }
-    // fallback: español original
-    return row[base]
+  if (lang === 'en') {
+    const v = row[`${base}_en`]
+    if (v != null && v !== '') return v
+  }
+  if (lang === 'pt') {
+    const v = row[`${base}_pt`]
+    if (v != null && v !== '') return v
+  }
+  // fallback: español original
+  return row[base]
 }
 
 // GET /api/admin/cafes/public  (público, solo estado = PUBLICADO)
 export async function GET(req: NextRequest) {
-    try {
-        const db = await getDb()
+  try {
+    const db = await getDb()
 
-        const { searchParams } = new URL(req.url)
-        const search = (searchParams.get('search') || '').trim().toLowerCase()
+    const { searchParams } = new URL(req.url)
+    const search = (searchParams.get('search') || '').trim().toLowerCase()
 
-        const langParam = (searchParams.get('lang') || 'es').toLowerCase()
-        const lang: 'es' | 'en' | 'pt' =
-            langParam === 'en' || langParam === 'pt' ? langParam : 'es'
+    const langParam = (searchParams.get('lang') || 'es').toLowerCase()
+    const lang: 'es' | 'en' | 'pt' =
+      langParam === 'en' || langParam === 'pt' ? langParam : 'es'
 
-        let rows: any[] = []
+    let rows: any[] = []
 
-        if (search) {
-            const like = `%${search}%`
+    if (search) {
+      const like = `%${search}%`
 
-            const result = await db.query(
-                `
+      const result = await db.query(
+        `
         SELECT
           id,
           nombre,
@@ -116,13 +116,13 @@ export async function GET(req: NextRequest) {
           rango_precios DESC NULLS LAST,
           nombre ASC
         `,
-                [like]
-            )
+        [like]
+      )
 
-            rows = result.rows
-        } else {
-            const result = await db.query(
-                `
+      rows = result.rows
+    } else {
+      const result = await db.query(
+        `
         SELECT
           id,
           nombre,
@@ -177,57 +177,57 @@ export async function GET(req: NextRequest) {
           rango_precios DESC NULLS LAST,
           nombre ASC
         `
-            )
+      )
 
-            rows = result.rows
-        }
-
-        const data = rows.map((row) => ({
-            id: row.id,
-            // 👇 estos campos salen ya traducidos según lang
-            nombre: pickTranslated(row, 'nombre', lang),
-            slug: row.slug,
-            descripcion_corta: pickTranslated(row, 'descripcion_corta', lang),
-            descripcion_larga: pickTranslated(row, 'descripcion_larga', lang),
-            direccion: row.direccion,
-            ciudad: row.ciudad,
-            provincia: row.provincia,
-            pais: row.pais,
-            zona: row.zona,
-            tipo_comida: pickTranslated(row, 'tipo_comida', lang),
-            rango_precios: row.rango_precios,
-            estrellas: row.estrellas,
-            moneda: row.moneda,
-            es_destacado: row.es_destacado,
-            sitio_web: row.sitio_web,
-            instagram: row.instagram,
-            facebook: row.facebook,
-            url_imagen: row.url_imagen || row.imagen_principal,
-            imagen_principal: row.imagen_principal,
-            url_reserva: row.url_reserva,
-            url_maps: row.url_maps,
-            horario_text: pickTranslated(row, 'horario_text', lang),
-            resena: pickTranslated(row, 'resena', lang),
-            meta_title: pickTranslated(row, 'meta_title', lang),
-            meta_description: pickTranslated(row, 'meta_description', lang),
-            tiene_terraza: row.tiene_terraza,
-            tiene_musica_vivo: row.tiene_musica_vivo,
-            tiene_happy_hour: row.tiene_happy_hour,
-        }))
-
-        return new NextResponse(JSON.stringify(data), {
-            status: 200,
-            headers: {
-                ...corsBaseHeaders(),
-                'Content-Type': 'application/json',
-            },
-        })
-    } catch (err: any) {
-        console.error('Error GET /api/admin/cafes/public:', err)
-
-        return new NextResponse(err?.message || 'Error al obtener cafes públicos', {
-            status: 500,
-            headers: corsBaseHeaders(),
-        })
+      rows = result.rows
     }
+
+    const data = rows.map((row) => ({
+      id: row.id,
+      // 👇 estos campos salen ya traducidos según lang
+      nombre: pickTranslated(row, 'nombre', lang),
+      slug: row.slug,
+      descripcion_corta: pickTranslated(row, 'descripcion_corta', lang),
+      descripcion_larga: pickTranslated(row, 'descripcion_larga', lang),
+      direccion: row.direccion,
+      ciudad: row.ciudad,
+      provincia: row.provincia,
+      pais: row.pais,
+      zona: row.zona,
+      tipo_comida: pickTranslated(row, 'tipo_comida', lang),
+      rango_precios: row.rango_precios,
+      estrellas: row.estrellas,
+      moneda: row.moneda,
+      es_destacado: row.es_destacado,
+      sitio_web: row.sitio_web,
+      instagram: row.instagram,
+      facebook: row.facebook,
+      url_imagen: row.url_imagen || row.imagen_principal,
+      imagen_principal: row.imagen_principal,
+      url_reserva: row.url_reserva,
+      url_maps: row.url_maps,
+      horario_text: pickTranslated(row, 'horario_text', lang),
+      resena: pickTranslated(row, 'resena', lang),
+      meta_title: pickTranslated(row, 'meta_title', lang),
+      meta_description: pickTranslated(row, 'meta_description', lang),
+      tiene_terraza: row.tiene_terraza,
+      tiene_musica_vivo: row.tiene_musica_vivo,
+      tiene_happy_hour: row.tiene_happy_hour,
+    }))
+
+    return new NextResponse(JSON.stringify(data), {
+      status: 200,
+      headers: {
+        ...corsBaseHeaders(),
+        'Content-Type': 'application/json',
+      },
+    })
+  } catch (err: any) {
+    console.error('Error GET /api/admin/cafes/public:', err)
+
+    return new NextResponse(err?.message || 'Error al obtener cafes públicos', {
+      status: 500,
+      headers: corsBaseHeaders(),
+    })
+  }
 }

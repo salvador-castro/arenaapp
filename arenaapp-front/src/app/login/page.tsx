@@ -64,7 +64,7 @@ const LOGIN_TEXTS = {
 } as const
 
 // 👇 Ruta /login (wrapper con Suspense)
-export default function LoginPage () {
+export default function LoginPage() {
   return (
     <Suspense fallback={null}>
       <LoginPageInner />
@@ -73,7 +73,7 @@ export default function LoginPage () {
 }
 
 // 👇 Componente principal con lógica + UI
-function LoginPageInner () {
+function LoginPageInner() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -87,7 +87,7 @@ function LoginPageInner () {
   // Elegimos el set de textos según idioma, default ES
   const t = LOGIN_TEXTS[locale as keyof typeof LOGIN_TEXTS] ?? LOGIN_TEXTS.es
 
-  async function handleSubmit (e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
@@ -136,58 +136,58 @@ function LoginPageInner () {
   }
 
   return (
-    <main className='min-h-screen flex items-center justify-center px-4 bg-slate-950 text-slate-50'>
-      <div className='w-full max-w-md bg-slate-900/60 border border-slate-700 rounded-2xl p-6 shadow-lg'>
-        <h1 className='text-2xl font-semibold mb-4 text-center'>{t.title}</h1>
+    <main className="min-h-screen flex items-center justify-center px-4 bg-slate-950 text-slate-50">
+      <div className="w-full max-w-md bg-slate-900/60 border border-slate-700 rounded-2xl p-6 shadow-lg">
+        <h1 className="text-2xl font-semibold mb-4 text-center">{t.title}</h1>
 
-        <form className='space-y-4' onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className='block text-sm mb-1'>{t.emailLabel}</label>
+            <label className="block text-sm mb-1">{t.emailLabel}</label>
             <input
-              type='email'
-              className='w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500'
+              type="email"
+              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder={t.emailPlaceholder}
               required
             />
           </div>
 
           <div>
-            <label className='block text-sm mb-1'>{t.passwordLabel}</label>
+            <label className="block text-sm mb-1">{t.passwordLabel}</label>
             <input
-              type='password'
-              className='w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500'
+              type="password"
+              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder={t.passwordPlaceholder}
               required
             />
           </div>
 
-          {error && <p className='text-red-400 text-xs text-center'>{error}</p>}
+          {error && <p className="text-red-400 text-xs text-center">{error}</p>}
 
           <button
-            type='submit'
-            className='w-full rounded-lg bg-emerald-500 text-slate-950 font-semibold py-2 mt-2 hover:bg-emerald-400 transition disabled:opacity-50'
+            type="submit"
+            className="w-full rounded-lg bg-emerald-500 text-slate-950 font-semibold py-2 mt-2 hover:bg-emerald-400 transition disabled:opacity-50"
             disabled={isSubmitting}
           >
             {isSubmitting ? t.submitLoading : t.submitIdle}
           </button>
         </form>
 
-        <p className='text-xs text-center text-slate-400 mt-4'>
+        <p className="text-xs text-center text-slate-400 mt-4">
           {t.noAccount}{' '}
-          <Link href='/register' className='text-emerald-400 hover:underline'>
+          <Link href="/register" className="text-emerald-400 hover:underline">
             {t.createAccount}
           </Link>
         </p>
 
-        <p className='text-xs text-center text-slate-400 mt-4'>
+        <p className="text-xs text-center text-slate-400 mt-4">
           {t.helpText}{' '}
           <a
             href={`mailto:${t.helpMail}`}
-            className='text-emerald-400 hover:underline'
+            className="text-emerald-400 hover:underline"
           >
             {t.helpMail}
           </a>

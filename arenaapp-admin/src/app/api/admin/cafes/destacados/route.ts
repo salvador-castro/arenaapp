@@ -5,30 +5,30 @@ import { getDb } from '@/lib/db'
 const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
 
 function corsBaseHeaders() {
-    return {
-        'Access-Control-Allow-Origin': FRONT_ORIGIN,
-        'Access-Control-Allow-Credentials': 'true',
-    }
+  return {
+    'Access-Control-Allow-Origin': FRONT_ORIGIN,
+    'Access-Control-Allow-Credentials': 'true',
+  }
 }
 
 export function OPTIONS() {
-    return new NextResponse(null, {
-        status: 204,
-        headers: {
-            ...corsBaseHeaders(),
-            'Access-Control-Allow-Methods': 'GET,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        },
-    })
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      ...corsBaseHeaders(),
+      'Access-Control-Allow-Methods': 'GET,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }
 
 // GET /api/admin/cafes/destacados  (público, sin admin)
 export async function GET(req: NextRequest) {
-    try {
-        const db = await getDb()
+  try {
+    const db = await getDb()
 
-        const result = await db.query(
-            `
+    const result = await db.query(
+      `
       SELECT
         id,
         nombre,
@@ -66,24 +66,24 @@ export async function GET(req: NextRequest) {
         rango_precios DESC NULLS LAST,
         nombre ASC
       `
-        )
+    )
 
-        return new NextResponse(JSON.stringify(result.rows), {
-            status: 200,
-            headers: {
-                ...corsBaseHeaders(),
-                'Content-Type': 'application/json',
-            },
-        })
-    } catch (err: any) {
-        console.error('Error GET /api/admin/cafes/destacados:', err)
+    return new NextResponse(JSON.stringify(result.rows), {
+      status: 200,
+      headers: {
+        ...corsBaseHeaders(),
+        'Content-Type': 'application/json',
+      },
+    })
+  } catch (err: any) {
+    console.error('Error GET /api/admin/cafes/destacados:', err)
 
-        return new NextResponse(
-            err?.message || 'Error al obtener cafes destacados',
-            {
-                status: 500,
-                headers: corsBaseHeaders(),
-            }
-        )
-    }
+    return new NextResponse(
+      err?.message || 'Error al obtener cafes destacados',
+      {
+        status: 500,
+        headers: corsBaseHeaders(),
+      }
+    )
+  }
 }

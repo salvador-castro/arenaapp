@@ -5,9 +5,9 @@ import Providers from './Providers'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { LocaleProvider } from '@/context/LocaleContext'
 
-export default function RootLayout ({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='es'>
+    <html lang="es">
       <body>
         <LocaleProvider>
           <Providers>{children}</Providers>

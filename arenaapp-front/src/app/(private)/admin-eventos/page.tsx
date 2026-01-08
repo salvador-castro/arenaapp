@@ -213,7 +213,10 @@ export default function AdminEventosPage() {
       es_destacado: !!e.es_destacado,
       resena: e.resena ?? '',
       imagen_principal: e.imagen_principal ?? '',
-      estrellas: typeof e.estrellas === 'number' && e.estrellas >= 1 && e.estrellas <= 5 ? e.estrellas : '',
+      estrellas:
+        typeof e.estrellas === 'number' && e.estrellas >= 1 && e.estrellas <= 5
+          ? e.estrellas
+          : '',
     })
     setIsFormOpen(true)
   }
@@ -302,7 +305,8 @@ export default function AdminEventosPage() {
         moneda: formValues.moneda || 'URU',
         fecha_inicio: formValues.fecha_inicio,
         fecha_fin: formValues.fecha_fin || null,
-        estrellas: formValues.estrellas === '' ? null : Number(formValues.estrellas),
+        estrellas:
+          formValues.estrellas === '' ? null : Number(formValues.estrellas),
       }
 
       const isEdit = !!editing && editing.id != null

@@ -55,7 +55,7 @@ const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/shopping/public`
 const FAVORITOS_SHOPPING_ENDPOINT = `${API_BASE}/api/admin/favoritos/shopping`
 const PAGE_SIZE = 12
 
-function getInstagramHandle (url: string | null): string {
+function getInstagramHandle(url: string | null): string {
   if (!url) return 'Instagram'
   try {
     const u = new URL(url)
@@ -67,7 +67,7 @@ function getInstagramHandle (url: string | null): string {
   }
 }
 
-function normalizeText (value: string | null | undefined): string {
+function normalizeText(value: string | null | undefined): string {
   if (!value) return ''
   return value
     .normalize('NFD')
@@ -75,13 +75,13 @@ function normalizeText (value: string | null | undefined): string {
     .toLowerCase()
 }
 
-function formatPriceRange (n: number | null): string {
+function formatPriceRange(n: number | null): string {
   if (n == null || n <= 0) return '-'
   if (n > 5) return '$$$$$'
   return '$'.repeat(n)
 }
 
-function renderStars (n: number | null): string {
+function renderStars(n: number | null): string {
   if (n == null || n <= 0) return '-'
   const value = Math.min(Math.max(n, 1), 5)
   return '★'.repeat(value)
@@ -258,7 +258,7 @@ type Lang = keyof typeof SHOPPING_TEXTS
 
 /* ------------------------------------------------------------------ */
 
-export default function ShoppingPage () {
+export default function ShoppingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -373,8 +373,8 @@ export default function ShoppingPage () {
 
         const data: any[] = await res.json()
         const ids = data
-          .map(row => Number(row.shopping_id))
-          .filter(id => !Number.isNaN(id))
+          .map((row) => Number(row.shopping_id))
+          .filter((id) => !Number.isNaN(id))
 
         setFavoriteShoppingIds(new Set(ids))
       } catch (err) {
@@ -419,7 +419,7 @@ export default function ShoppingPage () {
         return
       }
 
-      setFavoriteShoppingIds(prev => {
+      setFavoriteShoppingIds((prev) => {
         const next = new Set(prev)
         if (isFavorite) {
           next.delete(shoppingIdNum)
@@ -440,7 +440,7 @@ export default function ShoppingPage () {
     if (!shoppings.length) return
     if (!shoppingId) return
 
-    const found = shoppings.find(s => Number(s.id) === Number(shoppingId))
+    const found = shoppings.find((s) => Number(s.id) === Number(shoppingId))
 
     if (found) {
       setSelectedShopping(found)
@@ -466,7 +466,7 @@ export default function ShoppingPage () {
       Array.from(
         new Set(
           shoppings
-            .map(s => s.zona)
+            .map((s) => s.zona)
             .filter((z): z is string => !!z && z.trim().length > 0)
         )
       ).sort(),
@@ -479,7 +479,7 @@ export default function ShoppingPage () {
 
     const term = normalizeText(search.trim())
     if (term) {
-      result = result.filter(s => {
+      result = result.filter((s) => {
         const nombre = normalizeText(s.nombre)
         const ciudad = normalizeText(s.ciudad)
         const provincia = normalizeText(s.provincia)
@@ -494,22 +494,22 @@ export default function ShoppingPage () {
     }
 
     if (zonaFilter) {
-      result = result.filter(s => s.zona === zonaFilter)
+      result = result.filter((s) => s.zona === zonaFilter)
     }
 
     if (outletFilter) {
       const flag = outletFilter === 'SI'
-      result = result.filter(s => s.es_outlet === flag)
+      result = result.filter((s) => s.es_outlet === flag)
     }
 
     if (cineFilter) {
       const flag = cineFilter === 'SI'
-      result = result.filter(s => s.tiene_cine === flag)
+      result = result.filter((s) => s.tiene_cine === flag)
     }
 
     if (estacionamientoFilter) {
       const flag = estacionamientoFilter === 'SI'
-      result = result.filter(s => s.tiene_estacionamiento === flag)
+      result = result.filter((s) => s.tiene_estacionamiento === flag)
     }
 
     // Orden: destacados primero, luego por nombre
@@ -546,35 +546,35 @@ export default function ShoppingPage () {
 
   if (isLoading || (!user && !error)) {
     return (
-      <div className='min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center'>
-        <p className='text-sm text-slate-400'>{t.loadingPage}</p>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <p className="text-sm text-slate-400">{t.loadingPage}</p>
       </div>
     )
   }
 
   return (
-    <div className='min-h-screen bg-slate-950 text-slate-100 pb-20'>
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
       <TopNav isLoggedIn={isLoggedIn} />
 
-      <main className='max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4'>
+      <main className="max-w-6xl mx-auto px-4 pt-4 pb-6 space-y-4">
         {/* Título */}
-        <header className='flex flex-col gap-1 mb-1'>
-          <h1 className='text-lg font-semibold'>{t.pageTitle}</h1>
-          <p className='text-xs text-slate-400'>{t.pageSubtitle}</p>
+        <header className="flex flex-col gap-1 mb-1">
+          <h1 className="text-lg font-semibold">{t.pageTitle}</h1>
+          <p className="text-xs text-slate-400">{t.pageSubtitle}</p>
         </header>
 
         {/* Filtros colapsables */}
-        <section className='rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3'>
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-3 space-y-3">
           <button
-            type='button'
-            onClick={() => setFiltersOpen(open => !open)}
-            className='w-full flex items-center justify-between gap-2 text-sm font-semibold text-slate-100'
+            type="button"
+            onClick={() => setFiltersOpen((open) => !open)}
+            className="w-full flex items-center justify-between gap-2 text-sm font-semibold text-slate-100"
           >
-            <span className='flex items-center gap-2'>
+            <span className="flex items-center gap-2">
               <SlidersHorizontal size={14} />
               <span>{t.filters.title}</span>
             </span>
-            <span className='flex items-center gap-1 text-[11px] text-emerald-400'>
+            <span className="flex items-center gap-1 text-[11px] text-emerald-400">
               {filtersOpen ? t.filters.hide : t.filters.show}
               <ChevronDown
                 size={14}
@@ -587,33 +587,33 @@ export default function ShoppingPage () {
 
           {filtersOpen && (
             <>
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Buscador */}
                 <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     {t.filters.searchLabel}
                   </label>
                   <input
-                    type='text'
+                    type="text"
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    onChange={(e) => setSearch(e.target.value)}
                     placeholder={t.filters.searchPlaceholder}
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
                 {/* Zona */}
                 <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     {t.filters.zoneLabel}
                   </label>
                   <select
                     value={zonaFilter}
-                    onChange={e => setZonaFilter(e.target.value)}
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    onChange={(e) => setZonaFilter(e.target.value)}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value=''>{t.filters.zoneAll}</option>
-                    {zonas.map(z => (
+                    <option value="">{t.filters.zoneAll}</option>
+                    {zonas.map((z) => (
                       <option key={z} value={z}>
                         {z}
                       </option>
@@ -623,55 +623,57 @@ export default function ShoppingPage () {
 
                 {/* Es outlet */}
                 <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     {t.filters.outletLabel}
                   </label>
                   <select
                     value={outletFilter}
-                    onChange={e =>
+                    onChange={(e) =>
                       setOutletFilter(e.target.value as YesNoFilter)
                     }
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value=''>{t.filters.all}</option>
-                    <option value='SI'>{t.filters.yes}</option>
-                    <option value='NO'>{t.filters.no}</option>
+                    <option value="">{t.filters.all}</option>
+                    <option value="SI">{t.filters.yes}</option>
+                    <option value="NO">{t.filters.no}</option>
                   </select>
                 </div>
               </div>
 
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Tiene cine */}
                 <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     {t.filters.cinemaLabel}
                   </label>
                   <select
                     value={cineFilter}
-                    onChange={e => setCineFilter(e.target.value as YesNoFilter)}
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    onChange={(e) =>
+                      setCineFilter(e.target.value as YesNoFilter)
+                    }
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value=''>{t.filters.all}</option>
-                    <option value='SI'>{t.filters.yes}</option>
-                    <option value='NO'>{t.filters.no}</option>
+                    <option value="">{t.filters.all}</option>
+                    <option value="SI">{t.filters.yes}</option>
+                    <option value="NO">{t.filters.no}</option>
                   </select>
                 </div>
 
                 {/* Estacionamiento */}
                 <div>
-                  <label className='block text-[11px] font-medium text-slate-300 mb-1'>
+                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     {t.filters.parkingLabel}
                   </label>
                   <select
                     value={estacionamientoFilter}
-                    onChange={e =>
+                    onChange={(e) =>
                       setEstacionamientoFilter(e.target.value as YesNoFilter)
                     }
-                    className='w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value=''>{t.filters.all}</option>
-                    <option value='SI'>{t.filters.yes}</option>
-                    <option value='NO'>{t.filters.no}</option>
+                    <option value="">{t.filters.all}</option>
+                    <option value="SI">{t.filters.yes}</option>
+                    <option value="NO">{t.filters.no}</option>
                   </select>
                 </div>
               </div>
@@ -680,25 +682,25 @@ export default function ShoppingPage () {
         </section>
 
         {/* Estado de carga / error */}
-        {loading && <p className='text-xs text-slate-400'>{t.loadingList}</p>}
+        {loading && <p className="text-xs text-slate-400">{t.loadingList}</p>}
 
-        {error && <p className='text-xs text-red-400'>{error}</p>}
+        {error && <p className="text-xs text-red-400">{error}</p>}
 
         {/* Listado */}
         {!loading && !error && filteredShoppings.length === 0 && (
-          <p className='text-xs text-slate-400'>{t.emptyList}</p>
+          <p className="text-xs text-slate-400">{t.emptyList}</p>
         )}
 
         {!loading && !error && filteredShoppings.length > 0 && (
           <>
-            <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-              {paginatedShoppings.map(shopping => (
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {paginatedShoppings.map((shopping) => (
                 <div
                   key={shopping.id}
-                  className='rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden'
+                  className="rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden"
                 >
                   <div
-                    className='relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer'
+                    className="relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer"
                     onClick={() => openModalFromCard(shopping)}
                   >
                     <Image
@@ -708,82 +710,83 @@ export default function ShoppingPage () {
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
-                      className='object-cover'
-                      sizes='(max-width: 768px) 100vw, 25vw'
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 25vw"
                     />
                   </div>
 
-                  <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
-                    <p className='text-[10px] uppercase font-semibold text-emerald-400'>
+                  <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
+                    <p className="text-[10px] uppercase font-semibold text-emerald-400">
                       {shopping.zona ||
                         shopping.ciudad ||
                         shopping.provincia ||
                         t.locationFallback}
                     </p>
 
-                    <h3 className='text-sm font-semibold line-clamp-1'>
+                    <h3 className="text-sm font-semibold line-clamp-1">
                       {shopping.nombre}
                     </h3>
 
                     {shopping.resena && (
-                      <p className='text-slate-400 line-clamp-2'>
+                      <p className="text-slate-400 line-clamp-2">
                         {shopping.resena}
                       </p>
                     )}
 
                     {shopping.direccion && (
-                      <p className='mt-1 text-[10px] text-slate-500 line-clamp-1 flex items-center gap-1'>
-                        <MapPin size={11} className='shrink-0' />
+                      <p className="mt-1 text-[10px] text-slate-500 line-clamp-1 flex items-center gap-1">
+                        <MapPin size={11} className="shrink-0" />
                         {shopping.direccion}
                       </p>
                     )}
 
-                    <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
-                      {typeof shopping.estrellas === 'number' && shopping.estrellas > 0 && (
-                        <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
-                          {shopping.estrellas}★
-                        </span>
-                      )}
+                    <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300">
+                      {typeof shopping.estrellas === 'number' &&
+                        shopping.estrellas > 0 && (
+                          <span className="inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300">
+                            {shopping.estrellas}★
+                          </span>
+                        )}
                       {shopping.rango_precios != null && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px]'>
+                        <span className="inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px]">
                           {formatPriceRange(shopping.rango_precios)}
                         </span>
                       )}
                       {shopping.es_outlet && (
-                        <span className='inline-flex rounded-full border border-emerald-500/60 px-2 py-[2px] text-[10px] text-emerald-300'>
+                        <span className="inline-flex rounded-full border border-emerald-500/60 px-2 py-[2px] text-[10px] text-emerald-300">
                           {t.chips.outlet}
                         </span>
                       )}
                       {shopping.tiene_cine && (
-                        <span className='inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                           <Film size={10} />
                           {t.chips.cinema}
                         </span>
                       )}
                       {shopping.tiene_patio_comidas && (
-                        <span className='inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                           <ShoppingBag size={10} />
                           {t.chips.foodCourt}
                         </span>
                       )}
                       {shopping.tiene_estacionamiento && (
-                        <span className='inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                           <ParkingCircle size={10} />
                           {t.chips.parking}
                         </span>
                       )}
                       {shopping.cantidad_locales != null && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        <span className="inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                           {t.chips.storesCount(shopping.cantidad_locales)}
                         </span>
                       )}
                     </div>
 
-                    <div className='mt-2 flex justify-end'>
+                    <div className="mt-2 flex justify-end">
                       <button
-                        type='button'
+                        type="button"
                         onClick={() => openModalFromCard(shopping)}
-                        className='rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors'
+                        className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors"
                       >
                         {t.card.moreInfo}
                       </button>
@@ -795,26 +798,26 @@ export default function ShoppingPage () {
 
             {/* Paginación */}
             {totalPages > 1 && (
-              <div className='flex items-center justify-center gap-3 pt-2'>
+              <div className="flex items-center justify-center gap-3 pt-2">
                 <button
-                  type='button'
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className='px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70'
+                  className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
                 >
                   {t.pagination.prev}
                 </button>
-                <span className='text-[11px] text-slate-400'>
+                <span className="text-[11px] text-slate-400">
                   {t.pagination.page} {currentPage} {t.pagination.of}{' '}
                   {totalPages}
                 </span>
                 <button
-                  type='button'
+                  type="button"
                   onClick={() =>
-                    setCurrentPage(p => Math.min(totalPages, p + 1))
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
                   disabled={currentPage === totalPages}
-                  className='px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70'
+                  className="px-3 py-1.5 rounded-full border border-slate-700 text-[11px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/70"
                 >
                   {t.pagination.next}
                 </button>
@@ -826,28 +829,28 @@ export default function ShoppingPage () {
         {/* MODAL detalle */}
         {isModalOpen && selectedShopping && (
           <div
-            className='fixed inset-0 z-[60] flex items-start justify-center bg-black/60 px-4'
+            className="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 px-4"
             onClick={closeModal}
           >
             <div
-              className='relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'
-              onClick={e => e.stopPropagation()}
+              className="relative mt-10 mb-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Botón cerrar arriba a la derecha */}
               <button
-                type='button'
+                type="button"
                 onClick={closeModal}
-                className='absolute top-3 right-3 z-20
+                className="absolute top-3 right-3 z-20
                            flex h-8 w-8 items-center justify-center
                            rounded-full bg-slate-900/80 border border-slate-700
-                           text-sm text-slate-200 hover:bg-slate-800 transition'
+                           text-sm text-slate-200 hover:bg-slate-800 transition"
               >
                 ✕
               </button>
 
-              <div className='px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4'>
-                <div className='flex flex-col sm:flex-row gap-4'>
-                  <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
+              <div className="px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800">
                     <Image
                       alt={selectedShopping.nombre}
                       src={
@@ -855,29 +858,28 @@ export default function ShoppingPage () {
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
-                      className='object-cover'
-                      sizes='(max-width: 640px) 100vw, 160px'
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 160px"
                     />
                   </div>
 
-                  <div className='flex-1 space-y-1'>
-                    <p className='text-[11px] uppercase font-semibold text-emerald-400'>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-[11px] uppercase font-semibold text-emerald-400">
                       {selectedShopping.zona ||
                         selectedShopping.ciudad ||
                         selectedShopping.provincia ||
                         t.locationFallback}
                     </p>
-                    <h3 className='text-lg font-semibold'>
+                    <h3 className="text-lg font-semibold">
                       {selectedShopping.nombre}
                     </h3>
-
 
                     {selectedShopping.instagram && (
                       <a
                         href={selectedShopping.instagram}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1'
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1"
                       >
                         <Instagram size={14} />
                         <span>
@@ -886,45 +888,46 @@ export default function ShoppingPage () {
                       </a>
                     )}
 
-                    <div className='flex flex-wrap items-center gap-2 mt-2 text-[12px]'>
-                      {selectedShopping.estrellas != null && selectedShopping.estrellas > 0 && (
-                        <span className='text-amber-400'>
-                          {renderStars(selectedShopping.estrellas)}
-                       </span>
-                      )}
+                    <div className="flex flex-wrap items-center gap-2 mt-2 text-[12px]">
+                      {selectedShopping.estrellas != null &&
+                        selectedShopping.estrellas > 0 && (
+                          <span className="text-amber-400">
+                            {renderStars(selectedShopping.estrellas)}
+                          </span>
+                        )}
                       {selectedShopping.rango_precios != null && (
-                        <span className='text-slate-400'>
+                        <span className="text-slate-400">
                           {formatPriceRange(selectedShopping.rango_precios)}
                         </span>
                       )}
                     </div>
 
-                    <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
+                    <div className="flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300">
                       {selectedShopping.es_outlet && (
-                        <span className='inline-flex rounded-full border border-emerald-500/60 px-2 py-[2px] text-[10px] text-emerald-300'>
+                        <span className="inline-flex rounded-full border border-emerald-500/60 px-2 py-[2px] text-[10px] text-emerald-300">
                           {t.chips.outlet}
                         </span>
                       )}
                       {selectedShopping.tiene_cine && (
-                        <span className='inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                           <Film size={10} />
                           {t.chips.cinema}
                         </span>
                       )}
                       {selectedShopping.tiene_patio_comidas && (
-                        <span className='inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                           <ShoppingBag size={10} />
                           {t.chips.foodCourt}
                         </span>
                       )}
                       {selectedShopping.tiene_estacionamiento && (
-                        <span className='inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                           <ParkingCircle size={10} />
                           {t.chips.parking}
                         </span>
                       )}
                       {selectedShopping.cantidad_locales != null && (
-                        <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                        <span className="inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                           {t.chips.storesCount(
                             selectedShopping.cantidad_locales
                           )}
@@ -935,56 +938,56 @@ export default function ShoppingPage () {
                 </div>
 
                 {selectedShopping.resena && (
-                  <div className='space-y-1'>
-                    <h4 className='text-sm font-semibold'>{t.modal.review}</h4>
-                    <p className='text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left'>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-semibold">{t.modal.review}</h4>
+                    <p className="text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left">
                       {selectedShopping.resena}
                     </p>
                   </div>
                 )}
 
-                <div className='grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]'>
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
+                <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
                       {t.modal.address}
                     </p>
-                    <p className='text-slate-400'>
+                    <p className="text-slate-400">
                       {selectedShopping.direccion || t.modal.noData}
                     </p>
                   </div>
 
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
                       {t.modal.schedule}
                     </p>
-                    <p className='text-slate-400'>
+                    <p className="text-slate-400">
                       {selectedShopping.horario_text || t.modal.noData}
                     </p>
                   </div>
 
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
                       {t.modal.website}
                     </p>
                     {selectedShopping.sitio_web ? (
                       <a
                         href={selectedShopping.sitio_web}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
                       >
                         {selectedShopping.sitio_web}
                       </a>
                     ) : (
-                      <p className='text-slate-400'>{t.modal.noData}</p>
+                      <p className="text-slate-400">{t.modal.noData}</p>
                     )}
                   </div>
 
-                  <div className='space-y-1'>
-                    <p className='text-xs font-semibold text-slate-300'>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
                       {t.modal.contact}
                     </p>
-                    <p className='text-slate-400'>
+                    <p className="text-slate-400">
                       {selectedShopping.telefono || selectedShopping.facebook
                         ? `${selectedShopping.telefono ?? ''}${
                             selectedShopping.telefono &&
@@ -998,17 +1001,17 @@ export default function ShoppingPage () {
                 </div>
 
                 {selectedShopping && (
-                  <div className='flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2'>
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-2">
                     <button
-                      type='button'
+                      type="button"
                       onClick={closeModal}
-                      className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                      className="rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
                     >
                       {currentLang === 'en'
                         ? 'Close'
                         : currentLang === 'pt'
-                        ? 'Fechar'
-                        : 'Cerrar'}
+                          ? 'Fechar'
+                          : 'Cerrar'}
                     </button>
 
                     {(() => {
@@ -1022,7 +1025,7 @@ export default function ShoppingPage () {
 
                       return (
                         <button
-                          type='button'
+                          type="button"
                           disabled={favoriteLoading}
                           onClick={() => handleToggleFavorite(selectedShopping)}
                           className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition

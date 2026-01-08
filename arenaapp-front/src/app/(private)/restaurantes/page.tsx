@@ -42,7 +42,6 @@ const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/restaurantes/public`
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
 const PAGE_SIZE = 12
 
-
 const RESTAURANTES_TEXTS = {
   es: {
     pageTitle: 'Ruta Foodie',
@@ -64,7 +63,12 @@ const RESTAURANTES_TEXTS = {
       priceAll: 'Todos',
       typeLabel: 'Tipo de comida',
     },
-    pagination: { prev: 'Anterior', next: 'Siguiente', page: 'Página', of: 'de' },
+    pagination: {
+      prev: 'Anterior',
+      next: 'Siguiente',
+      page: 'Página',
+      of: 'de',
+    },
     modal: {
       review: 'Reseña',
       address: 'Dirección',
@@ -201,7 +205,9 @@ export default function RestaurantesPage() {
   const isLoggedIn = !isLoading && !!user
 
   const { locale } = useLocale()
-  const t = RESTAURANTES_TEXTS[locale as keyof typeof RESTAURANTES_TEXTS] ?? RESTAURANTES_TEXTS.es
+  const t =
+    RESTAURANTES_TEXTS[locale as keyof typeof RESTAURANTES_TEXTS] ??
+    RESTAURANTES_TEXTS.es
   const apiLang: 'es' | 'en' | 'pt' =
     locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
 
@@ -499,7 +505,7 @@ export default function RestaurantesPage() {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
         <h1 className="text-lg font-semibold">{t.pageTitle}</h1>
-<p className="text-xs text-slate-400">{t.pageSubtitle}</p>
+        <p className="text-xs text-slate-400">{t.pageSubtitle}</p>
       </div>
     )
   }
@@ -512,9 +518,7 @@ export default function RestaurantesPage() {
         {/* Título */}
         <header className="flex flex-col gap-1 mb-1">
           <h1 className="text-lg font-semibold">{t.pageTitle}</h1>
-          <p className="text-xs text-slate-400">
-            {t.pageSubtitle}
-          </p>
+          <p className="text-xs text-slate-400">{t.pageSubtitle}</p>
         </header>
 
         {/* Filtros */}
@@ -627,17 +631,13 @@ export default function RestaurantesPage() {
         </section>
 
         {/* Estado */}
-        {loading && (
-          <p className="text-xs text-slate-400">{t.loadingList}</p>
-        )}
+        {loading && <p className="text-xs text-slate-400">{t.loadingList}</p>}
 
         {error && <p className="text-xs text-red-400">{error}</p>}
 
         {/* Listado */}
         {!loading && !error && filteredRestaurants.length === 0 && (
-          <p className="text-xs text-slate-400">
-            {t.emptyList}
-          </p>
+          <p className="text-xs text-slate-400">{t.emptyList}</p>
         )}
 
         {!loading && !error && filteredRestaurants.length > 0 && (
@@ -664,7 +664,6 @@ export default function RestaurantesPage() {
                   <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
                     <p className="text-[10px] uppercase font-semibold text-emerald-400">
                       {place.zona || t.zoneFallback}
-
                     </p>
                     <h3 className="text-sm font-semibold line-clamp-1">
                       {place.nombre}
@@ -677,11 +676,12 @@ export default function RestaurantesPage() {
                     )}
 
                     <div className="flex items-center gap-2 mt-1">
-                      {typeof place.estrellas === 'number' && place.estrellas > 0 && (
-                        <span className="inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300">
-                          {place.estrellas}★
-                        </span>
-                      )}
+                      {typeof place.estrellas === 'number' &&
+                        place.estrellas > 0 && (
+                          <span className="inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300">
+                            {place.estrellas}★
+                          </span>
+                        )}
                       <span className="text-slate-400">
                         {renderPriceRange(place.rango_precios)}
                       </span>
@@ -705,7 +705,7 @@ export default function RestaurantesPage() {
                         onClick={() => openModalFromCard(place)}
                         className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors"
                       >
-                       {t.modal.moreInfo}
+                        {t.modal.moreInfo}
                       </button>
                     </div>
                   </div>
@@ -725,7 +725,8 @@ export default function RestaurantesPage() {
                   {t.pagination.prev}
                 </button>
                 <span className="text-[11px] text-slate-400">
-                  {t.pagination.page} {currentPage} {t.pagination.of} {totalPages}
+                  {t.pagination.page} {currentPage} {t.pagination.of}{' '}
+                  {totalPages}
                 </span>
                 <button
                   type="button"
@@ -927,9 +928,7 @@ export default function RestaurantesPage() {
                             }
                           `}
                         >
-                          {isFavorite
-                            ? t.favorite.remove
-                            : t.favorite.add}
+                          {isFavorite ? t.favorite.remove : t.favorite.add}
                         </button>
                       )
                     })()}

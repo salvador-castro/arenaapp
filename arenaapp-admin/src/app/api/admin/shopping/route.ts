@@ -350,7 +350,7 @@ export async function POST(req: NextRequest) {
 
     // ✨ Traducir automáticamente en background
     if (shopping?.id) {
-      autoTranslate('shopping', shopping.id).catch(err => {
+      autoTranslate('shopping', shopping.id).catch((err) => {
         console.error('[POST /shopping] Error auto-traducción:', err)
       })
     }

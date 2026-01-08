@@ -12,7 +12,9 @@ export function getOpenAIClient() {
   if (openaiInstance) return openaiInstance
 
   if (!apiKey) {
-    throw new Error('OPENAI_API_KEY no está definida en las variables de entorno')
+    throw new Error(
+      'OPENAI_API_KEY no está definida en las variables de entorno'
+    )
   }
 
   openaiInstance = new OpenAI({

@@ -19,7 +19,7 @@ type LocaleContextType = {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined)
 
-export function useLocale () {
+export function useLocale() {
   const ctx = useContext(LocaleContext)
   if (!ctx) {
     throw new Error('useLocale debe usarse dentro de <LocaleProvider>')
@@ -29,7 +29,7 @@ export function useLocale () {
 
 const STORAGE_KEY = 'arenaapp_locale'
 
-export function LocaleProvider ({ children }: { children: ReactNode }) {
+export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('es')
 
   // Leer idioma guardado al montar
