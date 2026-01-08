@@ -12,6 +12,7 @@ import EventosDestacados from '@/components/destacados/Eventos'
 import GaleriasDestacadas from '@/components/destacados/Galerias'
 import HotelesDestacados from '@/components/destacados/Hoteles'
 import ShoppingDestacados from '@/components/destacados/Shopping'
+import CafesDestacados from '@/components/destacados/Cafes'
 import { useAuth } from '@/context/AuthContext'
 
 export default function HomePage() {
@@ -34,6 +35,10 @@ export default function HomePage() {
 
         <section className="px-4 pt-6">
           <RestaurantesDestacados isLoggedIn={isLoggedIn} />
+        </section>
+
+        <section className="px-4 pt-6">
+          <CafesDestacados isLoggedIn={isLoggedIn} />
         </section>
         {/* 
         <section className='px-4 pt-6'>
