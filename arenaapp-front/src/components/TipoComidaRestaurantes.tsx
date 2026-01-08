@@ -20,6 +20,7 @@ const TIPOS_COMIDA = [
   'Mínima Intervención',
   'Opción Vegana',
   'Parrilla',
+  'Pasta',
   'Pastelería',
   'Peruana',
   'Pescados',
