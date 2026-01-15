@@ -40,7 +40,7 @@ const API_BASE = (
 
 const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/restaurantes/public`
 const FAVORITOS_RESTAURANTES_ENDPOINT = `${API_BASE}/api/admin/favoritos/restaurantes`
-const PAGE_SIZE = 12
+const PAGE_SIZE = 6
 
 const RESTAURANTES_TEXTS = {
   es: {
