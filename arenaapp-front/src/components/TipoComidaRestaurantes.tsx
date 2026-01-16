@@ -134,8 +134,8 @@ export default function TipoComidaRestaurantes({
                     type="button"
                     onClick={() => toggleOption(tipo)}
                     className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-slate-800 ${isSelected
-                        ? 'bg-slate-800/80 text-emerald-300'
-                        : 'text-slate-100'
+                      ? 'bg-slate-800/80 text-emerald-300'
+                      : 'text-slate-100'
                       }`}
                   >
                     <span>{tipo}</span>
