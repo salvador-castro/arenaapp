@@ -1,3 +1,4 @@
+// /Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/app/api/admin/cafes/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -27,8 +28,7 @@ export function OPTIONS() {
   })
 }
 
-// GET /api/admin/galerias/:id
-// GET /api/admin/galerias/:id
+// GET /api/admin/cafes/:id
 export async function GET(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
@@ -39,23 +39,45 @@ export async function GET(req: NextRequest, context: ContextWithId) {
 
     const result = await db.query(
       `
-      SELECT *
-      FROM galerias
+      SELECT
+        id,
+        slug,
+        nombre,
+        tipo_comida,
+        rango_precios,
+        estrellas,
+        zona,
+        direccion,
+        ciudad,
+        provincia,
+        pais,
+        url_maps,
+        horario_text,
+        url_reserva,
+        instagram,
+        sitio_web,
+        url_imagen,
+        es_destacado,
+        estado,
+        resena,
+        created_at,
+        updated_at
+      FROM cafes
       WHERE id = $1
       `,
       [id]
     )
 
-    const galeria = result.rows[0]
+    const bar = result.rows[0]
 
-    if (!galeria) {
-      return new NextResponse('Galería no encontrada', {
+    if (!bar) {
+      return new NextResponse('Bar no encontrado', {
         status: 404,
         headers: corsBaseHeaders(),
       })
     }
 
-    return new NextResponse(JSON.stringify(galeria), {
+    return new NextResponse(JSON.stringify(bar), {
       status: 200,
       headers: {
         ...corsBaseHeaders(),
@@ -63,7 +85,7 @@ export async function GET(req: NextRequest, context: ContextWithId) {
       },
     })
   } catch (err: any) {
-    console.error('Error GET /api/admin/galerias/[id]:', err)
+    console.error('Error GET /api/admin/cafes/[id]:', err)
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -81,14 +103,14 @@ export async function GET(req: NextRequest, context: ContextWithId) {
       })
     }
 
-    return new NextResponse(err?.message || 'Error al obtener galería', {
+    return new NextResponse(err?.message || 'Error al obtener bar', {
       status: 500,
       headers: corsBaseHeaders(),
     })
   }
 }
 
-// PUT /api/admin/galerias/:id
+// PUT /api/admin/cafes/:id
 export async function PUT(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
@@ -99,34 +121,38 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
 
     const {
       nombre,
-      resena,
-      direccion,
+      tipo_comida,
+      rango_precios,
+      estrellas,
       zona,
+      direccion,
       ciudad,
       provincia,
       pais,
-      lat,
-      lng,
-      telefono,
-      email_contacto,
-      sitio_web,
+      url_maps,
+      horario_text,
+      url_reserva,
       instagram,
-      facebook,
-      anio_fundacion,
-      tiene_entrada_gratuita,
-      requiere_reserva,
-      horario_desde,
-      horario_hasta,
+      sitio_web,
       url_imagen,
-      meta_title,
-      meta_description,
       es_destacado,
       estado,
-      estrellas,
+      resena,
     } = body
 
-    // Obligatorios
-    if (!nombre || !direccion || !resena || !url_imagen) {
+    if (
+      !nombre ||
+      !tipo_comida ||
+      rango_precios == null ||
+      estrellas == null ||
+      !zona ||
+      !direccion ||
+      !url_maps ||
+      !horario_text ||
+      !instagram ||
+      !resena ||
+      !url_imagen
+    ) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
         headers: corsBaseHeaders(),
@@ -137,65 +163,49 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
 
     await db.query(
       `
-      UPDATE galerias
+      UPDATE cafes
       SET
         nombre = $1,
-        descripcion_corta = $2,
-        resena = $3,
-        direccion = $4,
+        tipo_comida = $2,
+        rango_precios = $3,
+        estrellas = $4,
         zona = $5,
-        ciudad = $6,
-        provincia = $7,
-        pais = $8,
-        lat = $9,
-        lng = $10,
-        telefono = $11,
-        email_contacto = $12,
-        sitio_web = $13,
-        instagram = $14,
-        facebook = $15,
-        anio_fundacion = $16,
-        tiene_entrada_gratuita = $17,
-        requiere_reserva = $18,
-        horario_desde = $19,
-        horario_hasta = $20,
-        url_imagen = $21,
-        meta_title = $22,
-        meta_description = $23,
-        es_destacado = $24,
-        estado = $25,
-        estrellas = $26,
-        updated_at = now()
-      WHERE id = $27
+        direccion = $6,
+        ciudad = $7,
+        provincia = $8,
+        pais = $9,
+        url_maps = $10,
+        horario_text = $11,
+        url_reserva = $12,
+        instagram = $13,
+        sitio_web = $14,
+        url_imagen = $15,
+        es_destacado = $16,
+        estado = $17,
+        resena = $18,
+        updated_at = NOW()
+      WHERE id = $19
       `,
       [
-        nombre, // $1
-        resena ? String(resena).slice(0, 200) : null, // $2 -> descripcion_corta auto
-        resena || null, // $3
-        direccion, // $4
-        zona || null, // $5
-        ciudad || null, // $6
-        provincia || null, // $7
-        pais || 'Uruguay', // $8
-        lat === undefined || lat === null ? null : lat, // $9
-        lng === undefined || lng === null ? null : lng, // $10
-        telefono || null, // $11
-        email_contacto || null, // $12
-        sitio_web || null, // $13
-        instagram || null, // $14
-        facebook || null, // $15
-        anio_fundacion ?? null, // $16
-        !!tiene_entrada_gratuita, // $17
-        !!requiere_reserva, // $18
-        horario_desde || null, // $19
-        horario_hasta || null, // $20
-        url_imagen, // $21
-        meta_title || null, // $22
-        meta_description || null, // $23
-        !!es_destacado, // $24
-        estado || 'PUBLICADO', // $25
-        estrellas ? Number(estrellas) : null, // $26
-        id, // $27
+        nombre,
+        tipo_comida,
+        rango_precios,
+        estrellas,
+        zona,
+        direccion,
+        ciudad || null,
+        provincia || null,
+        pais || 'Uruguay',
+        url_maps,
+        horario_text,
+        url_reserva || null,
+        instagram,
+        sitio_web || null,
+        url_imagen,
+        !!es_destacado,
+        estado || 'PUBLICADO',
+        resena,
+        id,
       ]
     )
 
@@ -203,51 +213,43 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       `
       SELECT
         id,
-        nombre,
         slug,
-        descripcion_corta,
-        resena,
-        direccion,
+        nombre,
+        tipo_comida,
+        rango_precios,
+        estrellas,
         zona,
+        direccion,
         ciudad,
         provincia,
         pais,
-        lat,
-        lng,
-        telefono,
-        email_contacto,
-        sitio_web,
+        url_maps,
+        horario_text,
+        url_reserva,
         instagram,
-        facebook,
-        anio_fundacion,
-        tiene_entrada_gratuita,
-        requiere_reserva,
-        horario_desde,
-        horario_hasta,
+        sitio_web,
         url_imagen,
-        estrellas,
-        meta_title,
-        meta_description,
         es_destacado,
         estado,
+        resena,
         created_at,
         updated_at
-      FROM galerias
+      FROM cafes
       WHERE id = $1
       `,
       [id]
     )
 
-    const galeria = result.rows[0]
+    const bar = result.rows[0]
 
     // ✨ Traducir automáticamente en background
-    if (galeria?.id) {
-      autoTranslate('galerias', Number(galeria.id)).catch((err) => {
-        console.error('[PUT /galerias/:id] Error auto-traducción:', err)
+    if (bar?.id) {
+      autoTranslate('cafes', Number(bar.id)).catch((err) => {
+        console.error('[PUT /cafes/:id] Error auto-traducción:', err)
       })
     }
 
-    return new NextResponse(JSON.stringify(galeria), {
+    return new NextResponse(JSON.stringify(bar), {
       status: 200,
       headers: {
         ...corsBaseHeaders(),
@@ -255,7 +257,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       },
     })
   } catch (err: any) {
-    console.error('Error PUT /api/admin/galerias/[id]:', err)
+    console.error('Error PUT /api/admin/cafes/[id]:', err)
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -273,14 +275,14 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       })
     }
 
-    return new NextResponse(err?.message || 'Error al actualizar galería', {
+    return new NextResponse(err?.message || 'Error al actualizar bar', {
       status: 500,
       headers: corsBaseHeaders(),
     })
   }
 }
 
-// DELETE /api/admin/galerias/:id
+// DELETE /api/admin/cafes/:id
 export async function DELETE(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)
@@ -289,14 +291,14 @@ export async function DELETE(req: NextRequest, context: ContextWithId) {
     const { id } = await context.params
     const db = await getDb()
 
-    await db.query('DELETE FROM galerias WHERE id = $1', [id])
+    await db.query('DELETE FROM cafes WHERE id = $1', [id])
 
     return new NextResponse(null, {
       status: 204,
       headers: corsBaseHeaders(),
     })
   } catch (err: any) {
-    console.error('Error DELETE /api/admin/galerias/[id]:', err)
+    console.error('Error DELETE /api/admin/cafes/[id]:', err)
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -314,7 +316,7 @@ export async function DELETE(req: NextRequest, context: ContextWithId) {
       })
     }
 
-    return new NextResponse(err?.message || 'Error al eliminar galería', {
+    return new NextResponse(err?.message || 'Error al eliminar bar', {
       status: 500,
       headers: corsBaseHeaders(),
     })

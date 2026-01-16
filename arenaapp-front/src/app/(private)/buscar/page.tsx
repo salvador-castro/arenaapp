@@ -67,7 +67,14 @@ interface Galeria extends BaseEntity {
   estrellas?: number | null
 }
 
-type ContentType = 'all' | 'restaurante' | 'bar' | 'hotel' | 'evento' | 'shopping' | 'galeria'
+type ContentType =
+  | 'all'
+  | 'restaurante'
+  | 'bar'
+  | 'hotel'
+  | 'evento'
+  | 'shopping'
+  | 'galeria'
 
 interface SearchResult {
   id: number | string
@@ -101,7 +108,8 @@ const PAGE_SIZE = 12
 const BUSCAR_TEXTS = {
   es: {
     pageTitle: 'Buscar',
-    pageSubtitle: 'Buscá en todo el sitio: restaurantes, bares, hoteles, eventos y más.',
+    pageSubtitle:
+      'Buscá en todo el sitio: restaurantes, bares, hoteles, eventos y más.',
     searchPlaceholder: 'Buscar...',
     filters: {
       title: 'Filtros',
@@ -135,11 +143,13 @@ const BUSCAR_TEXTS = {
       page: 'Página',
       of: 'de',
     },
-    resultsCount: (count: number) => `${count} resultado${count !== 1 ? 's' : ''}`,
+    resultsCount: (count: number) =>
+      `${count} resultado${count !== 1 ? 's' : ''}`,
   },
   en: {
     pageTitle: 'Search',
-    pageSubtitle: 'Search the entire site: restaurants, bars, hotels, events and more.',
+    pageSubtitle:
+      'Search the entire site: restaurants, bars, hotels, events and more.',
     searchPlaceholder: 'Search...',
     filters: {
       title: 'Filters',
@@ -177,7 +187,8 @@ const BUSCAR_TEXTS = {
   },
   pt: {
     pageTitle: 'Buscar',
-    pageSubtitle: 'Busque em todo o site: restaurantes, bares, hotéis, eventos e mais.',
+    pageSubtitle:
+      'Busque em todo o site: restaurantes, bares, hotéis, eventos e mais.',
     searchPlaceholder: 'Buscar...',
     filters: {
       title: 'Filtros',
@@ -211,7 +222,8 @@ const BUSCAR_TEXTS = {
       page: 'Página',
       of: 'de',
     },
-    resultsCount: (count: number) => `${count} resultado${count !== 1 ? 's' : ''}`,
+    resultsCount: (count: number) =>
+      `${count} resultado${count !== 1 ? 's' : ''}`,
   },
 } as const
 
@@ -231,25 +243,39 @@ function renderStars(estrellas: number | null | undefined): string {
 
 function getContentTypeIcon(type: ContentType, size = 14) {
   switch (type) {
-    case 'restaurante': return <Utensils size={size} />
-    case 'bar': return <Wine size={size} />
-    case 'hotel': return <Hotel size={size} />
-    case 'evento': return <PartyPopper size={size} />
-    case 'shopping': return <ShoppingBag size={size} />
-    case 'galeria': return <Camera size={size} />
-    default: return null
+    case 'restaurante':
+      return <Utensils size={size} />
+    case 'bar':
+      return <Wine size={size} />
+    case 'hotel':
+      return <Hotel size={size} />
+    case 'evento':
+      return <PartyPopper size={size} />
+    case 'shopping':
+      return <ShoppingBag size={size} />
+    case 'galeria':
+      return <Camera size={size} />
+    default:
+      return null
   }
 }
 
 function getContentTypeColor(type: ContentType): string {
   switch (type) {
-    case 'restaurante': return 'border-orange-500/60 bg-orange-500/10 text-orange-300'
-    case 'bar': return 'border-purple-500/60 bg-purple-500/10 text-purple-300'
-    case 'hotel': return 'border-blue-500/60 bg-blue-500/10 text-blue-300'
-    case 'evento': return 'border-pink-500/60 bg-pink-500/10 text-pink-300'
-    case 'shopping': return 'border-cyan-500/60 bg-cyan-500/10 text-cyan-300'
-    case 'galeria': return 'border-yellow-500/60 bg-yellow-500/10 text-yellow-300'
-    default: return 'border-slate-700 bg-slate-900/60 text-slate-300'
+    case 'restaurante':
+      return 'border-orange-500/60 bg-orange-500/10 text-orange-300'
+    case 'bar':
+      return 'border-purple-500/60 bg-purple-500/10 text-purple-300'
+    case 'hotel':
+      return 'border-blue-500/60 bg-blue-500/10 text-blue-300'
+    case 'evento':
+      return 'border-pink-500/60 bg-pink-500/10 text-pink-300'
+    case 'shopping':
+      return 'border-cyan-500/60 bg-cyan-500/10 text-cyan-300'
+    case 'galeria':
+      return 'border-yellow-500/60 bg-yellow-500/10 text-yellow-300'
+    default:
+      return 'border-slate-700 bg-slate-900/60 text-slate-300'
   }
 }
 
@@ -271,7 +297,7 @@ export default function BuscarPage() {
   const [eventos, setEventos] = useState<Evento[]>([])
   const [shoppings, setShoppings] = useState<Shopping[]>([])
   const [galerias, setGalerias] = useState<Galeria[]>([])
-  
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -319,8 +345,14 @@ export default function BuscarPage() {
           fetch(`${ENDPOINTS.galerias}?lang=${apiLang}`),
         ])
 
-        if (!restaurantesRes.ok || !baresRes.ok || !hotelesRes.ok || 
-            !eventosRes.ok || !shoppingsRes.ok || !galeriasRes.ok) {
+        if (
+          !restaurantesRes.ok ||
+          !baresRes.ok ||
+          !hotelesRes.ok ||
+          !eventosRes.ok ||
+          !shoppingsRes.ok ||
+          !galeriasRes.ok
+        ) {
           throw new Error('Error loading data')
         }
 
@@ -360,7 +392,14 @@ export default function BuscarPage() {
   // Extraer zonas únicas de todos los datos
   const allZones = useMemo(() => {
     const zones = new Set<string>()
-    ;[...restaurantes, ...bares, ...hoteles, ...eventos, ...shoppings, ...galerias].forEach((item) => {
+    ;[
+      ...restaurantes,
+      ...bares,
+      ...hoteles,
+      ...eventos,
+      ...shoppings,
+      ...galerias,
+    ].forEach((item) => {
       if (item.zona && item.zona.trim()) zones.add(item.zona)
     })
     return Array.from(zones).sort()
@@ -370,7 +409,11 @@ export default function BuscarPage() {
   const allPrices = useMemo(() => {
     const prices = new Set<number>()
     ;[...restaurantes, ...bares, ...shoppings].forEach((item) => {
-      if ('rango_precios' in item && typeof item.rango_precios === 'number' && item.rango_precios > 0) {
+      if (
+        'rango_precios' in item &&
+        typeof item.rango_precios === 'number' &&
+        item.rango_precios > 0
+      ) {
         prices.add(item.rango_precios)
       }
     })
@@ -380,13 +423,23 @@ export default function BuscarPage() {
   // Extraer estrellas únicas (de restaurantes, bares, hoteles, shopping, eventos y galerías)
   const allStars = useMemo(() => {
     const stars = new Set<number>()
-    ;[...restaurantes, ...bares, ...shoppings, ...eventos, ...galerias].forEach((item) => {
-      if ('estrellas' in item && typeof item.estrellas === 'number' && item.estrellas > 0) {
-        stars.add(item.estrellas)
+    ;[...restaurantes, ...bares, ...shoppings, ...eventos, ...galerias].forEach(
+      (item) => {
+        if (
+          'estrellas' in item &&
+          typeof item.estrellas === 'number' &&
+          item.estrellas > 0
+        ) {
+          stars.add(item.estrellas)
+        }
       }
-    })
+    )
     ;[...hoteles].forEach((item) => {
-      if ('categoria_estrellas' in item && typeof item.categoria_estrellas === 'number' && item.categoria_estrellas > 0) {
+      if (
+        'categoria_estrellas' in item &&
+        typeof item.categoria_estrellas === 'number' &&
+        item.categoria_estrellas > 0
+      ) {
         stars.add(item.categoria_estrellas)
       }
     })
@@ -411,7 +464,8 @@ export default function BuscarPage() {
         title: r.nombre || '',
         zone: r.zona || undefined,
         city: r.ciudad || undefined,
-        image: r.url_imagen || '/images/placeholders/restaurante-placeholder.jpg',
+        image:
+          r.url_imagen || '/images/placeholders/restaurante-placeholder.jpg',
         badges,
         detailUrl: `/restaurantes?restauranteId=${r.id}`,
         isHighlighted: r.es_destacado,
@@ -472,7 +526,8 @@ export default function BuscarPage() {
         title: e.titulo || '',
         zone: e.zona || undefined,
         city: e.ciudad || undefined,
-        image: e.imagen_principal || '/images/placeholders/evento-placeholder.jpg',
+        image:
+          e.imagen_principal || '/images/placeholders/evento-placeholder.jpg',
         badges,
         detailUrl: `/eventos?eventoId=${e.id}`,
         isHighlighted: e.es_destacado,
@@ -492,7 +547,8 @@ export default function BuscarPage() {
         title: s.nombre || '',
         zone: s.zona || undefined,
         city: s.ciudad || undefined,
-        image: s.url_imagen || '/images/placeholders/restaurante-placeholder.jpg',
+        image:
+          s.url_imagen || '/images/placeholders/restaurante-placeholder.jpg',
         badges,
         detailUrl: `/shopping?shoppingId=${s.id}`,
         isHighlighted: s.es_destacado,
@@ -511,7 +567,8 @@ export default function BuscarPage() {
         title: g.nombre || '',
         zone: g.zona || undefined,
         city: g.ciudad || undefined,
-        image: g.url_imagen || '/images/placeholders/restaurante-placeholder.jpg',
+        image:
+          g.url_imagen || '/images/placeholders/restaurante-placeholder.jpg',
         badges,
         detailUrl: `/galerias?galeriaId=${g.id}`,
         isHighlighted: g.es_destacado,
@@ -582,7 +639,15 @@ export default function BuscarPage() {
     })
 
     return results
-  }, [allResults, search, contentTypeFilter, zoneFilter, priceFilter, starsFilter, t])
+  }, [
+    allResults,
+    search,
+    contentTypeFilter,
+    zoneFilter,
+    priceFilter,
+    starsFilter,
+    t,
+  ])
 
   // Reset page cuando cambian filtros
   useEffect(() => {
@@ -652,9 +717,13 @@ export default function BuscarPage() {
                 />
               </span>
             </button>
-            
+
             {/* Clear filters button - only show if any filter is active */}
-            {(contentTypeFilter !== 'all' || zoneFilter || priceFilter || starsFilter || search.trim()) && (
+            {(contentTypeFilter !== 'all' ||
+              zoneFilter ||
+              priceFilter ||
+              starsFilter ||
+              search.trim()) && (
               <button
                 type="button"
                 onClick={() => {
@@ -679,26 +748,34 @@ export default function BuscarPage() {
                   {t.filters.contentType}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {(['all', 'restaurante', 'bar', 'hotel', 'evento', 'shopping', 'galeria'] as ContentType[]).map(
-                    (type) => {
-                      const active = contentTypeFilter === type
-                      return (
-                        <button
-                          key={type}
-                          type="button"
-                          onClick={() => setContentTypeFilter(type)}
-                          className={`rounded-full border px-3 py-1.5 text-[11px] flex items-center gap-1.5 transition-colors ${
-                            active
-                              ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
-                              : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-400/60'
-                          }`}
-                        >
-                          {type !== 'all' && getContentTypeIcon(type, 12)}
-                          {t.contentTypes[type]}
-                        </button>
-                      )
-                    }
-                  )}
+                  {(
+                    [
+                      'all',
+                      'restaurante',
+                      'bar',
+                      'hotel',
+                      'evento',
+                      'shopping',
+                      'galeria',
+                    ] as ContentType[]
+                  ).map((type) => {
+                    const active = contentTypeFilter === type
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setContentTypeFilter(type)}
+                        className={`rounded-full border px-3 py-1.5 text-[11px] flex items-center gap-1.5 transition-colors ${
+                          active
+                            ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
+                            : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-400/60'
+                        }`}
+                      >
+                        {type !== 'all' && getContentTypeIcon(type, 12)}
+                        {t.contentTypes[type]}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -768,7 +845,7 @@ export default function BuscarPage() {
         {/* Estado y contador */}
         {loading && <p className="text-xs text-slate-400">{t.loading}</p>}
         {error && <p className="text-xs text-red-400">{error}</p>}
-        
+
         {!loading && !error && filteredResults.length === 0 && (
           <p className="text-xs text-slate-400">{t.noResults}</p>
         )}
@@ -790,7 +867,10 @@ export default function BuscarPage() {
                   <div className="relative w-full h-36 sm:h-40 md:h-44 bg-slate-800">
                     <Image
                       alt={result.title}
-                      src={result.image || '/images/placeholders/restaurante-placeholder.jpg'}
+                      src={
+                        result.image ||
+                        '/images/placeholders/restaurante-placeholder.jpg'
+                      }
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 25vw"
@@ -821,32 +901,39 @@ export default function BuscarPage() {
                     </h3>
 
                     {/* Stars and Price Range */}
-                    {(result.stars || result.badges.some(b => b.startsWith('$'))) && (
+                    {(result.stars ||
+                      result.badges.some((b) => b.startsWith('$'))) && (
                       <div className="flex items-center gap-2 mt-1">
                         {result.stars && result.stars > 0 && (
                           <span className="text-amber-400">
                             {renderStars(result.stars)}
                           </span>
                         )}
-                        {result.badges.filter(b => b.startsWith('$')).map((badge, idx) => (
-                          <span key={idx} className="text-slate-400">
-                            {badge}
-                          </span>
-                        ))}
+                        {result.badges
+                          .filter((b) => b.startsWith('$'))
+                          .map((badge, idx) => (
+                            <span key={idx} className="text-slate-400">
+                              {badge}
+                            </span>
+                          ))}
                       </div>
                     )}
 
                     {/* Other Badges (tipo de comida, etc) */}
-                    {result.badges.filter(b => !b.startsWith('$')).length > 0 && (
+                    {result.badges.filter((b) => !b.startsWith('$')).length >
+                      0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {result.badges.filter(b => !b.startsWith('$')).slice(0, 2).map((badge, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex rounded-full border border-slate-700 px-2 py-0.5 text-[10px] text-slate-300"
-                          >
-                            {badge}
-                          </span>
-                        ))}
+                        {result.badges
+                          .filter((b) => !b.startsWith('$'))
+                          .slice(0, 2)
+                          .map((badge, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex rounded-full border border-slate-700 px-2 py-0.5 text-[10px] text-slate-300"
+                            >
+                              {badge}
+                            </span>
+                          ))}
                       </div>
                     )}
                   </div>

@@ -200,7 +200,7 @@ export async function PUT(
 
     // ✨ Traducir automáticamente en background
     if (updated?.id) {
-      autoTranslate('hoteles', updated.id).catch(err => {
+      autoTranslate('hoteles', updated.id).catch((err) => {
         console.error('[PUT /hoteles/:id] Error auto-traducción:', err)
       })
     }

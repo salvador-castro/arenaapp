@@ -81,8 +81,6 @@ export async function GET(req: NextRequest) {
       headers: corsBaseHeaders(),
     })
   } catch (err: any) {
-    console.error('Error GET /api/auth/perfil:', err)
-
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
       err.message === 'UNAUTHORIZED_INVALID_TOKEN'
@@ -92,6 +90,8 @@ export async function GET(req: NextRequest) {
         headers: corsBaseHeaders(),
       })
     }
+
+    console.error('Error GET /api/auth/perfil:', err)
 
     return new NextResponse('Error al obtener perfil', {
       status: 500,

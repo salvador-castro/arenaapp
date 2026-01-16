@@ -1,3 +1,4 @@
+// /Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/app/api/admin/bares/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
@@ -243,7 +244,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
 
     // ✨ Traducir automáticamente en background
     if (bar?.id) {
-      autoTranslate('bares', Number(bar.id)).catch(err => {
+      autoTranslate('bares', Number(bar.id)).catch((err) => {
         console.error('[PUT /bares/:id] Error auto-traducción:', err)
       })
     }

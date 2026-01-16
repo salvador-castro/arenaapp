@@ -27,10 +27,10 @@ export function OPTIONS() {
 function slugify(str: string): string {
   return str
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '') // quita tildes
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/[^a-z0-9]+/g, '-') // no alfanum => guion
+    .replace(/^-+|-+$/g, '') // bordes
 }
 
 // GET todos (admin) con paginación y búsqueda
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     const search = (searchParams.get('search') || '').trim().toLowerCase()
 
     const page = Math.max(1, Number(pageParam) || 1)
-    const pageSize = Math.min(50, Math.max(1, Number(pageSizeParam) || 10))
+    const pageSize = Math.min(50, Math.max(1, Number(pageSizeParam) || 10)) // tope 50
     const offset = (page - 1) * pageSize
 
     let total = 0
@@ -61,9 +61,10 @@ export async function GET(req: NextRequest) {
       const countResult = await db.query(
         `
         SELECT COUNT(*)::int AS count
-        FROM shopping
+        FROM cafes
         WHERE
           LOWER(nombre) LIKE $1
+          OR LOWER(COALESCE(tipo_comida, '')) LIKE $1
           OR LOWER(COALESCE(zona, '')) LIKE $1
           OR LOWER(COALESCE(ciudad, '')) LIKE $1
         `,
@@ -78,6 +79,7 @@ export async function GET(req: NextRequest) {
           id,
           slug,
           nombre,
+          tipo_comida,
           rango_precios,
           estrellas,
           zona,
@@ -85,25 +87,21 @@ export async function GET(req: NextRequest) {
           ciudad,
           provincia,
           pais,
+          url_maps,
           horario_text,
+          url_reserva,
+          instagram,
           sitio_web,
           url_imagen,
-          cantidad_locales,
-          tiene_estacionamiento,
-          tiene_patio_comidas,
-          tiene_cine,
-          es_outlet,
           es_destacado,
-          telefono,
-          instagram,
-          facebook,
           estado,
           resena,
           created_at,
           updated_at
-        FROM shopping
+        FROM cafes
         WHERE
           LOWER(nombre) LIKE $1
+          OR LOWER(COALESCE(tipo_comida, '')) LIKE $1
           OR LOWER(COALESCE(zona, '')) LIKE $1
           OR LOWER(COALESCE(ciudad, '')) LIKE $1
         ORDER BY id ASC
@@ -116,7 +114,7 @@ export async function GET(req: NextRequest) {
     } else {
       // total sin filtro
       const countResult = await db.query(
-        'SELECT COUNT(*)::int AS count FROM shopping'
+        'SELECT COUNT(*)::int AS count FROM cafes'
       )
       total = countResult.rows[0]?.count ?? 0
 
@@ -127,6 +125,7 @@ export async function GET(req: NextRequest) {
           id,
           slug,
           nombre,
+          tipo_comida,
           rango_precios,
           estrellas,
           zona,
@@ -134,23 +133,18 @@ export async function GET(req: NextRequest) {
           ciudad,
           provincia,
           pais,
+          url_maps,
           horario_text,
+          url_reserva,
+          instagram,
           sitio_web,
           url_imagen,
-          cantidad_locales,
-          tiene_estacionamiento,
-          tiene_patio_comidas,
-          tiene_cine,
-          es_outlet,
           es_destacado,
-          telefono,
-          instagram,
-          facebook,
           estado,
           resena,
           created_at,
           updated_at
-        FROM shopping
+        FROM cafes
         ORDER BY id ASC
         LIMIT $1 OFFSET $2
         `,
@@ -179,7 +173,7 @@ export async function GET(req: NextRequest) {
       }
     )
   } catch (err: any) {
-    console.error('Error GET /api/admin/shopping:', err)
+    console.error('Error GET /api/admin/cafes:', err)
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -197,14 +191,14 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    return new NextResponse(err?.message || 'Error al obtener shoppings', {
+    return new NextResponse(err?.message || 'Error al obtener cafes', {
       status: 500,
       headers: corsBaseHeaders(),
     })
   }
 }
 
-// POST crear
+// POST crear bar
 export async function POST(req: NextRequest) {
   try {
     const payload = await verifyAuth(req)
@@ -214,6 +208,7 @@ export async function POST(req: NextRequest) {
 
     const {
       nombre,
+      tipo_comida,
       rango_precios,
       estrellas,
       zona,
@@ -221,29 +216,27 @@ export async function POST(req: NextRequest) {
       ciudad,
       provincia,
       pais,
+      url_maps,
       horario_text,
+      url_reserva,
+      instagram,
       sitio_web,
       url_imagen,
-      cantidad_locales,
-      tiene_estacionamiento,
-      tiene_patio_comidas,
-      tiene_cine,
-      es_outlet,
       es_destacado,
-      telefono,
-      instagram,
-      facebook,
       estado,
       resena,
     } = body
 
     if (
       !nombre ||
+      !tipo_comida ||
       rango_precios == null ||
       estrellas == null ||
       !zona ||
       !direccion ||
+      !url_maps ||
       !horario_text ||
+      !instagram ||
       !resena ||
       !url_imagen
     ) {
@@ -253,16 +246,15 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Generar slug
     const slug = slugify(nombre)
-
     const db = await getDb()
 
     const insertResult = await db.query(
       `
-      INSERT INTO shopping (
+      INSERT INTO cafes (
         slug,
         nombre,
+        tipo_comida,
         rango_precios,
         estrellas,
         zona,
@@ -270,31 +262,27 @@ export async function POST(req: NextRequest) {
         ciudad,
         provincia,
         pais,
+        url_maps,
         horario_text,
+        url_reserva,
+        instagram,
         sitio_web,
         url_imagen,
-        cantidad_locales,
-        tiene_estacionamiento,
-        tiene_patio_comidas,
-        tiene_cine,
-        es_outlet,
         es_destacado,
-        telefono,
-        instagram,
-        facebook,
         estado,
         resena
       )
       VALUES (
-        $1, $2, $3, $4, $5, $6,
-        $7, $8, $9, $10, $11, $12,
-        $13, $14, $15, $16, $17,
-        $18, $19, $20, $21, $22, $23
+        $1, $2, $3, $4, $5,
+        $6, $7, $8, $9, $10,
+        $11, $12, $13, $14, $15,
+        $16, $17, $18, $19
       )
       RETURNING
         id,
         slug,
         nombre,
+        tipo_comida,
         rango_precios,
         estrellas,
         zona,
@@ -302,18 +290,13 @@ export async function POST(req: NextRequest) {
         ciudad,
         provincia,
         pais,
+        url_maps,
         horario_text,
+        url_reserva,
+        instagram,
         sitio_web,
         url_imagen,
-        cantidad_locales,
-        tiene_estacionamiento,
-        tiene_patio_comidas,
-        tiene_cine,
-        es_outlet,
         es_destacado,
-        telefono,
-        instagram,
-        facebook,
         estado,
         resena,
         created_at,
@@ -322,40 +305,36 @@ export async function POST(req: NextRequest) {
       [
         slug, // 1
         nombre, // 2
-        rango_precios, // 3
-        estrellas, // 4
-        zona, // 5
-        direccion, // 6
-        ciudad || null, // 7
-        provincia || null, // 8
-        pais || 'Argentina', // 9
-        horario_text, // 10
-        sitio_web || null, // 11
-        url_imagen, // 12
-        cantidad_locales ?? null, // 13
-        !!tiene_estacionamiento, // 14
-        !!tiene_patio_comidas, // 15
-        !!tiene_cine, // 16
-        !!es_outlet, // 17
-        !!es_destacado, // 18
-        telefono || null, // 19
-        instagram || null, // 20
-        facebook || null, // 21
-        estado || 'PUBLICADO', // 22
-        resena, // 23
+        tipo_comida, // 3
+        rango_precios, // 4
+        estrellas, // 5
+        zona, // 6
+        direccion, // 7
+        ciudad || null, // 8
+        provincia || null, // 9
+        pais || 'Uruguay', // 10 (ajustá si querés usar 'Argentina' o el default)
+        url_maps, // 11
+        horario_text, // 12
+        url_reserva || null, // 13
+        instagram, // 14
+        sitio_web || null, // 15
+        url_imagen, // 16
+        !!es_destacado, // 17
+        estado || 'PUBLICADO', // 18
+        resena, // 19
       ]
     )
 
-    const shopping = insertResult.rows[0] || null
+    const bar = insertResult.rows[0] || null
 
     // ✨ Traducir automáticamente en background
-    if (shopping?.id) {
-      autoTranslate('shopping', shopping.id).catch((err) => {
-        console.error('[POST /shopping] Error auto-traducción:', err)
+    if (bar?.id) {
+      autoTranslate('cafes', bar.id).catch((err) => {
+        console.error('[POST /cafes] Error auto-traducción:', err)
       })
     }
 
-    return new NextResponse(JSON.stringify(shopping), {
+    return new NextResponse(JSON.stringify(bar), {
       status: 201,
       headers: {
         ...corsBaseHeaders(),
@@ -363,7 +342,7 @@ export async function POST(req: NextRequest) {
       },
     })
   } catch (err: any) {
-    console.error('Error POST /api/admin/shopping:', err)
+    console.error('Error POST /api/admin/cafes:', err)
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -381,7 +360,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    return new NextResponse(err?.message || 'Error al crear shopping', {
+    return new NextResponse(err?.message || 'Error al crear bar', {
       status: 500,
       headers: corsBaseHeaders(),
     })

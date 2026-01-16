@@ -160,7 +160,7 @@ const translationsByLocale: Record<'es' | 'en' | 'pt', Translations> = {
   },
 }
 
-export default function BottomNav () {
+export default function BottomNav() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, isLoading } = useAuth()
@@ -210,7 +210,7 @@ export default function BottomNav () {
   ]
 
   const loggedItemsFiltered = isLoggedIn
-    ? loggedItemsBase.filter(item => !(item.requiresAdmin && !isAdmin))
+    ? loggedItemsBase.filter((item) => !(item.requiresAdmin && !isAdmin))
     : []
 
   const adminSubItems: AdminSubItem[] = [
@@ -261,10 +261,10 @@ export default function BottomNav () {
       <Link
         key={item.href + item.label}
         href={item.href}
-        onClick={e => {
+        onClick={(e) => {
           if (pathnameIsMenu) {
             e.preventDefault()
-            if (isAdmin) setIsMenuOpen(prev => !prev)
+            if (isAdmin) setIsMenuOpen((prev) => !prev)
           }
         }}
         className={`flex flex-col items-center gap-0.5 text-[11px] transition
@@ -275,34 +275,34 @@ export default function BottomNav () {
           }
         `}
       >
-        <span className='flex items-center justify-center w-8 h-8'>
+        <span className="flex items-center justify-center w-8 h-8">
           {item.icon}
         </span>
-        <span className='leading-none'>{item.label}</span>
+        <span className="leading-none">{item.label}</span>
       </Link>
     )
   }
 
   const renderLanguageButton = () => (
-    <div className='relative flex flex-col items-center gap-0.5 text-[11px]'>
+    <div className="relative flex flex-col items-center gap-0.5 text-[11px]">
       <button
-        type='button'
-        onClick={() => setIsLangMenuOpen(prev => !prev)}
-        className='flex flex-col items-center gap-0.5 text-[11px] text-slate-300 hover:text-white transition'
+        type="button"
+        onClick={() => setIsLangMenuOpen((prev) => !prev)}
+        className="flex flex-col items-center gap-0.5 text-[11px] text-slate-300 hover:text-white transition"
       >
-        <span className='flex items-center justify-center w-8 h-8'>
+        <span className="flex items-center justify-center w-8 h-8">
           <Languages size={20} />
         </span>
-        <span className='leading-none'>{t.languagesMenu.title}</span>
+        <span className="leading-none">{t.languagesMenu.title}</span>
       </button>
 
       {isLangMenuOpen && (
-        <div className='absolute bottom-11 left-1/2 -translate-x-1/2 mb-1 w-40 rounded-xl bg-slate-900 border border-slate-700 shadow-xl py-1 text-xs z-50'>
-          <div className='px-3 py-1 text-[11px] text-slate-400'>
+        <div className="absolute bottom-11 left-1/2 -translate-x-1/2 mb-1 w-40 rounded-xl bg-slate-900 border border-slate-700 shadow-xl py-1 text-xs z-50">
+          <div className="px-3 py-1 text-[11px] text-slate-400">
             {t.languagesMenu.title}
           </div>
           <button
-            type='button'
+            type="button"
             onClick={() => handleChangeLocale('es')}
             className={`w-full text-left px-3 py-1.5 hover:bg-slate-800 ${
               locale === 'es' ? 'text-white font-semibold' : 'text-slate-200'
@@ -311,7 +311,7 @@ export default function BottomNav () {
             {t.languagesMenu.es}
           </button>
           <button
-            type='button'
+            type="button"
             onClick={() => handleChangeLocale('pt')}
             className={`w-full text-left px-3 py-1.5 hover:bg-slate-800 ${
               locale === 'pt' ? 'text-white font-semibold' : 'text-slate-200'
@@ -320,7 +320,7 @@ export default function BottomNav () {
             {t.languagesMenu.pt}
           </button>
           <button
-            type='button'
+            type="button"
             onClick={() => handleChangeLocale('en')}
             className={`w-full text-left px-3 py-1.5 hover:bg-slate-800 ${
               locale === 'en' ? 'text-white font-semibold' : 'text-slate-200'
@@ -351,8 +351,8 @@ export default function BottomNav () {
   // sin admin: Inicio / Dashboard / Favoritos / Buscar / Idioma / Perfil
   // con admin: Inicio / Dashboard / Favoritos / Buscar / Menú / Idioma / Perfil
   const renderLoggedNav = () => {
-    const perfilItem = loggedItemsFiltered.find(i => i.href === '/perfil')
-    const others = loggedItemsFiltered.filter(i => i.href !== '/perfil')
+    const perfilItem = loggedItemsFiltered.find((i) => i.href === '/perfil')
+    const others = loggedItemsFiltered.filter((i) => i.href !== '/perfil')
 
     return (
       <>
@@ -367,20 +367,20 @@ export default function BottomNav () {
     <>
       {/* Overlay para cerrar cualquier menú haciendo click afuera */}
       {(isLangMenuOpen || (isLoggedIn && isAdmin && isMenuOpen)) && (
-        <div className='fixed inset-0 z-40' onClick={closeAllMenus} />
+        <div className="fixed inset-0 z-40" onClick={closeAllMenus} />
       )}
 
-      <nav className='fixed bottom-0 inset-x-0 z-50 h-16 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md'>
+      <nav className="fixed bottom-0 inset-x-0 z-50 h-16 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md">
         {/* SUBMENÚ ADMIN */}
         {isLoggedIn && isAdmin && isMenuOpen && (
-          <div className='absolute bottom-16 inset-x-0 mb-2 z-50'>
-            <div className='mx-auto max-w-md rounded-2xl bg-slate-900 border border-slate-700 shadow-xl p-2 grid grid-cols-2 gap-2 text-xs'>
-              {adminSubItems.map(sub => {
+          <div className="absolute bottom-16 inset-x-0 mb-2 z-50">
+            <div className="mx-auto max-w-md rounded-2xl bg-slate-900 border border-slate-700 shadow-xl p-2 grid grid-cols-2 gap-2 text-xs">
+              {adminSubItems.map((sub) => {
                 const isActive = pathname === sub.href
                 return (
                   <button
                     key={sub.href}
-                    type='button'
+                    type="button"
                     onClick={() => {
                       router.push(sub.href)
                       closeAllMenus()
@@ -393,10 +393,10 @@ export default function BottomNav () {
                       }
                     `}
                   >
-                    <span className='flex items-center justify-center w-6 h-6'>
+                    <span className="flex items-center justify-center w-6 h-6">
                       {sub.icon}
                     </span>
-                    <span className='truncate'>{sub.label}</span>
+                    <span className="truncate">{sub.label}</span>
                   </button>
                 )
               })}
@@ -405,7 +405,7 @@ export default function BottomNav () {
         )}
 
         {/* BARRA PRINCIPAL */}
-        <div className='mx-auto max-w-md flex h-full items-center justify-between px-4 gap-1'>
+        <div className="mx-auto max-w-md flex h-full items-center justify-between px-4 gap-1">
           {isLoggedIn ? renderLoggedNav() : renderGuestNav()}
         </div>
       </nav>

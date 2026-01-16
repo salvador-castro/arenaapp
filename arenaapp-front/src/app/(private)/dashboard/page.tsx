@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 import { useLocale } from '@/context/LocaleContext'
+import { describe } from 'node:test'
 
 const DASHBOARD_TEXTS = {
   es: {
@@ -13,6 +14,7 @@ const DASHBOARD_TEXTS = {
     subtitle: '¿Qué te gustaría explorar hoy?',
     sectionTitle: 'Explorá por categoría',
     sectionSubtitle: 'Entrá directo a la sección que quieras descubrir.',
+    proximamente: 'Proximamente',
     cards: {
       favoritos: {
         tag: 'Tus listas',
@@ -21,12 +23,17 @@ const DASHBOARD_TEXTS = {
       },
       restaurantes: {
         tag: 'Comer',
-        title: 'Restaurantes',
+        title: 'Ruta Foodie',
         desc: 'Cocina local, internacional y más.',
+      },
+      cafes: {
+        tag: 'Cafés',
+        title: 'Cafés',
+        desc: 'Cafés, bares y más.',
       },
       galerias: {
         tag: 'Arte',
-        title: 'Galerías',
+        title: 'Galerías & Museos',
         desc: 'Exhibiciones, muestras y cultura visual.',
       },
       hoteles: {
@@ -56,6 +63,7 @@ const DASHBOARD_TEXTS = {
     subtitle: 'What would you like to explore today?',
     sectionTitle: 'Explore by category',
     sectionSubtitle: 'Jump straight into the section you want to discover.',
+    proximamente: 'Coming soon',
     cards: {
       favoritos: {
         tag: 'Your lists',
@@ -67,9 +75,14 @@ const DASHBOARD_TEXTS = {
         title: 'Restaurants',
         desc: 'Local, international and more.',
       },
+      cafes: {
+        tag: 'Coffee',
+        title: 'Coffee',
+        desc: 'Coffee, tea and more.',
+      },
       galerias: {
         tag: 'Art',
-        title: 'Galleries',
+        title: 'Galleries & Museums',
         desc: 'Exhibitions, shows and visual culture.',
       },
       hoteles: {
@@ -99,6 +112,7 @@ const DASHBOARD_TEXTS = {
     subtitle: 'O que você gostaria de explorar hoje?',
     sectionTitle: 'Explore por categoria',
     sectionSubtitle: 'Vá direto para a seção que quer conhecer.',
+    proximamente: 'Proximamente',
     cards: {
       favoritos: {
         tag: 'Suas listas',
@@ -110,9 +124,14 @@ const DASHBOARD_TEXTS = {
         title: 'Restaurantes',
         desc: 'Cozinha local, internacional e muito mais.',
       },
+      cafes: {
+        tag: 'Cafés',
+        title: 'Cafés',
+        desc: 'Cafés, bares y más.',
+      },
       galerias: {
         tag: 'Arte',
-        title: 'Galerias',
+        title: 'Galerias & Museus',
         desc: 'Exposições, mostras e cultura visual.',
       },
       hoteles: {
@@ -139,7 +158,7 @@ const DASHBOARD_TEXTS = {
   },
 } as const
 
-export default function DashboardPage () {
+export default function DashboardPage() {
   const { user, isLoading }: any = useAuth()
   const isLoggedIn = !isLoading && !!user
   const { goTo } = useAuthRedirect(isLoggedIn)
@@ -156,48 +175,48 @@ export default function DashboardPage () {
   }
 
   return (
-    <div className='min-h-screen pb-16 flex flex-col bg-slate-950'>
+    <div className="min-h-screen pb-16 flex flex-col bg-slate-950">
       {/* NAVBAR SUPERIOR REUTILIZABLE */}
       <TopNav isLoggedIn={isLoggedIn} />
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className='flex-1 max-w-3xl mx-auto px-4 pt-4 pb-4 space-y-6'>
+      <main className="flex-1 max-w-3xl mx-auto px-4 pt-4 pb-4 space-y-6">
         {/* Saludo */}
-        <header className='flex flex-col gap-1'>
-          <h1 className='text-lg md:text-xl font-medium text-slate-100'>
+        <header className="flex flex-col gap-1">
+          <h1 className="text-lg md:text-xl font-medium text-slate-100">
             {t.welcome}
             {firstName ? `, ${firstName}` : ''} 👋
           </h1>
-          <p className='text-xs text-slate-400'>{t.subtitle}</p>
+          <p className="text-xs text-slate-400">{t.subtitle}</p>
         </header>
 
         {/* Explorá por categoría */}
-        <section className='space-y-3'>
-          <h2 className='text-lg font-semibold text-slate-100'>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-slate-100">
             {t.sectionTitle}
           </h2>
-          <p className='text-xs text-slate-400'>{t.sectionSubtitle}</p>
+          <p className="text-xs text-slate-400">{t.sectionSubtitle}</p>
 
-          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {/* Favoritos */}
             <button
-              type='button'
+              type="button"
               onClick={() => handleGoToSection('/favoritos')}
-              className='relative rounded-xl overflow-hidden border border-emerald-500/50 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              className="relative rounded-xl overflow-hidden border border-emerald-500/50 hover:border-emerald-400 transition-colors bg-cover bg-center"
               style={{
                 backgroundImage:
                   "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/favoritos.png?v=2 ')",
               }}
             >
-              <div className='absolute inset-0 bg-slate-950/60' />
-              <div className='relative px-3 py-4 text-left'>
-                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+              <div className="absolute inset-0 bg-slate-950/60" />
+              <div className="relative px-3 py-4 text-left">
+                <p className="text-[11px] font-semibold text-emerald-300 mb-1">
                   {t.cards.favoritos.tag}
                 </p>
-                <p className='text-sm font-semibold text-white'>
+                <p className="text-sm font-semibold text-white">
                   {t.cards.favoritos.title}
                 </p>
-                <p className='text-[11px] text-slate-200 mt-1'>
+                <p className="text-[11px] text-slate-200 mt-1">
                   {t.cards.favoritos.desc}
                 </p>
               </div>
@@ -205,47 +224,81 @@ export default function DashboardPage () {
 
             {/* Restaurantes */}
             <button
-              type='button'
+              type="button"
               onClick={() => handleGoToSection('/restaurantes')}
-              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              className="relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center"
               style={{
                 backgroundImage:
                   "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/restaurantes.png?v=2 ')",
               }}
             >
-              <div className='absolute inset-0 bg-slate-950/60' />
-              <div className='relative px-3 py-4 text-left'>
-                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+              <div className="absolute inset-0 bg-slate-950/60" />
+              <div className="relative px-3 py-4 text-left">
+                <p className="text-[11px] font-semibold text-emerald-300 mb-1">
                   {t.cards.restaurantes.tag}
                 </p>
-                <p className='text-sm font-semibold text-white'>
+                <p className="text-sm font-semibold text-white">
                   {t.cards.restaurantes.title}
                 </p>
-                <p className='text-[11px] text-slate-200 mt-1'>
+                <p className="text-[11px] text-slate-200 mt-1">
                   {t.cards.restaurantes.desc}
                 </p>
               </div>
             </button>
 
+            {/* Cafes */}
+            <button
+              type="button"
+              onClick={() => handleGoToSection('/cafes')}
+              className="relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/bars.png?v=2 ')",
+              }}
+            >
+              <div className="absolute inset-0 bg-slate-950/60" />
+              <div className="relative px-3 py-4 text-left">
+                <p className="text-[11px] font-semibold text-emerald-300 mb-1">
+                  {t.cards.cafes.tag}
+                </p>
+                <p className="text-sm font-semibold text-white">
+                  {t.cards.cafes.title}
+                </p>
+                <p className="text-[11px] text-slate-200 mt-1">
+                  {t.cards.cafes.desc}
+                </p>
+              </div>
+            </button>
+
+            {/* Proximamente */}
+
+            <div className="col-span-full flex items-center gap-3 my-2">
+              <div className="flex-1 h-px bg-slate-700/60" />
+              <p className="text-xs text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                {t.proximamente}
+              </p>
+              <div className="flex-1 h-px bg-slate-700/60" />
+            </div>
+
             {/* Galerías */}
             <button
-              type='button'
-              onClick={() => handleGoToSection('/galerias')}
-              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              type="button"
+              /* onClick={() => handleGoToSection('/galerias-museos')} */
+              className="relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center"
               style={{
                 backgroundImage:
                   "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/galerias.png?v=2 ')",
               }}
             >
-              <div className='absolute inset-0 bg-slate-950/60' />
-              <div className='relative px-3 py-4 text-left'>
-                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+              <div className="absolute inset-0 bg-slate-950/60" />
+              <div className="relative px-3 py-4 text-left">
+                <p className="text-[11px] font-semibold text-emerald-300 mb-1">
                   {t.cards.galerias.tag}
                 </p>
-                <p className='text-sm font-semibold text-white'>
+                <p className="text-sm font-semibold text-white">
                   {t.cards.galerias.title}
                 </p>
-                <p className='text-[11px] text-slate-200 mt-1'>
+                <p className="text-[11px] text-slate-200 mt-1">
                   {t.cards.galerias.desc}
                 </p>
               </div>
@@ -253,23 +306,23 @@ export default function DashboardPage () {
 
             {/* Hoteles */}
             <button
-              type='button'
-              onClick={() => handleGoToSection('/hoteles')}
-              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              type="button"
+              /* onClick={() => handleGoToSection('/hoteles')} */
+              className="relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center"
               style={{
                 backgroundImage:
                   "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/hoteles.png?v=2 ')",
               }}
             >
-              <div className='absolute inset-0 bg-slate-950/60' />
-              <div className='relative px-3 py-4 text-left'>
-                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+              <div className="absolute inset-0 bg-slate-950/60" />
+              <div className="relative px-3 py-4 text-left">
+                <p className="text-[11px] font-semibold text-emerald-300 mb-1">
                   {t.cards.hoteles.tag}
                 </p>
-                <p className='text-sm font-semibold text-white'>
+                <p className="text-sm font-semibold text-white">
                   {t.cards.hoteles.title}
                 </p>
-                <p className='text-[11px] text-slate-200 mt-1'>
+                <p className="text-[11px] text-slate-200 mt-1">
                   {t.cards.hoteles.desc}
                 </p>
               </div>
@@ -277,23 +330,23 @@ export default function DashboardPage () {
 
             {/* Shopping */}
             <button
-              type='button'
-              onClick={() => handleGoToSection('/shopping')}
-              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              type="button"
+              /* onClick={() => handleGoToSection('/shopping')} */
+              className="relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center"
               style={{
                 backgroundImage:
                   "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/shopping.png?v=2 ')",
               }}
             >
-              <div className='absolute inset-0 bg-slate-950/60' />
-              <div className='relative px-3 py-4 text-left'>
-                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+              <div className="absolute inset-0 bg-slate-950/60" />
+              <div className="relative px-3 py-4 text-left">
+                <p className="text-[11px] font-semibold text-emerald-300 mb-1">
                   {t.cards.shopping.tag}
                 </p>
-                <p className='text-sm font-semibold text-white'>
+                <p className="text-sm font-semibold text-white">
                   {t.cards.shopping.title}
                 </p>
-                <p className='text-[11px] text-slate-200 mt-1'>
+                <p className="text-[11px] text-slate-200 mt-1">
                   {t.cards.shopping.desc}
                 </p>
               </div>
@@ -301,23 +354,23 @@ export default function DashboardPage () {
 
             {/* Eventos */}
             <button
-              type='button'
-              onClick={() => handleGoToSection('/eventos')}
-              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              type="button"
+              /* onClick={() => handleGoToSection('/eventos')} */
+              className="relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center"
               style={{
                 backgroundImage:
                   "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/eventos.png?v=2 ')",
               }}
             >
-              <div className='absolute inset-0 bg-slate-950/60' />
-              <div className='relative px-3 py-4 text-left'>
-                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+              <div className="absolute inset-0 bg-slate-950/60" />
+              <div className="relative px-3 py-4 text-left">
+                <p className="text-[11px] font-semibold text-emerald-300 mb-1">
                   {t.cards.eventos.tag}
                 </p>
-                <p className='text-sm font-semibold text-white'>
+                <p className="text-sm font-semibold text-white">
                   {t.cards.eventos.title}
                 </p>
-                <p className='text-[11px] text-slate-200 mt-1'>
+                <p className="text-[11px] text-slate-200 mt-1">
                   {t.cards.eventos.desc}
                 </p>
               </div>
@@ -325,23 +378,23 @@ export default function DashboardPage () {
 
             {/* Bares */}
             <button
-              type='button'
-              onClick={() => handleGoToSection('/bares')}
-              className='relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center'
+              type="button"
+              /* onClick={() => handleGoToSection('/bares')} */
+              className="relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-400 transition-colors bg-cover bg-center"
               style={{
                 backgroundImage:
                   "url('https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/cardsDashboard/bars.png?v=2 ')",
               }}
             >
-              <div className='absolute inset-0 bg-slate-950/60' />
-              <div className='relative px-3 py-4 text-left'>
-                <p className='text-[11px] font-semibold text-emerald-300 mb-1'>
+              <div className="absolute inset-0 bg-slate-950/60" />
+              <div className="relative px-3 py-4 text-left">
+                <p className="text-[11px] font-semibold text-emerald-300 mb-1">
                   {t.cards.bares.tag}
                 </p>
-                <p className='text-sm font-semibold text-white'>
+                <p className="text-sm font-semibold text-white">
                   {t.cards.bares.title}
                 </p>
-                <p className='text-[11px] text-slate-200 mt-1'>
+                <p className="text-[11px] text-slate-200 mt-1">
                   {t.cards.bares.desc}
                 </p>
               </div>

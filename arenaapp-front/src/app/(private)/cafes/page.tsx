@@ -1,4 +1,3 @@
-// C:\Users\sacastro\Documents\proyects\arenaapp\arenaapp-front\src\app\(private)\bares\page.tsx
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -6,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
 import {
-  Instagram,
   SlidersHorizontal,
   ChevronDown,
   Heart,
@@ -17,7 +15,7 @@ import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 import { useLocale } from '@/context/LocaleContext'
 
-interface Bar {
+interface Cafe {
   id: number | string
   nombre: string
   slug: string
@@ -50,18 +48,18 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
-const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/bares/public`
-const FAVORITOS_BARES_ENDPOINT = `${API_BASE}/api/admin/favoritos/bares`
+const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/cafes/public`
+const FAVORITOS_CAFES_ENDPOINT = `${API_BASE}/api/admin/favoritos/cafes`
 const PAGE_SIZE = 12
 
-const BARES_TEXTS = {
+const CAFES_TEXTS = {
   es: {
-    pageTitle: 'Bares',
-    pageSubtitle: 'Descubrí bares y coctelerías recomendadas.',
+    pageTitle: 'Cafés',
+    pageSubtitle: 'Descubrí cafés de especialidad y meriendas.',
     loadingPage: 'Cargando...',
-    loadingList: 'Cargando bares...',
-    errorDefault: 'Error al cargar bares.',
-    emptyList: 'No se encontraron bares con los filtros actuales.',
+    loadingList: 'Cargando cafés...',
+    errorDefault: 'Error al cargar cafés.',
+    emptyList: 'No se encontraron cafés con los filtros actuales.',
     filters: {
       title: 'Filtros',
       show: 'Mostrar filtros',
@@ -103,12 +101,12 @@ const BARES_TEXTS = {
     },
   },
   en: {
-    pageTitle: 'Bars',
-    pageSubtitle: 'Discover recommended bars and cocktail spots.',
+    pageTitle: 'Cafes',
+    pageSubtitle: 'Discover specialty coffee shops and snacks.',
     loadingPage: 'Loading...',
-    loadingList: 'Loading bars...',
-    errorDefault: 'Error loading bars.',
-    emptyList: 'No bars found with the current filters.',
+    loadingList: 'Loading cafes...',
+    errorDefault: 'Error loading cafes.',
+    emptyList: 'No cafes found with the current filters.',
     filters: {
       title: 'Filters',
       show: 'Show filters',
@@ -150,12 +148,12 @@ const BARES_TEXTS = {
     },
   },
   pt: {
-    pageTitle: 'Bares',
-    pageSubtitle: 'Descubra bares e coquetelarias recomendadas.',
+    pageTitle: 'Cafés',
+    pageSubtitle: 'Descubra cafés especiais e lanches.',
     loadingPage: 'Carregando...',
-    loadingList: 'Carregando bares...',
-    errorDefault: 'Erro ao carregar bares.',
-    emptyList: 'Nenhum bar encontrado com os filtros atuais.',
+    loadingList: 'Carregando cafés...',
+    errorDefault: 'Erro ao carregar cafés.',
+    emptyList: 'Nenhum café encontrado com os filtros atuais.',
     filters: {
       title: 'Filtros',
       show: 'Mostrar filtros',
@@ -204,24 +202,6 @@ function renderPriceRange(rango: number | null | undefined): string {
   return '$'.repeat(value)
 }
 
-function renderStars(estrellas: number | null | undefined): string {
-  if (!estrellas || estrellas < 1) return '-'
-  const value = Math.min(Math.max(estrellas, 1), 5)
-  return '★'.repeat(value)
-}
-
-function getInstagramHandle(url: string | null): string {
-  if (!url) return 'Instagram'
-  try {
-    const u = new URL(url)
-    const cleanPath = u.pathname.replace(/\/$/, '')
-    const last = cleanPath.split('/').filter(Boolean).pop()
-    return last || 'Instagram'
-  } catch {
-    return 'Instagram'
-  }
-}
-
 function normalizeText(value: string | null | undefined): string {
   if (!value) return ''
   return value
@@ -230,7 +210,7 @@ function normalizeText(value: string | null | undefined): string {
     .toLowerCase()
 }
 
-export default function BaresPage() {
+export default function CafesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -239,18 +219,18 @@ export default function BaresPage() {
   const isLoggedIn = !isLoading && !!user
 
   const { locale } = useLocale()
-  const t = BARES_TEXTS[locale as keyof typeof BARES_TEXTS] ?? BARES_TEXTS.es
+  const t = CAFES_TEXTS[locale as keyof typeof CAFES_TEXTS] ?? CAFES_TEXTS.es
   const apiLang: 'es' | 'en' | 'pt' =
     locale === 'en' ? 'en' : locale === 'pt' ? 'pt' : 'es'
 
-  const barIdParam = searchParams.get('barId')
-  const barId = barIdParam ? Number(barIdParam) : null
+  const cafeIdParam = searchParams.get('cafeId')
+  const cafeId = cafeIdParam ? Number(cafeIdParam) : null
 
-  const [bars, setBars] = useState<Bar[]>([])
+  const [cafes, setCafes] = useState<Cafe[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [selectedBar, setSelectedBar] = useState<Bar | null>(null)
+  const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Filtros
@@ -261,8 +241,8 @@ export default function BaresPage() {
   const [tiposFilter, setTiposFilter] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Favoritos de Bares
-  const [favoriteBarIds, setFavoriteBarIds] = useState<Set<number>>(new Set())
+  // Favoritos de Cafes
+  const [favoriteCafeIds, setFavoriteCafeIds] = useState<Set<number>>(new Set())
   const [favoriteLoading, setFavoriteLoading] = useState(false)
 
   // 1) Guardia de auth
@@ -270,17 +250,17 @@ export default function BaresPage() {
     if (isLoading) return
 
     if (!user) {
-      const redirectUrl = barId ? `/bares?barId=${barId}` : '/bares'
+      const redirectUrl = cafeId ? `/cafes?cafeId=${cafeId}` : '/cafes'
       router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
       return
     }
-  }, [user, isLoading, router, barId])
+  }, [user, isLoading, router, cafeId])
 
-  // 2) Traer todos los bares PUBLICADOS
+  // 2) Traer todos los cafes PUBLICADOS
   useEffect(() => {
     if (!user) return
 
-    const fetchBars = async () => {
+    const fetchCafes = async () => {
       try {
         setLoading(true)
         setError(null)
@@ -293,112 +273,123 @@ export default function BaresPage() {
           throw new Error(`Error HTTP ${res.status}`)
         }
 
-        const data: Bar[] = await res.json()
-        setBars(data)
+        const data: Cafe[] = await res.json()
+        setCafes(data)
       } catch (err: any) {
-        console.error('Error cargando bares públicos', err)
-        setError(err.message ?? BARES_TEXTS.es.errorDefault)
+        console.error('Error cargando cafes públicos', err)
+        setError(err.message ?? CAFES_TEXTS.es.errorDefault)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchBars()
+    fetchCafes()
   }, [user, apiLang])
 
-  // 3) Traer favoritos de bares del usuario
+  // 3) Traer favoritos de cafes del usuario
   useEffect(() => {
     if (!user) return
 
     const fetchFavoritos = async () => {
       try {
-        const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
+        const headers: HeadersInit = {}
+        if (auth?.token) {
+          headers['Authorization'] = `Bearer ${auth.token}`
+        }
+
+        const res = await fetch(FAVORITOS_CAFES_ENDPOINT, {
           method: 'GET',
+          headers,
           credentials: 'include',
         })
 
         if (!res.ok) {
-          console.error('Error HTTP favoritos bares', res.status)
+          console.error('Error HTTP favoritos cafes', res.status)
           return
         }
 
         const data: any[] = await res.json()
 
         const ids = data
-          .map((row) => Number(row.bar_id ?? row.id ?? row.item_id))
+          .map((row) => Number(row.cafe_id ?? row.id ?? row.item_id))
           .filter((id) => !Number.isNaN(id))
 
-        setFavoriteBarIds(new Set(ids))
+        setFavoriteCafeIds(new Set(ids))
       } catch (err) {
-        console.error('Error cargando favoritos de bares', err)
+        console.error('Error cargando favoritos de cafes', err)
       }
     }
 
     fetchFavoritos()
-  }, [user, apiLang])
+  }, [user, apiLang, auth?.token])
 
-  // 4) Abrir modal si viene ?barId=
+  // 4) Abrir modal si viene ?cafeId=
   useEffect(() => {
-    if (!bars.length) return
-    if (!barId) return
+    if (!cafes.length) return
+    if (!cafeId) return
 
-    const found = bars.find((b) => Number(b.id) === Number(barId))
+    const found = cafes.find((c) => Number(c.id) === Number(cafeId))
 
     if (found) {
-      setSelectedBar(found)
+      setSelectedCafe(found)
       setIsModalOpen(true)
     }
-  }, [bars, barId])
+  }, [cafes, cafeId])
 
   const closeModal = () => {
     setIsModalOpen(false)
-    setSelectedBar(null)
-    router.push('/bares')
+    setSelectedCafe(null)
+    router.push('/cafes')
   }
 
-  const openModalFromCard = (place: Bar) => {
-    setSelectedBar(place)
+  const openModalFromCard = (place: Cafe) => {
+    setSelectedCafe(place)
     setIsModalOpen(true)
-    router.push(`/bares?barId=${place.id}`)
+    router.push(`/cafes?cafeId=${place.id}`)
   }
 
-  // 5) Toggle favorito de Bar
-  const handleToggleFavoriteBar = async (bar: Bar) => {
-    if (!bar?.id) return
+  // 5) Toggle favorito de Cafe
+  const handleToggleFavoriteCafe = async (cafe: Cafe) => {
+    if (!cafe?.id) return
 
-    const barIdNumeric = Number(bar.id)
-    if (!barIdNumeric || Number.isNaN(barIdNumeric)) return
+    const cafeIdNumeric = Number(cafe.id)
+    if (!cafeIdNumeric || Number.isNaN(cafeIdNumeric)) return
 
     setFavoriteLoading(true)
 
     try {
-      const isFavorite = favoriteBarIds.has(barIdNumeric)
+      const isFavorite = favoriteCafeIds.has(cafeIdNumeric)
 
-      const res = await fetch(FAVORITOS_BARES_ENDPOINT, {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+      if (auth?.token) {
+        headers['Authorization'] = `Bearer ${auth.token}`
+      }
+
+      const res = await fetch(FAVORITOS_CAFES_ENDPOINT, {
         method: isFavorite ? 'DELETE' : 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ barId: barIdNumeric }),
+        headers,
+        body: JSON.stringify({ cafeId: cafeIdNumeric }),
       })
 
       if (!res.ok) {
-        console.error('Error al actualizar favorito de bar', await res.text())
+        console.error('Error al actualizar favorito de cafe', await res.text())
         return
       }
 
-      setFavoriteBarIds((prev) => {
+      setFavoriteCafeIds((prev) => {
         const next = new Set(prev)
         if (isFavorite) {
-          next.delete(barIdNumeric)
+          next.delete(cafeIdNumeric)
         } else {
-          next.add(barIdNumeric)
+          next.add(cafeIdNumeric)
         }
         return next
       })
     } catch (err) {
-      console.error('Error al actualizar favorito de bar', err)
+      console.error('Error al actualizar favorito de cafe', err)
     } finally {
       setFavoriteLoading(false)
     }
@@ -409,51 +400,51 @@ export default function BaresPage() {
     () =>
       Array.from(
         new Set(
-          bars
-            .map((b) => b.zona)
+          cafes
+            .map((c) => c.zona)
             .filter((z): z is string => !!z && z.trim().length > 0)
         )
       ).sort(),
-    [bars]
+    [cafes]
   )
 
   const precios = useMemo(
     () =>
       Array.from(
         new Set(
-          bars
-            .map((b) => b.rango_precios)
+          cafes
+            .map((c) => c.rango_precios)
             .filter(
               (p): p is number => typeof p === 'number' && !Number.isNaN(p)
             )
         )
       ).sort((a, b) => a - b),
-    [bars]
+    [cafes]
   )
 
   const tiposComida = useMemo(
     () =>
       Array.from(
         new Set(
-          bars
-            .map((b) => b.tipo_comida)
+          cafes
+            .map((c) => c.tipo_comida)
             .filter((t): t is string => !!t && t.trim().length > 0)
         )
       ).sort(),
-    [bars]
+    [cafes]
   )
 
   // 7) Aplicar filtros + orden
-  const filteredBars = useMemo(() => {
-    let result = [...bars]
+  const filteredCafes = useMemo(() => {
+    let result = [...cafes]
 
     const term = normalizeText(search.trim())
     if (term) {
-      result = result.filter((b) => {
-        const nombre = normalizeText(b.nombre)
-        const tipo = normalizeText(b.tipo_comida)
-        const zona = normalizeText(b.zona)
-        const ciudad = normalizeText(b.ciudad)
+      result = result.filter((c) => {
+        const nombre = normalizeText(c.nombre)
+        const tipo = normalizeText(c.tipo_comida)
+        const zona = normalizeText(c.zona)
+        const ciudad = normalizeText(c.ciudad)
         return (
           nombre.includes(term) ||
           tipo.includes(term) ||
@@ -464,19 +455,19 @@ export default function BaresPage() {
     }
 
     if (zonaFilter) {
-      result = result.filter((b) => b.zona === zonaFilter)
+      result = result.filter((c) => c.zona === zonaFilter)
     }
 
     if (priceFilter) {
       const priceNumber = Number(priceFilter)
       if (!Number.isNaN(priceNumber)) {
-        result = result.filter((b) => b.rango_precios === priceNumber)
+        result = result.filter((c) => c.rango_precios === priceNumber)
       }
     }
 
     if (tiposFilter.length > 0) {
       result = result.filter(
-        (b) => b.tipo_comida && tiposFilter.includes(b.tipo_comida)
+        (c) => c.tipo_comida && tiposFilter.includes(c.tipo_comida)
       )
     }
 
@@ -492,19 +483,19 @@ export default function BaresPage() {
     })
 
     return result
-  }, [bars, search, zonaFilter, priceFilter, tiposFilter])
+  }, [cafes, search, zonaFilter, priceFilter, tiposFilter])
 
   // Reset página al cambiar filtros
   useEffect(() => {
     setCurrentPage(1)
   }, [search, zonaFilter, priceFilter, tiposFilter])
 
-  const totalPages = Math.max(1, Math.ceil(filteredBars.length / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(filteredCafes.length / PAGE_SIZE))
 
-  const paginatedBars = useMemo(() => {
+  const paginatedCafes = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE
-    return filteredBars.slice(start, start + PAGE_SIZE)
-  }, [filteredBars, currentPage])
+    return filteredCafes.slice(start, start + PAGE_SIZE)
+  }, [filteredCafes, currentPage])
 
   const toggleTipoComida = (tipo: string) => {
     setTiposFilter((prev) =>
@@ -646,14 +637,14 @@ export default function BaresPage() {
         {error && <p className="text-xs text-red-400">{error}</p>}
 
         {/* Listado */}
-        {!loading && !error && filteredBars.length === 0 && (
+        {!loading && !error && filteredCafes.length === 0 && (
           <p className="text-xs text-slate-400">{t.emptyList}</p>
         )}
 
-        {!loading && !error && filteredBars.length > 0 && (
+        {!loading && !error && filteredCafes.length > 0 && (
           <>
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {paginatedBars.map((place) => (
+              {paginatedCafes.map((place) => (
                 <div
                   key={place.id}
                   className="rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden"
@@ -673,6 +664,27 @@ export default function BaresPage() {
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 25vw"
                     />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleToggleFavoriteCafe(place)
+                      }}
+                      className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-slate-900/50 text-slate-100 backdrop-blur-sm transition hover:bg-slate-900/70 hover:scale-105"
+                      title={
+                        favoriteCafeIds.has(Number(place.id))
+                          ? t.favorite.remove
+                          : t.favorite.add
+                      }
+                    >
+                      {favoriteCafeIds.has(Number(place.id)) ? (
+                        <Heart
+                          className="fill-red-500 text-red-500"
+                          size={16}
+                        />
+                      ) : (
+                        <Heart className="text-slate-100" size={16} />
+                      )}
+                    </button>
                   </div>
 
                   <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
@@ -762,7 +774,7 @@ export default function BaresPage() {
         )}
 
         {/* MODAL detalle */}
-        {isModalOpen && selectedBar && (
+        {isModalOpen && selectedCafe && (
           <div
             className="fixed inset-0 z-60 flex items-start justify-center bg-black/60 px-4"
             onClick={closeModal}
@@ -784,10 +796,10 @@ export default function BaresPage() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800">
                     <Image
-                      alt={selectedBar.nombre}
+                      alt={selectedCafe.nombre}
                       src={
-                        selectedBar.url_imagen ||
-                        selectedBar.imagen_principal ||
+                        selectedCafe.url_imagen ||
+                        selectedCafe.imagen_principal ||
                         '/images/placeholders/restaurante-placeholder.jpg'
                       }
                       fill
@@ -798,181 +810,193 @@ export default function BaresPage() {
 
                   <div className="flex-1 space-y-1">
                     <p className="text-[11px] uppercase font-semibold text-emerald-400">
-                      {selectedBar.zona || t.zoneFallback}
+                      {selectedCafe.zona || t.zoneFallback}
                     </p>
-                    <h3 className="text-lg font-semibold">
-                      {selectedBar.nombre}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-2 text-[12px]">
-                      <span className="text-amber-400">
-                        {renderStars(selectedBar.estrellas)}
+                    <h2 className="text-lg font-bold leading-tight">
+                      {selectedCafe.nombre}
+                    </h2>
+
+                    {selectedCafe.tipo_comida && (
+                      <span className="inline-flex rounded-full border border-slate-700 px-2 py-0.5 text-[10px] text-slate-300">
+                        {selectedCafe.tipo_comida}
                       </span>
-                      <span className="text-slate-400">
-                        {renderPriceRange(selectedBar.rango_precios)}
+                    )}
+
+                    <div className="flex items-center gap-3 pt-1 text-xs text-slate-400">
+                      {typeof selectedCafe.estrellas === 'number' &&
+                        selectedCafe.estrellas > 0 && (
+                          <span className="text-amber-400 font-medium">
+                            {selectedCafe.estrellas} ★
+                          </span>
+                        )}
+                      <span>
+                        {renderPriceRange(selectedCafe.rango_precios)}
                       </span>
-                      {selectedBar.tipo_comida && (
-                        <span className="rounded-full border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300">
-                          {selectedBar.tipo_comida}
-                        </span>
-                      )}
-                      {selectedBar.tiene_terraza && (
+                    </div>
+
+                    {/* Chips extra: Terraza, Musica, Happy Hour */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {selectedCafe.tiene_terraza && (
                         <span className="rounded-full border border-emerald-500/50 px-2 py-0.5 text-[10px] text-emerald-300">
                           {t.chips.terrace}
                         </span>
                       )}
-                      {selectedBar.tiene_musica_vivo && (
+                      {selectedCafe.tiene_musica_vivo && (
                         <span className="rounded-full border border-emerald-500/50 px-2 py-0.5 text-[10px] text-emerald-300">
                           {t.chips.liveMusic}
                         </span>
                       )}
-                      {selectedBar.tiene_happy_hour && (
+                      {selectedCafe.tiene_happy_hour && (
                         <span className="rounded-full border border-emerald-500/50 px-2 py-0.5 text-[10px] text-emerald-300">
                           {t.chips.happyHour}
                         </span>
                       )}
                     </div>
-
-                    {selectedBar.instagram && (
-                      <a
-                        href={selectedBar.instagram}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1"
-                      >
-                        <Instagram size={14} />
-                        <span>
-                          @{getInstagramHandle(selectedBar.instagram)}
-                        </span>
-                      </a>
-                    )}
                   </div>
                 </div>
 
-                {selectedBar.resena && (
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold">{t.modal.review}</h4>
-                    <p className="text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left">
-                      {selectedBar.resena}
-                    </p>
-                  </div>
-                )}
+                <div className="space-y-4 text-sm text-slate-300 pt-2">
+                  {selectedCafe.descripcion_larga && (
+                    <div className="bg-slate-900/40 p-3 rounded-xl border border-slate-800/50">
+                      <p className="whitespace-pre-line text-xs leading-relaxed">
+                        {selectedCafe.descripcion_larga}
+                      </p>
+                    </div>
+                  )}
 
-                <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      {t.modal.address}
-                    </p>
-                    <p className="text-slate-400">
-                      {selectedBar.direccion || t.modal.noData}
-                    </p>
-                    {selectedBar.url_maps && (
-                      <a
-                        href={selectedBar.url_maps}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 mt-1 inline-block"
-                      >
-                        {t.modal.howToGet}
-                      </a>
+                  {selectedCafe.resena && (
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-semibold">
+                        {t.modal.review}
+                      </h4>
+                      <p className="text-[12px] text-slate-300 whitespace-pre-line text-justify md:text-left">
+                        {selectedCafe.resena}
+                      </p>
+                    </div>
+                  )}
+                  {!selectedCafe.descripcion_larga &&
+                    selectedCafe.descripcion_corta && (
+                      <p className="text-xs italic text-slate-400">
+                        {selectedCafe.descripcion_corta}
+                      </p>
+                    )}
+
+                  {/* Info grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {selectedCafe.direccion && (
+                      <div>
+                        <span className="block font-semibold text-slate-500 mb-0.5">
+                          {t.modal.address}
+                        </span>
+                        <span>{selectedCafe.direccion}</span>
+                        {selectedCafe.ciudad && `, ${selectedCafe.ciudad}`}
+                      </div>
+                    )}
+
+                    {selectedCafe.horario_text && (
+                      <div>
+                        <span className="block font-semibold text-slate-500 mb-0.5">
+                          {t.modal.schedule}
+                        </span>
+                        <span>{selectedCafe.horario_text}</span>
+                      </div>
+                    )}
+
+                    {(selectedCafe.url_maps ||
+                      selectedCafe.sitio_web ||
+                      selectedCafe.instagram) && (
+                      <div className="sm:col-span-2 flex flex-wrap gap-2 pt-1">
+                        {selectedCafe.url_maps && (
+                          <a
+                            href={selectedCafe.url_maps}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 text-[10px] hover:bg-slate-700"
+                          >
+                            🗺️ Maps
+                          </a>
+                        )}
+                        {selectedCafe.instagram && (
+                          <a
+                            href={selectedCafe.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 text-[10px] hover:bg-slate-700"
+                          >
+                            📸 Instagram
+                          </a>
+                        )}
+                        {selectedCafe.sitio_web && (
+                          <a
+                            href={selectedCafe.sitio_web}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 text-[10px] hover:bg-slate-700"
+                          >
+                            🔗 Web
+                          </a>
+                        )}
+                      </div>
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      {t.modal.schedule}
-                    </p>
-                    <p className="text-slate-400">
-                      {selectedBar.horario_text || t.modal.noData}
-                    </p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      {t.modal.website}
-                    </p>
-                    {selectedBar.sitio_web ? (
+                  {selectedCafe.url_reserva && (
+                    <div className="pt-2">
                       <a
-                        href={selectedBar.sitio_web}
+                        href={selectedCafe.url_reserva}
                         target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
-                      >
-                        {selectedBar.sitio_web}
-                      </a>
-                    ) : (
-                      <p className="text-slate-400">{t.modal.noData}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      {t.modal.reservations}
-                    </p>
-                    {selectedBar.url_reserva ? (
-                      <a
-                        href={selectedBar.url_reserva}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
+                        rel="noopener noreferrer"
+                        className="block w-full text-center rounded-xl bg-emerald-600 py-2.5 font-bold text-white transition hover:bg-emerald-500 text-xs"
                       >
                         {t.modal.reservationsCta}
                       </a>
-                    ) : (
-                      <p className="text-slate-400">{t.modal.noData}</p>
-                    )}
+                    </div>
+                  )}
+
+                  {/* Footer Modal: Close + Favorite */}
+                  <div className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2 border-t border-slate-800/60 mt-4">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="w-full max-w-[200px] self-center sm:self-auto rounded-full border border-slate-700 px-3 py-1.5 text-[11px] font-medium text-slate-300 hover:bg-slate-800 transition"
+                    >
+                      {t.modal.close}
+                    </button>
+
+                    {(() => {
+                      const isFavorite = favoriteCafeIds.has(
+                        Number(selectedCafe.id)
+                      )
+                      const label = isFavorite
+                        ? t.favorite.remove
+                        : t.favorite.add
+
+                      return (
+                        <button
+                          type="button"
+                          disabled={favoriteLoading}
+                          onClick={() => handleToggleFavoriteCafe(selectedCafe)}
+                          className={`w-full max-w-[230px] self-center sm:self-auto inline-flex items-center justify-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold transition
+                            ${
+                              isFavorite
+                                ? 'bg-emerald-500 text-slate-900 hover:bg-emerald-400'
+                                : 'bg-slate-900 text-slate-100 border border-slate-700 hover:border-emerald-400 hover:bg-slate-800'
+                            }
+                            ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
+                          `}
+                        >
+                          {favoriteLoading ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : isFavorite ? (
+                            <HeartOff size={14} />
+                          ) : (
+                            <Heart size={14} className="fill-emerald-500/70" />
+                          )}
+                          <span>{label}</span>
+                        </button>
+                      )
+                    })()}
                   </div>
-                </div>
-
-                {/* Botones cierre + favorito */}
-                <div className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2">
-                  {/* BOTÓN CERRAR */}
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="w-full max-w-[200px] self-center sm:self-auto
-               rounded-full border border-slate-700 
-               px-3 py-1.5 text-[11px] font-medium text-slate-300 
-               hover:bg-slate-800 transition"
-                  >
-                    {t.modal.close}
-                  </button>
-
-                  {/* BOTÓN FAVORITO */}
-                  {(() => {
-                    const isFavorite = favoriteBarIds.has(
-                      Number(selectedBar.id)
-                    )
-                    const label = isFavorite
-                      ? t.favorite.remove
-                      : t.favorite.add
-
-                    return (
-                      <button
-                        type="button"
-                        disabled={favoriteLoading}
-                        onClick={() => handleToggleFavoriteBar(selectedBar)}
-                        className={`w-full max-w-[230px] self-center sm:self-auto
-          inline-flex items-center justify-center gap-6
-          rounded-full px-3 py-1.5 text-[11px] font-semibold transition
-          ${
-            isFavorite
-              ? 'bg-emerald-500 text-slate-900 hover:bg-emerald-400'
-              : 'bg-slate-900 text-slate-100 border border-slate-700 hover:border-emerald-400 hover:bg-slate-800'
-          }
-          ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
-        `}
-                      >
-                        {favoriteLoading ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : isFavorite ? (
-                          <HeartOff size={14} />
-                        ) : (
-                          <Heart size={14} className="fill-emerald-500/70" />
-                        )}
-                        <span>{label}</span>
-                      </button>
-                    )
-                  })()}
                 </div>
               </div>
             </div>

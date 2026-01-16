@@ -45,13 +45,13 @@ const localeMap: Record<'es' | 'en' | 'pt', string> = {
   pt: 'pt-BR',
 }
 
-function formatStars (estrellas: number | null): string {
+function formatStars(estrellas: number | null): string {
   if (!estrellas || estrellas < 1) return '-'
   const value = Math.min(Math.max(estrellas, 1), 5)
   return '★'.repeat(value)
 }
 
-function formatDateRange (
+function formatDateRange(
   inicio: string,
   fin: string | null,
   locale: 'es' | 'en' | 'pt'
@@ -88,7 +88,7 @@ function formatDateRange (
   return `${start.toLocaleString(loc)} – ${end.toLocaleString(loc)}`
 }
 
-export default function EventosDestacados ({ isLoggedIn }: Props) {
+export default function EventosDestacados({ isLoggedIn }: Props) {
   const { goTo } = useAuthRedirect(isLoggedIn)
   const { locale } = useLocale()
 
@@ -183,7 +183,7 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
 
         const eventosResp: Evento[] = Array.isArray(data)
           ? data
-          : data.eventos ?? []
+          : (data.eventos ?? [])
 
         setEventos(eventosResp)
       } catch (e: any) {
@@ -217,42 +217,42 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
   const topEventos = eventos.slice(0, 4)
 
   return (
-    <section className='mt-4 space-y-3'>
-      <div className='flex items-center justify-between gap-2'>
+    <section className="mt-4 space-y-3">
+      <div className="flex items-center justify-between gap-2">
         <div>
-          <h2 className='text-sm font-semibold text-slate-100'>
+          <h2 className="text-sm font-semibold text-slate-100">
             {t.sectionTitle}
           </h2>
-          <p className='text-[11px] text-slate-400'>{t.sectionSubtitle}</p>
+          <p className="text-[11px] text-slate-400">{t.sectionSubtitle}</p>
         </div>
 
         <button
-          type='button'
-          className='text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2'
+          type="button"
+          className="text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
           onClick={() => goTo('/eventos')}
         >
           {t.seeAll}
         </button>
       </div>
 
-      {loading && <p className='text-xs text-slate-400'>{t.loading}</p>}
+      {loading && <p className="text-xs text-slate-400">{t.loading}</p>}
 
-      {error && !loading && <p className='text-xs text-red-400'>{t.error}</p>}
+      {error && !loading && <p className="text-xs text-red-400">{t.error}</p>}
 
       {!loading && !error && eventos.length === 0 && (
-        <p className='text-xs text-slate-400'>{t.empty}</p>
+        <p className="text-xs text-slate-400">{t.empty}</p>
       )}
 
       {!loading && !error && topEventos.length > 0 && (
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'>
-          {topEventos.map(ev => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {topEventos.map((ev) => (
             <button
               key={ev.id}
-              type='button'
+              type="button"
               onClick={() => handleMoreInfo(ev)}
-              className='group text-left rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/70 hover:bg-slate-900 transition-colors flex flex-col overflow-hidden'
+              className="group text-left rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/70 hover:bg-slate-900 transition-colors flex flex-col overflow-hidden"
             >
-              <div className='relative w-full h-28 sm:h-32 bg-slate-800'>
+              <div className="relative w-full h-28 sm:h-32 bg-slate-800">
                 <Image
                   alt={ev.titulo}
                   src={
@@ -260,40 +260,40 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
                     '/images/placeholders/evento-placeholder.jpg'
                   }
                   fill
-                  className='object-cover group-hover:scale-[1.03] transition-transform'
-                  sizes='(max-width: 768px) 100vw, 25vw'
+                  className="object-cover group-hover:scale-[1.03] transition-transform"
+                  sizes="(max-width: 768px) 100vw, 25vw"
                 />
               </div>
 
-              <div className='p-3 flex-1 flex flex-col gap-1 text-[11px]'>
-                <p className='text-[10px] uppercase font-semibold text-emerald-400'>
+              <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
+                <p className="text-[10px] uppercase font-semibold text-emerald-400">
                   {ev.zona || t.zoneFallback}
                 </p>
-                <h3 className='text-sm font-semibold line-clamp-1'>
+                <h3 className="text-sm font-semibold line-clamp-1">
                   {ev.titulo}
                 </h3>
 
-                <p className='text-slate-400 line-clamp-2'>
+                <p className="text-slate-400 line-clamp-2">
                   {formatDateRange(ev.fecha_inicio, ev.fecha_fin, locale)}
                 </p>
 
-                <div className='mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300'>
+                <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300">
                   {ev.estrellas && ev.estrellas > 0 && (
-                    <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
+                    <span className="inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300">
                       {ev.estrellas}★
                     </span>
                   )}
-                  <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                  <span className="inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                     {ev.es_gratuito
                       ? t.freeEntry
                       : ev.precio_desde
-                      ? `${t.fromLabel} ${ev.precio_desde} ${ev.moneda || ''}`
-                      : t.checkPrices}
+                        ? `${t.fromLabel} ${ev.precio_desde} ${ev.moneda || ''}`
+                        : t.checkPrices}
                   </span>
                 </div>
 
-                <div className='mt-2 flex justify-end'>
-                  <span className='text-[11px] font-medium text-emerald-300 group-hover:text-emerald-200'>
+                <div className="mt-2 flex justify-end">
+                  <span className="text-[11px] font-medium text-emerald-300 group-hover:text-emerald-200">
                     {t.seeMore}
                   </span>
                 </div>
@@ -304,19 +304,19 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
       )}
 
       {isModalOpen && selectedEvento && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4'>
-          <div className='relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl'>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="relative w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-800 shadow-xl">
             <button
-              type='button'
+              type="button"
               onClick={closeModal}
-              className='absolute right-3 top-3 rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700'
+              className="absolute right-3 top-3 rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"
             >
               ✕
             </button>
 
-            <div className='p-4 sm:p-6 space-y-4'>
-              <div className='flex flex-col sm:flex-row gap-4'>
-                <div className='relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800'>
+            <div className="p-4 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative w-full sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden bg-slate-800">
                   <Image
                     alt={selectedEvento.titulo}
                     src={
@@ -324,19 +324,19 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
                       '/images/placeholders/evento-placeholder.jpg'
                     }
                     fill
-                    className='object-cover'
-                    sizes='(max-width: 640px) 100vw, 160px'
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 160px"
                   />
                 </div>
 
-                <div className='flex-1 space-y-1'>
-                  <p className='text-[11px] uppercase font-semibold text-emerald-400'>
+                <div className="flex-1 space-y-1">
+                  <p className="text-[11px] uppercase font-semibold text-emerald-400">
                     {selectedEvento.categoria}
                   </p>
-                  <h3 className='text-lg font-semibold'>
+                  <h3 className="text-lg font-semibold">
                     {selectedEvento.titulo}
                   </h3>
-                  <p className='text-[12px] text-slate-300'>
+                  <p className="text-[12px] text-slate-300">
                     {formatDateRange(
                       selectedEvento.fecha_inicio,
                       selectedEvento.fecha_fin,
@@ -344,77 +344,78 @@ export default function EventosDestacados ({ isLoggedIn }: Props) {
                     )}
                   </p>
 
-                  <div className='flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300'>
-                    {selectedEvento.estrellas && selectedEvento.estrellas > 0 && (
-                      <span className='inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300'>
-                        {selectedEvento.estrellas}★
-                      </span>
-                    )}
-                    <span className='inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300'>
+                  <div className="flex flex-wrap gap-2 mt-2 text-[11px] text-slate-300">
+                    {selectedEvento.estrellas &&
+                      selectedEvento.estrellas > 0 && (
+                        <span className="inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300">
+                          {selectedEvento.estrellas}★
+                        </span>
+                      )}
+                    <span className="inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
                       {selectedEvento.es_gratuito
                         ? t.freeEntry
                         : selectedEvento.precio_desde
-                        ? `${t.fromLabel} ${selectedEvento.precio_desde} ${
-                            selectedEvento.moneda || ''
-                          }`
-                        : t.checkPrices}
+                          ? `${t.fromLabel} ${selectedEvento.precio_desde} ${
+                              selectedEvento.moneda || ''
+                            }`
+                          : t.checkPrices}
                     </span>
                   </div>
                 </div>
               </div>
 
               {selectedEvento.resena && (
-                <div className='space-y-1'>
-                  <h4 className='text-sm font-semibold'>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold">
                     {t.descriptionTitle}
                   </h4>
-                  <p className='text-[12px] text-slate-300 whitespace-pre-line'>
+                  <p className="text-[12px] text-slate-300 whitespace-pre-line">
                     {selectedEvento.resena}
                   </p>
                 </div>
               )}
 
-              <div className='grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]'>
-                <div className='space-y-1'>
-                  <p className='text-xs font-semibold text-slate-300'>
+              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-slate-300">
                     {t.addressLabel}
                   </p>
-                  <p className='text-slate-400'>
+                  <p className="text-slate-400">
                     {selectedEvento.direccion || '-'}
                   </p>
                 </div>
 
-                <div className='space-y-1'>
-                  <p className='text-xs font-semibold text-slate-300'>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-slate-300">
                     {t.zoneLabel}
                   </p>
-                  <p className='text-slate-400'>{selectedEvento.zona || '-'}</p>
+                  <p className="text-slate-400">{selectedEvento.zona || '-'}</p>
                 </div>
 
-                <div className='space-y-1'>
-                  <p className='text-xs font-semibold text-slate-300'>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-slate-300">
                     {t.ticketsLabel}
                   </p>
                   {selectedEvento.url_entradas ? (
                     <a
                       href={selectedEvento.url_entradas}
-                      target='_blank'
-                      rel='noreferrer'
-                      className='text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all'
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
                     >
                       {t.buyTickets}
                     </a>
                   ) : (
-                    <p className='text-slate-400'>-</p>
+                    <p className="text-slate-400">-</p>
                   )}
                 </div>
               </div>
 
-              <div className='flex justify-end pt-2'>
+              <div className="flex justify-end pt-2">
                 <button
-                  type='button'
+                  type="button"
                   onClick={closeModal}
-                  className='rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800'
+                  className="rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
                 >
                   {t.close}
                 </button>

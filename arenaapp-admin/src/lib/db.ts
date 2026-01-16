@@ -9,6 +9,12 @@ export async function getDb() {
   }
 
   if (!pool) {
+    // En desarrollo, a veces es necesario forzar la aceptación de certificados self-signed
+    // si la configuración de ssl: { rejectUnauthorized: false } no es suficiente.
+    if (process.env.NODE_ENV !== 'production') {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    }
+
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: {

@@ -293,7 +293,8 @@ export default function GaleriasPage() {
       const payload: any = {
         ...formValues,
         zona: formValues.zona.length > 0 ? formValues.zona.join(', ') : null,
-        estrellas: formValues.estrellas === '' ? null : Number(formValues.estrellas),
+        estrellas:
+          formValues.estrellas === '' ? null : Number(formValues.estrellas),
       }
 
       const isEdit = !!editing && editing.id != null

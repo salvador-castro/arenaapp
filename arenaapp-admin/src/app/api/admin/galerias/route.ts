@@ -295,7 +295,7 @@ export async function POST(req: NextRequest) {
 
     // ✨ Traducir automáticamente en background
     if (galeria?.id) {
-      autoTranslate('galerias', galeria.id).catch(err => {
+      autoTranslate('galerias', galeria.id).catch((err) => {
         console.error('[POST /galerias] Error auto-traducción:', err)
       })
     }

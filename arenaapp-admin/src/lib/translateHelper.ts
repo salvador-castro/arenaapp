@@ -4,6 +4,7 @@ import { getDb } from './db'
 
 export type TranslatableEntity =
   | 'bares'
+  | 'cafes'
   | 'eventos'
   | 'galerias'
   | 'hoteles'
@@ -77,7 +78,10 @@ export async function autoTranslate(
 
     console.log(`[autoTranslate] ✅ ${entity} id=${id} traducido exitosamente`)
   } catch (err) {
-    console.error(`[autoTranslate] ❌ Error traduciendo ${entity} id=${id}:`, err)
+    console.error(
+      `[autoTranslate] ❌ Error traduciendo ${entity} id=${id}:`,
+      err
+    )
     // Lanzar el error para que el endpoint lo pueda reportar
     throw err
   }
@@ -105,6 +109,20 @@ function getFieldsForEntity(entity: TranslatableEntity) {
       selectFields:
         'nombre, descripcion_corta, descripcion_larga, resena, horario_text, tipo_comida, meta_title, meta_description',
     },
+    cafes: {
+      fields: [
+        'nombre',
+        'descripcion_corta',
+        'descripcion_larga',
+        'resena',
+        'horario_text',
+        'tipo_comida',
+        'meta_title',
+        'meta_description',
+      ],
+      selectFields:
+        'nombre, descripcion_corta, descripcion_larga, resena, horario_text, tipo_comida, meta_title, meta_description',
+    },
     eventos: {
       fields: [
         'titulo',
@@ -113,8 +131,7 @@ function getFieldsForEntity(entity: TranslatableEntity) {
         'meta_title',
         'meta_description',
       ],
-      selectFields:
-        'titulo, categoria, resena, meta_title, meta_description',
+      selectFields: 'titulo, categoria, resena, meta_title, meta_description',
     },
     galerias: {
       fields: [
@@ -180,12 +197,15 @@ function buildTranslationPrompt(
   item: any,
   fields: string[]
 ): string {
-  const fieldValues = fields.reduce((acc, field) => {
-    acc[field] = item[field] ?? null
-    return acc
-  }, {} as Record<string, any>)
+  const fieldValues = fields.reduce(
+    (acc, field) => {
+      acc[field] = item[field] ?? null
+      return acc
+    },
+    {} as Record<string, any>
+  )
 
-  const fieldList = fields.map(f => `"${f}": null o "..."`).join(',\n    ')
+  const fieldList = fields.map((f) => `"${f}": null o "..."`).join(',\n    ')
 
   return `
 Eres un traductor profesional. Vas a recibir información de un ${entity} en español
@@ -228,7 +248,7 @@ async function updateTranslations(
   const params: any[] = []
   let paramIndex = 1
 
-  fields.forEach(field => {
+  fields.forEach((field) => {
     setClauses.push(`${field}_en = $${paramIndex}`)
     params.push(en[field] ?? null)
     paramIndex++

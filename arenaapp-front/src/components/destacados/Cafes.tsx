@@ -1,4 +1,4 @@
-// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\components\dashboard\BaresDestacados.tsx
+// C:\Users\salvaCastro\Desktop\arenaapp\arenaapp-front\src\components\dashboard\cafesDestacados.tsx
 'use client'
 
 import React, { useEffect, useState } from 'react'
@@ -10,7 +10,7 @@ type Props = {
   isLoggedIn: boolean
 }
 
-interface Bar {
+interface cafe {
   id: number | string
   nombre: string
   slug: string
@@ -42,7 +42,7 @@ const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 ).replace(/\/$/, '')
 
-const DESTACADOS_ENDPOINT = `${API_BASE}/api/admin/bares/destacados`
+const DESTACADOS_ENDPOINT = `${API_BASE}/api/admin/cafes/destacados`
 
 function renderPriceRange(rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
@@ -56,47 +56,48 @@ function renderStars(estrellas: number | null | undefined): string {
   return '★'.repeat(value)
 }
 
-export default function BaresDestacados({ isLoggedIn }: Props) {
+export default function cafesDestacados({ isLoggedIn }: Props) {
   const { goTo } = useAuthRedirect(isLoggedIn)
   const { locale } = useLocale()
 
-  const [bares, setBares] = useState<Bar[]>([])
+  const [cafes, setcafes] = useState<cafe[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // 🔥 Diccionario de traducciones de UI
-  const t = {
-    es: {
-      sectionTitle: 'Bares destacados',
-      sectionSubtitle: 'Elegidos por su ambiente, tragos y experiencia.',
-      seeAll: 'Ver todos',
-      loading: 'Cargando bares destacados...',
-      error: 'No se pudieron cargar los bares destacados.',
-      zoneFallback: 'Zona no especificada',
-      seeMore: 'Ver más',
-    },
-    en: {
-      sectionTitle: 'Featured bars',
-      sectionSubtitle: 'Selected for their vibe, drinks and experience.',
-      seeAll: 'See all',
-      loading: 'Loading featured bars...',
-      error: 'Could not load featured bars.',
-      zoneFallback: 'Zone not specified',
-      seeMore: 'See more',
-    },
-    pt: {
-      sectionTitle: 'Bares em destaque',
-      sectionSubtitle: 'Escolhidos pelo ambiente, drinks e experiência.',
-      seeAll: 'Ver todos',
-      loading: 'Carregando bares em destaque...',
-      error: 'Não foi possível carregar os bares em destaque.',
-      zoneFallback: 'Zona não especificada',
-      seeMore: 'Ver mais',
-    },
-  }[locale]
+const t = {
+  es: {
+    sectionTitle: 'Cafés destacados',
+    sectionSubtitle: 'Elegidos por su ambiente, tragos y experiencia.',
+    seeAll: 'Ver todos',
+    loading: 'Cargando cafés destacados...',
+    error: 'No se pudieron cargar los cafés destacados.',
+    zoneFallback: 'Zona no especificada',
+    seeMore: 'Ver más',
+  },
+  en: {
+    sectionTitle: 'Featured cafés',
+    sectionSubtitle: 'Selected for their vibe, drinks and experience.',
+    seeAll: 'See all',
+    loading: 'Loading featured cafés...',
+    error: 'Could not load featured cafés.',
+    zoneFallback: 'Zone not specified',
+    seeMore: 'See more',
+  },
+  pt: {
+    sectionTitle: 'Cafés em destaque',
+    sectionSubtitle: 'Escolhidos pelo ambiente, bebidas e experiência.',
+    seeAll: 'Ver todos',
+    loading: 'Carregando cafés em destaque...',
+    error: 'Não foi possível carregar os cafés em destaque.',
+    zoneFallback: 'Zona não especificada',
+    seeMore: 'Ver mais',
+  },
+}[locale]
+
 
   useEffect(() => {
-    const fetchBares = async () => {
+    const fetchcafes = async () => {
       try {
         setLoading(true)
         setError(null)
@@ -109,10 +110,10 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
           throw new Error(`Error HTTP ${res.status}`)
         }
 
-        const data: Bar[] = await res.json()
-        setBares(Array.isArray(data) ? data.filter((b) => b.es_destacado) : [])
+        const data: cafe[] = await res.json()
+        setcafes(Array.isArray(data) ? data.filter((b) => b.es_destacado) : [])
       } catch (err: any) {
-        console.error('Error cargando bares destacados:', err)
+        console.error('Error cargando cafes destacados:', err)
         // el texto visible viene de t.error
         setError('LOAD_ERROR')
       } finally {
@@ -120,15 +121,15 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
       }
     }
 
-    fetchBares()
+    fetchcafes()
   }, [])
 
-  const handleMoreInfo = (bar: Bar) => {
-    const redirectUrl = `/bares?barId=${bar.id}`
+  const handleMoreInfo = (cafe: cafe) => {
+    const redirectUrl = `/cafes?cafeId=${cafe.id}`
 
     // Igual lógica que RestaurantesDestacados:
     // - si no está logueado, useAuthRedirect lo manda a /login?redirect=redirectUrl
-    // - si está logueado, lo manda directo a /bares?barId=...
+    // - si está logueado, lo manda directo a /cafes?cafeId=...
     goTo(redirectUrl)
   }
 
@@ -154,11 +155,11 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
     )
   }
 
-  if (!bares.length) {
+  if (!cafes.length) {
     return null
   }
 
-  const topBares = bares.slice(0, 4)
+  const topcafes = cafes.slice(0, 4)
 
   return (
     <section className="mt-4 space-y-3">
@@ -171,7 +172,7 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
         </div>
         <button
           type="button"
-          onClick={() => goTo('/bares')}
+          onClick={() => goTo('/cafes')}
           className="text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
         >
           {t.seeAll}
@@ -179,19 +180,19 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {topBares.map((bar) => (
+        {topcafes.map((cafe) => (
           <button
-            key={bar.id}
+            key={cafe.id}
             type="button"
-            onClick={() => handleMoreInfo(bar)}
+            onClick={() => handleMoreInfo(cafe)}
             className="group text-left rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/70 hover:bg-slate-900 transition-colors flex flex-col overflow-hidden"
           >
             <div className="relative w-full h-28 sm:h-32 bg-slate-800">
               <Image
-                alt={bar.nombre}
+                alt={cafe.nombre}
                 src={
-                  bar.url_imagen ||
-                  bar.imagen_principal ||
+                  cafe.url_imagen ||
+                  cafe.imagen_principal ||
                   '/images/placeholders/restaurante-placeholder.jpg'
                 }
                 fill
@@ -202,32 +203,32 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
 
             <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
               <p className="text-[10px] uppercase font-semibold text-emerald-400">
-                {bar.zona || bar.ciudad || t.zoneFallback}
+                {cafe.zona || cafe.ciudad || t.zoneFallback}
               </p>
               <h3 className="text-sm font-semibold line-clamp-1">
-                {bar.nombre}
+                {cafe.nombre}
               </h3>
 
-              {bar.descripcion_corta && (
+              {cafe.descripcion_corta && (
                 <p className="text-slate-400 line-clamp-2">
-                  {bar.descripcion_corta}
+                  {cafe.descripcion_corta}
                 </p>
               )}
 
               <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-slate-300">
-                {bar.estrellas && bar.estrellas > 0 && (
+                {cafe.estrellas && cafe.estrellas > 0 && (
                   <span className="inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300">
-                    {bar.estrellas}★
+                    {cafe.estrellas}★
                   </span>
                 )}
-                {bar.rango_precios && bar.rango_precios > 0 && (
+                {cafe.rango_precios && cafe.rango_precios > 0 && (
                   <span className="inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
-                    {renderPriceRange(bar.rango_precios)}
+                    {renderPriceRange(cafe.rango_precios)}
                   </span>
                 )}
-                {bar.tipo_comida && (
+                {cafe.tipo_comida && (
                   <span className="inline-flex rounded-full border border-slate-700 px-2 py-[2px] text-[10px] text-slate-300">
-                    {bar.tipo_comida}
+                    {cafe.tipo_comida}
                   </span>
                 )}
               </div>
