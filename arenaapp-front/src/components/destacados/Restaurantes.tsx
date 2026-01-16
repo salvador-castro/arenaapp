@@ -43,19 +43,19 @@ const API_BASE = (
 
 const DESTACADOS_ENDPOINT = `${API_BASE}/api/admin/restaurantes/destacados`
 
-function renderPriceRange (rango: number | null | undefined): string {
+function renderPriceRange(rango: number | null | undefined): string {
   if (!rango || rango < 1) return '-'
   const value = Math.min(Math.max(rango, 1), 5)
   return '$'.repeat(value)
 }
 
-function renderStars (estrellas: number | null | undefined): string {
+function renderStars(estrellas: number | null | undefined): string {
   if (!estrellas || estrellas < 1) return '-'
   const value = Math.min(Math.max(estrellas, 1), 5)
   return '★'.repeat(value)
 }
 
-function getInstagramHandle (url: string | null): string {
+function getInstagramHandle(url: string | null): string {
   if (!url) return 'Instagram'
   try {
     const u = new URL(url)
@@ -67,7 +67,7 @@ function getInstagramHandle (url: string | null): string {
   }
 }
 
-export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
+export default function RestaurantesDestacados({ isLoggedIn }: Props) {
   const { goTo } = useAuthRedirect(isLoggedIn)
   const { auth }: any = useAuth()
   const userRole: string | undefined = auth?.user?.role // por ahora se mantiene aunque no se use
@@ -195,7 +195,7 @@ export default function RestaurantesDestacados ({ isLoggedIn }: Props) {
     setSelectedPlace(null)
   }
 
-  const topPlaces = places.slice(0, 4)
+  const topPlaces = places
 
   return (
     <section className='mt-4 space-y-3'>
