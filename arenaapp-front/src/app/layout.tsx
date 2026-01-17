@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import './globals.css'
 import Providers from './Providers'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Analytics } from '@vercel/analytics/next'
 import { LocaleProvider } from '@/context/LocaleContext'
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Providers>{children}</Providers>
         </LocaleProvider>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   )
