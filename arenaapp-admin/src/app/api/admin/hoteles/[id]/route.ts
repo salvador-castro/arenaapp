@@ -5,20 +5,14 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { AdminHotel, AdminHotelPayload, HotelDetalle } from '@/types/hotel'
 import { autoTranslate } from '@/lib/translateHelper'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
 
-function corsBaseHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsBaseHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     },
@@ -40,7 +34,7 @@ export async function GET(
     if (Number.isNaN(hotelId)) {
       return new NextResponse('ID inválido', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -54,14 +48,14 @@ export async function GET(
       console.error('Supabase error GET hotel [id]:', error)
       return new NextResponse(error.message, {
         status: 500,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     if (!data) {
       return new NextResponse('Hotel no encontrado', {
         status: 404,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -76,12 +70,13 @@ export async function GET(
       detalle,
     }
 
-    return NextResponse.json(result, { headers: corsBaseHeaders() })
+    return NextResponse.json(result, { headers: getCorsHeaders(req.headers.get('origin')) })
   } catch (err: any) {
     console.error('Error en GET /api/admin/hoteles/[id]', err)
+    const origin = req.headers.get('origin')
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -101,7 +96,7 @@ export async function PUT(
     if (Number.isNaN(hotelId)) {
       return new NextResponse('ID inválido', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -111,7 +106,7 @@ export async function PUT(
     if (!hotel?.nombre) {
       return new NextResponse('El nombre es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -162,7 +157,7 @@ export async function PUT(
       console.error('Supabase error PUT hotel [id]:', updateError)
       return new NextResponse(updateError.message, {
         status: 500,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -205,12 +200,13 @@ export async function PUT(
       })
     }
 
-    return NextResponse.json(result, { headers: corsBaseHeaders() })
+    return NextResponse.json(result, { headers: getCorsHeaders(req.headers.get('origin')) })
   } catch (err: any) {
     console.error('Error en PUT /api/admin/hoteles/[id]', err)
+    const origin = req.headers.get('origin')
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -230,7 +226,7 @@ export async function DELETE(
     if (Number.isNaN(hotelId)) {
       return new NextResponse('ID inválido', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -246,19 +242,20 @@ export async function DELETE(
       console.error('Supabase error DELETE hotel [id]:', delError)
       return new NextResponse(delError.message, {
         status: 500,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   } catch (err: any) {
     console.error('Error en DELETE /api/admin/hoteles/[id]', err)
+    const origin = req.headers.get('origin')
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }

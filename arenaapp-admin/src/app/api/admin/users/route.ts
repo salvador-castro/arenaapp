@@ -5,23 +5,17 @@ import bcrypt from 'bcryptjs'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
 
-function corsHeaders(extra: Record<string, string> = {}) {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-    ...extra,
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders({
+    headers: {
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
-    }),
+    },
   })
 }
 
@@ -54,14 +48,17 @@ export async function GET(req: NextRequest) {
       `
     )
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(rows), {
       status: 200,
-      headers: corsHeaders({
+      headers: {
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
-      }),
+      },
     })
   } catch (err: any) {
     console.error('Error GET /api/admin/users:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -69,19 +66,19 @@ export async function GET(req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse('Error al obtener usuarios', {
       status: 500,
-      headers: corsHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -108,7 +105,7 @@ export async function POST(req: NextRequest) {
     if (!nombre || !apellido || !email || !password) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -155,20 +152,23 @@ export async function POST(req: NextRequest) {
 
     const user = rows[0] ?? null
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(user), {
       status: 201,
-      headers: corsHeaders({
+      headers: {
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
-      }),
+      },
     })
   } catch (err: any) {
     console.error('Error POST /api/admin/users:', err)
+    const origin = req.headers.get('origin')
 
     // Código de duplicado en Postgres suele ser 23505
     if (err.code === '23505') {
       return new NextResponse('El email ya está registrado', {
         status: 409,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
@@ -178,19 +178,19 @@ export async function POST(req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse('Error al crear usuario', {
       status: 500,
-      headers: corsHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }

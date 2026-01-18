@@ -4,20 +4,14 @@ import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
 import { autoTranslate } from '@/lib/translateHelper'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
 
-function corsBaseHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsBaseHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
@@ -168,13 +162,14 @@ export async function GET(req: NextRequest) {
       {
         status: 200,
         headers: {
-          ...corsBaseHeaders(),
+          ...getCorsHeaders(req.headers.get('origin')),
           'Content-Type': 'application/json',
         },
       }
     )
   } catch (err: any) {
     console.error('Error GET /api/admin/restaurantes:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -182,19 +177,19 @@ export async function GET(req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener restaurantes', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -241,9 +236,10 @@ export async function POST(req: NextRequest) {
       !resena ||
       !url_imagen
     ) {
+      const origin = req.headers.get('origin')
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
@@ -336,15 +332,17 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(restaurant), {
       status: 201,
       headers: {
-        ...corsBaseHeaders(),
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
       },
     })
   } catch (err: any) {
     console.error('Error POST /api/admin/restaurantes:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -352,19 +350,19 @@ export async function POST(req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al crear restaurante', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }

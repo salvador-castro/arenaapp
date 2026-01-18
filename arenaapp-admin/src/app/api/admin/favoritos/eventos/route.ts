@@ -3,21 +3,16 @@ import { getDb } from '@/lib/db'
 import { verifyAuth } from '@/lib/auth'
 import type { JwtPayload } from '@/lib/auth'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
+
 const FAVORITO_TIPO_EVENTO = 'EVENTO' as const
 
-function corsBaseHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsBaseHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     },
@@ -44,7 +39,7 @@ export async function GET(req: NextRequest) {
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -82,15 +77,17 @@ export async function GET(req: NextRequest) {
       [userId, FAVORITO_TIPO_EVENTO]
     )
 
+    const origin = req.headers.get('origin')
     return NextResponse.json(rows, {
       status: 200,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   } catch (err) {
     console.error('Error GET /favoritos/eventos', err)
+    const origin = req.headers.get('origin')
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -102,7 +99,7 @@ export async function POST(req: NextRequest) {
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -114,7 +111,7 @@ export async function POST(req: NextRequest) {
     if (!eventoId || Number.isNaN(eventoId)) {
       return new NextResponse('eventoId inválido', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -127,15 +124,17 @@ export async function POST(req: NextRequest) {
       [userId, FAVORITO_TIPO_EVENTO, eventoId]
     )
 
+    const origin = req.headers.get('origin')
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   } catch (err) {
     console.error('Error POST /favoritos/eventos', err)
+    const origin = req.headers.get('origin')
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -147,7 +146,7 @@ export async function DELETE(req: NextRequest) {
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -159,7 +158,7 @@ export async function DELETE(req: NextRequest) {
     if (!eventoId || Number.isNaN(eventoId)) {
       return new NextResponse('eventoId inválido', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -173,15 +172,17 @@ export async function DELETE(req: NextRequest) {
       [userId, FAVORITO_TIPO_EVENTO, eventoId]
     )
 
+    const origin = req.headers.get('origin')
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   } catch (err) {
     console.error('Error DELETE /favoritos/eventos', err)
+    const origin = req.headers.get('origin')
     return new NextResponse('Error interno', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }

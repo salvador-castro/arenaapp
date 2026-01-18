@@ -4,20 +4,14 @@ import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
 import { autoTranslate } from '@/lib/translateHelper'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
 
-function corsBaseHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsBaseHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
@@ -161,13 +155,14 @@ export async function GET(req: NextRequest) {
       {
         status: 200,
         headers: {
-          ...corsBaseHeaders(),
+          ...getCorsHeaders(req.headers.get('origin')),
           'Content-Type': 'application/json',
         },
       }
     )
   } catch (err: any) {
     console.error('Error GET /api/admin/eventos:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -175,19 +170,19 @@ export async function GET(req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener eventos', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -221,58 +216,58 @@ export async function POST(req: NextRequest) {
 
     // ===== Validaciones de obligatorios =====
     if (!titulo) {
-      return new NextResponse('El título es obligatorio', {
+      return new NextResponse('La fecha de inicio es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     if (!categoria) {
       return new NextResponse('La categoría es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     if (!zona || (Array.isArray(zona) && zona.length === 0)) {
       return new NextResponse('La zona es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     if (!direccion) {
       return new NextResponse('La dirección es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     if (typeof es_gratuito !== 'boolean') {
       return new NextResponse('El campo "es_gratuito" es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     if (!url_entradas) {
       return new NextResponse('La URL de entradas es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     if (!estado) {
       return new NextResponse('El estado es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
     if (!fecha_inicio) {
       return new NextResponse('La fecha de inicio es obligatoria', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -286,7 +281,7 @@ export async function POST(req: NextRequest) {
           'El campo "Precio desde" es obligatorio si el evento no es gratuito',
           {
             status: 400,
-            headers: corsBaseHeaders(),
+            headers: getCorsHeaders(req.headers.get('origin')),
           }
         )
       }
@@ -387,15 +382,17 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(evento), {
       status: 201,
       headers: {
-        ...corsBaseHeaders(),
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
       },
     })
   } catch (err: any) {
     console.error('Error POST /api/admin/eventos:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -403,19 +400,19 @@ export async function POST(req: NextRequest) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al crear evento', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }

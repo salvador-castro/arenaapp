@@ -10,18 +10,14 @@ type ContextWithId = {
   params: Promise<{ id: string }>
 }
 
-function corsBaseHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
+import { getCorsHeaders } from '@/lib/cors'
 
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsBaseHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
@@ -71,41 +67,44 @@ export async function GET(req: NextRequest, context: ContextWithId) {
     const bar = result.rows[0]
 
     if (!bar) {
+      const origin = req.headers.get('origin')
       return new NextResponse('Bar no encontrado', {
         status: 404,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(bar), {
       status: 200,
       headers: {
-        ...corsBaseHeaders(),
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
       },
     })
   } catch (err: any) {
     console.error('Error GET /api/admin/cafes/[id]:', err)
 
+    const origin = req.headers.get('origin')
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
       err.message === 'UNAUTHORIZED_INVALID_TOKEN'
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener bar', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -153,9 +152,10 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       !resena ||
       !url_imagen
     ) {
+      const origin = req.headers.get('origin')
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
@@ -249,35 +249,37 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       })
     }
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(bar), {
       status: 200,
       headers: {
-        ...corsBaseHeaders(),
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
       },
     })
   } catch (err: any) {
     console.error('Error PUT /api/admin/cafes/[id]:', err)
 
+    const origin = req.headers.get('origin')
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
       err.message === 'UNAUTHORIZED_INVALID_TOKEN'
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al actualizar bar', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -293,32 +295,34 @@ export async function DELETE(req: NextRequest, context: ContextWithId) {
 
     await db.query('DELETE FROM cafes WHERE id = $1', [id])
 
+    const origin = req.headers.get('origin')
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   } catch (err: any) {
     console.error('Error DELETE /api/admin/cafes/[id]:', err)
 
+    const origin = req.headers.get('origin')
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
       err.message === 'UNAUTHORIZED_INVALID_TOKEN'
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al eliminar bar', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }

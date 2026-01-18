@@ -5,20 +5,14 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { AdminHotel, AdminHotelPayload, HotelDetalle } from '@/types/hotel'
 import { autoTranslate } from '@/lib/translateHelper'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
 
-function corsBaseHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsBaseHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     },
@@ -71,7 +65,7 @@ export async function GET(req: NextRequest) {
       console.error('Supabase error GET hoteles:', error)
       return new NextResponse(error.message, {
         status: 500,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -100,13 +94,14 @@ export async function GET(req: NextRequest) {
         total,
         totalPages,
       },
-      { headers: corsBaseHeaders() }
+      { headers: getCorsHeaders(req.headers.get('origin')) }
     )
   } catch (err: any) {
     console.error('Error en GET /api/admin/hoteles', err)
+    const origin = req.headers.get('origin')
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -123,7 +118,7 @@ export async function POST(req: NextRequest) {
     if (!hotel?.nombre) {
       return new NextResponse('El nombre es obligatorio', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -174,7 +169,7 @@ export async function POST(req: NextRequest) {
       console.error('Supabase error POST hoteles:', insertError)
       return new NextResponse(insertError.message, {
         status: 500,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -214,13 +209,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, {
       status: 201,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   } catch (err: any) {
     console.error('Error en POST /api/admin/hoteles', err)
+    const origin = req.headers.get('origin')
     return new NextResponse(err.message || 'Error interno', {
       status: err.status || 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }

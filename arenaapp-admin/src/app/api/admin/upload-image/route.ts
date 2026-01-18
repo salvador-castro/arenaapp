@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'https://arenapress.app'
+import { getCorsHeaders } from '@/lib/cors'
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -17,18 +17,12 @@ const supabase =
     ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     : null
 
-function corsHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
@@ -40,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (!supabase) {
       return new NextResponse('Supabase no configurado en el servidor', {
         status: 500,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -52,7 +46,7 @@ export async function POST(req: NextRequest) {
     if (!file) {
       return new NextResponse('No se envió archivo', {
         status: 400,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -82,7 +76,7 @@ export async function POST(req: NextRequest) {
       console.error('Error subiendo a Supabase Storage:', uploadError)
       return new NextResponse('Error al subir imagen', {
         status: 500,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -91,6 +85,7 @@ export async function POST(req: NextRequest) {
       .getPublicUrl(storagePath)
 
     const publicUrl = publicData.publicUrl
+    const origin = req.headers.get('origin')
 
     return new NextResponse(
       JSON.stringify({
@@ -100,7 +95,7 @@ export async function POST(req: NextRequest) {
       {
         status: 200,
         headers: {
-          ...corsHeaders(),
+          ...getCorsHeaders(origin),
           'Content-Type': 'application/json',
         },
       }
@@ -109,7 +104,7 @@ export async function POST(req: NextRequest) {
     console.error('Error en upload-image:', err)
     return new NextResponse('Error al subir imagen', {
       status: 500,
-      headers: corsHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   }
 }

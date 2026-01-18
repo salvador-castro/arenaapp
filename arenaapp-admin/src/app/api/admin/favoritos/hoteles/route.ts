@@ -4,21 +4,16 @@ import { getDb } from '@/lib/db'
 import { verifyAuth } from '@/lib/auth'
 import type { JwtPayload } from '@/lib/auth'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
+
 const FAVORITO_TIPO_HOTEL = 'HOTEL' as const
 
-function corsBaseHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsBaseHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     },
@@ -39,7 +34,7 @@ export async function GET(req: NextRequest) {
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -96,13 +91,13 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(rows, {
       status: 200,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   } catch (err) {
     console.error('GET favoritos/hoteles', err)
     return new NextResponse('Error', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   }
 }
@@ -113,7 +108,7 @@ export async function POST(req: NextRequest) {
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -125,7 +120,7 @@ export async function POST(req: NextRequest) {
     if (!hotelId) {
       return new NextResponse('hotelId inválido', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -140,13 +135,13 @@ export async function POST(req: NextRequest) {
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   } catch (err) {
     console.error('POST favoritos/hoteles', err)
     return new NextResponse('Error', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   }
 }
@@ -157,7 +152,7 @@ export async function DELETE(req: NextRequest) {
     if (!payload) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -169,7 +164,7 @@ export async function DELETE(req: NextRequest) {
     if (!hotelId) {
       return new NextResponse('hotelId inválido', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -185,13 +180,13 @@ export async function DELETE(req: NextRequest) {
 
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   } catch (err) {
     console.error('DELETE favoritos/hoteles', err)
     return new NextResponse('Error', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(req.headers.get('origin')),
     })
   }
 }

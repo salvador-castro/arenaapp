@@ -3,23 +3,17 @@ import bcrypt from 'bcryptjs'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
 
-function corsHeaders(extra: Record<string, string> = {}) {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-    ...extra,
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders({
+    headers: {
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
-    }),
+    },
   })
 }
 
@@ -61,20 +55,24 @@ export async function GET(
     const user = rows[0] ?? null
 
     if (!user) {
+      const origin = req.headers.get('origin')
       return new NextResponse('Usuario no encontrado', {
         status: 404,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(user), {
       status: 200,
-      headers: corsHeaders({
+      headers: {
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
-      }),
+      },
     })
   } catch (err: any) {
     console.error('Error GET /api/admin/users/[id]:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -82,19 +80,19 @@ export async function GET(
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse('Error al obtener usuario', {
       status: 500,
-      headers: corsHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -126,7 +124,7 @@ export async function PUT(
     if (!nombre || !apellido || !email) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -171,7 +169,7 @@ export async function PUT(
       if (result.rowCount === 0) {
         return new NextResponse('Usuario no encontrado', {
           status: 404,
-          headers: corsHeaders(),
+          headers: getCorsHeaders(req.headers.get('origin')),
         })
       }
     } else {
@@ -206,7 +204,7 @@ export async function PUT(
       if (result.rowCount === 0) {
         return new NextResponse('Usuario no encontrado', {
           status: 404,
-          headers: corsHeaders(),
+          headers: getCorsHeaders(req.headers.get('origin')),
         })
       }
     }
@@ -234,21 +232,24 @@ export async function PUT(
     )
 
     const user = rows[0] ?? null
+    const origin = req.headers.get('origin')
 
     return new NextResponse(JSON.stringify(user), {
       status: 200,
-      headers: corsHeaders({
+      headers: {
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
-      }),
+      },
     })
   } catch (err: any) {
     console.error('Error PUT /api/admin/users/[id]:', err)
+    const origin = req.headers.get('origin')
 
     // clave duplicada en Postgres
     if (err.code === '23505') {
       return new NextResponse('El email ya está registrado', {
         status: 409,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
@@ -258,19 +259,19 @@ export async function PUT(
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse('Error al actualizar usuario', {
       status: 500,
-      headers: corsHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -293,16 +294,18 @@ export async function DELETE(
     if (result.rowCount === 0) {
       return new NextResponse('Usuario no encontrado', {
         status: 404,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
+    const origin = req.headers.get('origin')
     return new NextResponse(null, {
       status: 204,
-      headers: corsHeaders(),
+      headers: getCorsHeaders(origin),
     })
   } catch (err: any) {
     console.error('Error DELETE /api/admin/users/[id]:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -310,19 +313,19 @@ export async function DELETE(
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse('Error al eliminar usuario', {
       status: 500,
-      headers: corsHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }

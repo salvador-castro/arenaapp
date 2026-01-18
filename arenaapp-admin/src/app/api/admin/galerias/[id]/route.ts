@@ -3,24 +3,18 @@ import { getDb } from '@/lib/db'
 import { verifyAuth, requireAdmin } from '@/lib/auth'
 import { autoTranslate } from '@/lib/translateHelper'
 
-const FRONT_ORIGIN = process.env.FRONT_ORIGIN || 'http://localhost:3000'
+import { getCorsHeaders } from '@/lib/cors'
 
 type ContextWithId = {
   params: Promise<{ id: string }>
 }
 
-function corsBaseHeaders() {
-  return {
-    'Access-Control-Allow-Origin': FRONT_ORIGIN,
-    'Access-Control-Allow-Credentials': 'true',
-  }
-}
-
-export function OPTIONS() {
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsBaseHeaders(),
+      ...getCorsHeaders(origin),
       'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
@@ -49,21 +43,24 @@ export async function GET(req: NextRequest, context: ContextWithId) {
     const galeria = result.rows[0]
 
     if (!galeria) {
+      const origin = req.headers.get('origin')
       return new NextResponse('Galería no encontrada', {
         status: 404,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(galeria), {
       status: 200,
       headers: {
-        ...corsBaseHeaders(),
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
       },
     })
   } catch (err: any) {
     console.error('Error GET /api/admin/galerias/[id]:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -71,19 +68,19 @@ export async function GET(req: NextRequest, context: ContextWithId) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al obtener galería', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -129,7 +126,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
     if (!nombre || !direccion || !resena || !url_imagen) {
       return new NextResponse('Faltan campos obligatorios', {
         status: 400,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(req.headers.get('origin')),
       })
     }
 
@@ -247,15 +244,17 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       })
     }
 
+    const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(galeria), {
       status: 200,
       headers: {
-        ...corsBaseHeaders(),
+        ...getCorsHeaders(origin),
         'Content-Type': 'application/json',
       },
     })
   } catch (err: any) {
     console.error('Error PUT /api/admin/galerias/[id]:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -263,19 +262,19 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al actualizar galería', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
@@ -291,12 +290,14 @@ export async function DELETE(req: NextRequest, context: ContextWithId) {
 
     await db.query('DELETE FROM galerias WHERE id = $1', [id])
 
+    const origin = req.headers.get('origin')
     return new NextResponse(null, {
       status: 204,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   } catch (err: any) {
     console.error('Error DELETE /api/admin/galerias/[id]:', err)
+    const origin = req.headers.get('origin')
 
     if (
       err.message === 'UNAUTHORIZED_NO_TOKEN' ||
@@ -304,19 +305,19 @@ export async function DELETE(req: NextRequest, context: ContextWithId) {
     ) {
       return new NextResponse('No autorizado', {
         status: 401,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
     if (err.message === 'FORBIDDEN_NOT_ADMIN') {
       return new NextResponse('Prohibido', {
         status: 403,
-        headers: corsBaseHeaders(),
+        headers: getCorsHeaders(origin),
       })
     }
 
     return new NextResponse(err?.message || 'Error al eliminar galería', {
       status: 500,
-      headers: corsBaseHeaders(),
+      headers: getCorsHeaders(origin),
     })
   }
 }
