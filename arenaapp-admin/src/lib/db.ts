@@ -26,14 +26,11 @@ if (process.env.NODE_ENV !== 'production') {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
   if (!global.pgPool) {
-<<<<<<< HEAD
     console.log('🔌 CREATING NEW DEV DB POOL 🔌')
     global.pgPool = new Pool(config)
   } else {
     console.log('♻️ REUSING DEV DB POOL ♻️')
-=======
-    global.pgPool = new Pool(config)
->>>>>>> develop
+    global.pgPool = global.pgPool
   }
   pool = global.pgPool
 } else {
@@ -42,9 +39,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export async function getDb() {
-<<<<<<< HEAD
   console.log(`📊 Pool stats: total=${pool.totalCount}, idle=${pool.idleCount}, waiting=${pool.waitingCount}`)
-=======
->>>>>>> develop
   return pool
 }
