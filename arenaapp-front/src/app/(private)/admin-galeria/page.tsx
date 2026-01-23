@@ -585,7 +585,7 @@ export default function GaleriasPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs mb-1 text-slate-300">
-                      Nombre *
+                      Nombre galeria*
                     </label>
                     <input
                       type="text"
@@ -733,7 +733,7 @@ export default function GaleriasPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-xs mb-1 text-slate-300">
-                      Hora desde
+                      Hora galeria desde
                     </label>
                     <input
                       type="time"
@@ -745,7 +745,7 @@ export default function GaleriasPage() {
                   </div>
                   <div>
                     <label className="block text-xs mb-1 text-slate-300">
-                      Hora hasta
+                      Hora galeria hasta
                     </label>
                     <input
                       type="time"

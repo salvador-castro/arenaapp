@@ -752,6 +752,25 @@ export default function GaleriasPage() {
                          </a>
                     </div>
                   )}
+
+                  {/* Instagram */}
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-300">
+                      Instagram
+                    </p>
+                    {selectedGaleria.instagram ? (
+                      <a
+                        href={selectedGaleria.instagram}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
+                      >
+                        {selectedGaleria.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@').replace(/\/$/, '')}
+                      </a>
+                    ) : (
+                      <p className="text-slate-400">{t.modal.noData}</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Botones cierre + favorito */}
