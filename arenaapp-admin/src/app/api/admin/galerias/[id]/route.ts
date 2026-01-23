@@ -120,6 +120,10 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       es_destacado,
       estado,
       estrellas,
+      nombre_muestra,
+      artistas,
+      fecha_inauguracion,
+      hora_inauguracion,
     } = body
 
     // Obligatorios
@@ -162,8 +166,12 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         es_destacado = $24,
         estado = $25,
         estrellas = $26,
+        nombre_muestra = $27,
+        artistas = $28,
+        fecha_inauguracion = $29,
+        hora_inauguracion = $30,
         updated_at = now()
-      WHERE id = $27
+      WHERE id = $31
       `,
       [
         nombre, // $1
@@ -192,7 +200,11 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         !!es_destacado, // $24
         estado || 'PUBLICADO', // $25
         estrellas ? Number(estrellas) : null, // $26
-        id, // $27
+        nombre_muestra || null, // $27
+        artistas || null, // $28
+        fecha_inauguracion || null, // $29
+        hora_inauguracion || null, // $30
+        id, // $31
       ]
     )
 
@@ -228,7 +240,11 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         es_destacado,
         estado,
         created_at,
-        updated_at
+        updated_at,
+        nombre_muestra,
+        artistas,
+        fecha_inauguracion,
+        hora_inauguracion
       FROM galerias
       WHERE id = $1
       `,

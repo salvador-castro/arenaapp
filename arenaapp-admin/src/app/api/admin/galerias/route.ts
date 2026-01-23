@@ -171,6 +171,10 @@ export async function POST(req: NextRequest) {
       es_destacado,
       estado,
       estrellas,
+      nombre_muestra,
+      artistas,
+      fecha_inauguracion,
+      hora_inauguracion,
     } = body
 
     // Obligatorios: nombre, dirección, reseña, imagen
@@ -213,7 +217,11 @@ export async function POST(req: NextRequest) {
         meta_description,
         es_destacado,
         estado,
-        estrellas
+        estrellas,
+        nombre_muestra,
+        artistas,
+        fecha_inauguracion,
+        hora_inauguracion
       )
       VALUES (
         $1, $2, $3, $4, $5,
@@ -221,7 +229,7 @@ export async function POST(req: NextRequest) {
         $11, $12, $13, $14, $15,
         $16, $17, $18, $19, $20,
         $21, $22, $23, $24, $25,
-        $26, $27
+        $26, $27, $28, $29, $30, $31
       )
       RETURNING
         id,
@@ -253,7 +261,11 @@ export async function POST(req: NextRequest) {
         es_destacado,
         estado,
         created_at,
-        updated_at
+        updated_at,
+        nombre_muestra,
+        artistas,
+        fecha_inauguracion,
+        hora_inauguracion
       `,
       [
         nombre, // $1
@@ -283,6 +295,10 @@ export async function POST(req: NextRequest) {
         !!es_destacado, // $25
         estado || 'PUBLICADO', // $26
         estrellas ? Number(estrellas) : null, // $27
+        nombre_muestra || null, // $28
+        artistas || null, // $29
+        fecha_inauguracion || null, // $30
+        hora_inauguracion || null // $31
       ]
     )
 

@@ -34,6 +34,10 @@ interface Galeria {
   url_imagen: string | null
   imagen_principal?: string | null
   estrellas?: number | null
+  nombre_muestra?: string | null
+  artistas?: string | null
+  fecha_inauguracion?: string | null
+  hora_inauguracion?: string | null
 }
 
 const API_BASE = (
@@ -566,35 +570,38 @@ export default function GaleriasPage() {
                   </div>
 
                   <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
+                    {/* Zona */}
                     <p className="text-[10px] uppercase font-semibold text-emerald-400">
                       {g.zona || t.zoneFallback}
                     </p>
-                    <h3 className="text-sm font-semibold line-clamp-1">
+                    
+                    {/* Nombre Galería (Uppercase) */}
+                    <h3 className="text-sm font-semibold line-clamp-1 uppercase">
                       {g.nombre}
                     </h3>
 
-                    {g.descripcion_corta && (
-                      <p className="text-slate-400 line-clamp-2">
-                        {g.descripcion_corta}
+                    {/* Nombre Muestra */}
+                    {g.nombre_muestra && (
+                      <p className="text-slate-200 font-medium capitalize line-clamp-1">
+                        {g.nombre_muestra}
                       </p>
                     )}
 
-                    {typeof g.estrellas === 'number' && g.estrellas > 0 && (
-                      <div className="mt-1">
-                        <span className="inline-flex rounded-full border border-amber-500/60 px-2 py-[2px] text-[10px] text-amber-300">
-                          {g.estrellas}★
-                        </span>
+                    {/* Artista */}
+                    {g.artistas && (
+                      <p className="text-slate-400 line-clamp-1">
+                        {g.artistas}
+                      </p>
+                    )}
+
+                    {/* Fecha Inauguración */}
+                    {g.fecha_inauguracion && (
+                      <div className="mt-1 text-[10px] text-slate-500">
+                        Inauguración: {new Date(g.fecha_inauguracion).toLocaleDateString()}
                       </div>
                     )}
 
-                    {g.direccion && (
-                      <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-500 line-clamp-1">
-                        <MapPin size={11} />
-                        <span>{g.direccion}</span>
-                      </div>
-                    )}
-
-                    <div className="mt-2 flex justify-end">
+                    <div className="mt-auto flex justify-end pt-2">
                       <button
                         type="button"
                         onClick={() => openModalFromCard(g)}
@@ -680,38 +687,43 @@ export default function GaleriasPage() {
                     <p className="text-[11px] uppercase font-semibold text-emerald-400">
                       {selectedGaleria.zona || t.zoneFallback}
                     </p>
-                    <h3 className="text-lg font-semibold">
+                    <h3 className="text-lg font-semibold uppercase">
                       {selectedGaleria.nombre}
                     </h3>
 
-                    {(selectedGaleria.estrellas ||
-                      selectedGaleria.anio_fundacion) && (
-                      <div className="flex items-center gap-2 mt-1 text-[12px]">
-                        {selectedGaleria.estrellas &&
-                          selectedGaleria.estrellas > 0 && (
-                            <span className="text-amber-400">
-                              {renderStars(selectedGaleria.estrellas)}
-                            </span>
-                          )}
-                        {selectedGaleria.anio_fundacion && (
-                          <span className="text-slate-400">
-                            {t.modal.foundedIn} {selectedGaleria.anio_fundacion}
-                          </span>
-                        )}
-                      </div>
+                    {/* Muestra */}
+                    {selectedGaleria.nombre_muestra && (
+                        <p className="text-base text-slate-200 font-medium capitalize">
+                            {selectedGaleria.nombre_muestra}
+                        </p>
+                    )}
+
+                    {/* Artista */}
+                    {selectedGaleria.artistas && (
+                        <p className="text-sm text-slate-400">
+                            {selectedGaleria.artistas}
+                        </p>
+                    )}
+
+                    {/* Fecha y Hora */}
+                    {selectedGaleria.fecha_inauguracion && (
+                        <p className="text-xs text-slate-500 mt-1">
+                            Inauguración: {new Date(selectedGaleria.fecha_inauguracion).toLocaleDateString()}
+                            {selectedGaleria.hora_inauguracion ? ` - ${selectedGaleria.hora_inauguracion.slice(0,5)}` : ''}
+                        </p>
+                    )}
+
+                     {/* Horario Galeria */}
+                    {(selectedGaleria.horario_desde || selectedGaleria.horario_hasta) && (
+                        <p className="text-xs text-slate-500">
+                            Horario: {selectedGaleria.horario_desde?.slice(0,5) || '?'} - {selectedGaleria.horario_hasta?.slice(0,5) || '?'}
+                        </p>
                     )}
                   </div>
                 </div>
 
-                {selectedGaleria.resena && (
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold">{t.modal.review}</h4>
-                    <p className="text-[12px] text-slate-300 whitespace-pre-line">
-                      {selectedGaleria.resena}
-                    </p>
-                  </div>
-                )}
-
+                {/* Reseña oculta por pedido usuario */}
+                
                 <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-slate-300">
@@ -721,46 +733,25 @@ export default function GaleriasPage() {
                       {selectedGaleria.direccion || t.modal.noData}
                     </p>
                   </div>
-
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      {t.modal.website}
-                    </p>
-                    {selectedGaleria.sitio_web ? (
-                      <a
-                        href={selectedGaleria.sitio_web}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
-                      >
-                        {selectedGaleria.sitio_web}
-                      </a>
-                    ) : (
-                      <p className="text-slate-400">{t.modal.noData}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      {t.modal.entry}
-                    </p>
-                    <p className="text-slate-400">
-                      {selectedGaleria.tiene_entrada_gratuita
-                        ? t.modal.entryFree
-                        : t.modal.entryPaid}
-                    </p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      {t.modal.reservation}
-                    </p>
-                    <p className="text-slate-400">
-                      {selectedGaleria.requiere_reserva
-                        ? t.modal.reservationRequired
-                        : t.modal.reservationNotRequired}
-                    </p>
-                  </div>
+                  
+                  {/* Como llegar */}
+                  {selectedGaleria.direccion && (
+                    <div className="space-y-1">
+                         <p className="text-xs font-semibold text-slate-300">
+                            Cómo llegar
+                         </p>
+                         <a
+                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                             selectedGaleria.direccion + (selectedGaleria.ciudad ? `, ${selectedGaleria.ciudad}` : '')
+                           )}`}
+                           target="_blank"
+                           rel="noreferrer"
+                           className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
+                         >
+                            Ver en mapa
+                         </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Botones cierre + favorito */}

@@ -47,6 +47,11 @@ interface AdminGallery {
   lat?: number | null
   lng?: number | null
   estrellas?: number | null
+
+  nombre_muestra?: string | null
+  artistas?: string | null
+  fecha_inauguracion?: string | null
+  hora_inauguracion?: string | null
 }
 
 interface FormValues {
@@ -63,6 +68,10 @@ interface FormValues {
   url_imagen: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
   estrellas: number | ''
+  nombre_muestra: string
+  artistas: string
+  fecha_inauguracion: string
+  hora_inauguracion: string
 }
 
 export default function GaleriasPage() {
@@ -95,6 +104,10 @@ export default function GaleriasPage() {
     url_imagen: '',
     estado: 'PUBLICADO',
     estrellas: '',
+    nombre_muestra: '',
+    artistas: '',
+    fecha_inauguracion: '',
+    hora_inauguracion: '',
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -180,6 +193,10 @@ export default function GaleriasPage() {
       url_imagen: '',
       estado: 'PUBLICADO',
       estrellas: '',
+      nombre_muestra: '',
+      artistas: '',
+      fecha_inauguracion: '',
+      hora_inauguracion: '',
     })
     setIsFormOpen(true)
   }
@@ -228,6 +245,10 @@ export default function GaleriasPage() {
       url_imagen: g.url_imagen ?? '', // 👈 importante
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO',
       estrellas: typeof g.estrellas === 'number' ? g.estrellas : '',
+      nombre_muestra: g.nombre_muestra ?? '',
+      artistas: g.artistas ?? '',
+      fecha_inauguracion: g.fecha_inauguracion ? new Date(g.fecha_inauguracion).toISOString().split('T')[0] : '',
+      hora_inauguracion: g.hora_inauguracion ? g.hora_inauguracion.slice(0, 5) : '',
     })
 
     setIsFormOpen(true)
@@ -586,6 +607,64 @@ export default function GaleriasPage() {
                       value={formValues.direccion}
                       onChange={handleChange}
                       required
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                    />
+                  </div>
+                </div>
+
+                {/* Campos nuevos: Nombre Muestra, Artistas */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs mb-1 text-slate-300">
+                      Nombre Muestra
+                    </label>
+                    <input
+                      type="text"
+                      name="nombre_muestra"
+                      value={formValues.nombre_muestra}
+                      onChange={handleChange}
+                      placeholder="Ej: Hola Mundo"
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs mb-1 text-slate-300">
+                      Artistas
+                    </label>
+                    <input
+                      type="text"
+                      name="artistas"
+                      value={formValues.artistas}
+                      onChange={handleChange}
+                      placeholder="Nombre del artista"
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                    />
+                  </div>
+                </div>
+
+                {/* Campos nuevos: Fecha/Hora Inauguración */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs mb-1 text-slate-300">
+                      Fecha Inauguración
+                    </label>
+                    <input
+                      type="date"
+                      name="fecha_inauguracion"
+                      value={formValues.fecha_inauguracion}
+                      onChange={handleChange}
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs mb-1 text-slate-300">
+                      Hora Inauguración
+                    </label>
+                    <input
+                      type="time"
+                      name="hora_inauguracion"
+                      value={formValues.hora_inauguracion}
+                      onChange={handleChange}
                       className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>

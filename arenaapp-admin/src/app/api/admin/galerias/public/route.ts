@@ -110,6 +110,11 @@ export async function GET(req: NextRequest) {
       meta_description: pickTranslated(row, 'meta_description', lang),
       created_at: row.created_at,
       updated_at: row.updated_at,
+      // Nuevos campos
+      nombre_muestra: pickTranslated(row, 'nombre_muestra', lang), // Support translation if needed, or just row.nombre_muestra
+      artistas: row.artistas,
+      fecha_inauguracion: row.fecha_inauguracion,
+      hora_inauguracion: row.hora_inauguracion,
     }))
 
     const origin = req.headers.get('origin')
