@@ -179,7 +179,7 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
   const handleMoreInfo = (place: Galeria) => {
     // si NO está logueado → login con redirect a /galerias?galeriaId=ID
     if (!isLoggedIn) {
-      const redirectUrl = `/galerias?galeriaId=${place.id}`
+      const redirectUrl = `/galerias-museos?galeriaId=${place.id}`
       goTo(redirectUrl)
       return
     }
@@ -210,7 +210,7 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
         <button
           type="button"
           className="text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
-          onClick={() => goTo('/galerias')}
+          onClick={() => goTo('/galerias-museos')}
         >
           {t.seeAll}
         </button>

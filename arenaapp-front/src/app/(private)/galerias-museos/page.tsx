@@ -245,8 +245,8 @@ export default function GaleriasPage() {
 
     if (!user) {
       const redirectUrl = galeriaId
-        ? `/galerias?galeriaId=${galeriaId}`
-        : '/galerias'
+        ? `/galerias-museos?galeriaId=${galeriaId}`
+        : '/galerias-museos'
 
       router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
       return
@@ -338,13 +338,13 @@ export default function GaleriasPage() {
   const closeModal = () => {
     setIsModalOpen(false)
     setSelectedGaleria(null)
-    router.push('/galerias')
+    router.push('/galerias-museos')
   }
 
   const openModalFromCard = (galeria: Galeria) => {
     setSelectedGaleria(galeria)
     setIsModalOpen(true)
-    router.push(`/galerias?galeriaId=${galeria.id}`)
+    router.push(`/galerias-museos?galeriaId=${galeria.id}`)
   }
 
   // 5) Opciones dinámicas (zonas)

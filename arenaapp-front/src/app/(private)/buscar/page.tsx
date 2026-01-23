@@ -570,7 +570,7 @@ export default function BuscarPage() {
         image:
           g.url_imagen || '/images/placeholders/restaurante-placeholder.jpg',
         badges,
-        detailUrl: `/galerias?galeriaId=${g.id}`,
+        detailUrl: `/galerias-museos?galeriaId=${g.id}`,
         isHighlighted: g.es_destacado,
         stars: g.estrellas || undefined,
       })

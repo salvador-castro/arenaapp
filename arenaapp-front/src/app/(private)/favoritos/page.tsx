@@ -506,7 +506,7 @@ export default function FavoritosPage() {
         router.push(`/hoteles?hotelId=${item.item_id}`)
         break
       case 'GALERIA':
-        router.push(`/galerias?galeriaId=${item.item_id}`)
+        router.push(`/galerias-museos?galeriaId=${item.item_id}`)
         break
       case 'SHOPPING':
         router.push(`/shopping?shoppingId=${item.item_id}`)
