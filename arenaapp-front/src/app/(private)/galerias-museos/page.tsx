@@ -4,9 +4,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { useLocale } from '@/context/LocaleContext' // 👈 NUEVO
+import { useLocale } from '@/context/LocaleContext'
 import Image from 'next/image'
-import { SlidersHorizontal, ChevronDown, MapPin } from 'lucide-react'
+import { SlidersHorizontal, ChevronDown, MapPin, Instagram } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
 
@@ -60,6 +60,18 @@ function renderStars(estrellas: number | null | undefined): string {
   if (!estrellas || estrellas < 1) return '-'
   const value = Math.min(Math.max(estrellas, 1), 5)
   return '★'.repeat(value)
+}
+
+function getInstagramHandle(url: string | null): string {
+  if (!url) return 'Instagram'
+  try {
+    const u = new URL(url)
+    const cleanPath = u.pathname.replace(/\/$/, '')
+    const last = cleanPath.split('/').filter(Boolean).pop()
+    return last || 'Instagram'
+  } catch {
+    return 'Instagram'
+  }
 }
 
 /* ---------------- i18n simple (es, en, pt) ---------------- */
@@ -713,11 +725,26 @@ export default function GaleriasPage() {
                         </p>
                     )}
 
-                     {/* Horario Galeria */}
+     {/* Horario Galeria */}
                     {(selectedGaleria.horario_desde || selectedGaleria.horario_hasta) && (
                         <p className="text-xs text-slate-500">
                             Horario: {selectedGaleria.horario_desde?.slice(0,5) || '?'} - {selectedGaleria.horario_hasta?.slice(0,5) || '?'}
                         </p>
+                    )}
+
+                    {selectedGaleria.instagram && (
+                      <a
+                        href={selectedGaleria.instagram}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[12px] text-pink-400 hover:text-pink-300 mt-1"
+                      >
+                        <Instagram size={14} />
+                        <span>
+                          @
+                          {getInstagramHandle(selectedGaleria.instagram)}
+                        </span>
+                      </a>
                     )}
                   </div>
                 </div>
@@ -753,24 +780,7 @@ export default function GaleriasPage() {
                     </div>
                   )}
 
-                  {/* Instagram */}
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-300">
-                      Instagram
-                    </p>
-                    {selectedGaleria.instagram ? (
-                      <a
-                        href={selectedGaleria.instagram}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all"
-                      >
-                        {selectedGaleria.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@').replace(/\/$/, '')}
-                      </a>
-                    ) : (
-                      <p className="text-slate-400">{t.modal.noData}</p>
-                    )}
-                  </div>
+
                 </div>
 
                 {/* Botones cierre + favorito */}
