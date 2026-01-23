@@ -14,12 +14,12 @@ const slidesByLocale = {
   es: [
     {
       id: 1,
-      title: 'Descubrí los mejores bares',
+      title: 'Descubrí los mejores cafés',
       description: 'Los spots ideales para salir con amigos.',
-      cta: 'Ver bares',
+      cta: 'Ver cafés',
       image:
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/bars.jpg',
-      target: '/bares',
+      target: '/cafes',
     },
     /* {
       id: 2,
@@ -44,12 +44,12 @@ const slidesByLocale = {
   en: [
     {
       id: 1,
-      title: 'Discover the best bars',
+      title: 'Discover the best cafes',
       description: 'Perfect spots to go out with friends.',
-      cta: 'See bars',
+      cta: 'See cafes',
       image:
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/bars.jpg',
-      target: '/bares',
+      target: '/cafes',
     } /* 
     {
       id: 2,
@@ -74,12 +74,12 @@ const slidesByLocale = {
   pt: [
     {
       id: 1,
-      title: 'Descubra os melhores bares',
+      title: 'Descubra os melhores cafés',
       description: 'Os lugares perfeitos para sair com amigos.',
-      cta: 'Ver bares',
+      cta: 'Ver cafés',
       image:
         'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/carruselPrincipal/bars.jpg',
-      target: '/bares',
+      target: '/cafes',
     } /* 
     {
       id: 2,
