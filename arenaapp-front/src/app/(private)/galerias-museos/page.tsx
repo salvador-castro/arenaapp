@@ -728,7 +728,7 @@ export default function GaleriasPage() {
      {/* Horario Galeria */}
                     {(selectedGaleria.horario_desde || selectedGaleria.horario_hasta) && (
                         <p className="text-xs text-slate-500">
-                            Horario: {selectedGaleria.horario_desde?.slice(0,5) || '?'} - {selectedGaleria.horario_hasta?.slice(0,5) || '?'}
+                            Horario galeria: {selectedGaleria.horario_desde?.slice(0,5) || '?'} - {selectedGaleria.horario_hasta?.slice(0,5) || '?'}
                         </p>
                     )}
 
