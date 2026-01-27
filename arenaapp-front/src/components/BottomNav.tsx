@@ -13,6 +13,7 @@ import {
   Users,
   Utensils,
   Wine,
+  Coffee,
   Hotel,
   Image,
   PartyPopper,
@@ -54,6 +55,7 @@ type Translations = {
     users: string
     restaurants: string
     bars: string
+    cafes: string
     hotels: string
     gallery: string
     shopping: string
@@ -86,6 +88,7 @@ const translationsByLocale: Record<'es' | 'en' | 'pt', Translations> = {
       users: 'Usuarios',
       restaurants: 'Restaurante',
       bars: 'Bares',
+      cafes: 'Cafés',
       hotels: 'Hoteles',
       gallery: 'Galería',
       shopping: 'Shopping',
@@ -116,6 +119,7 @@ const translationsByLocale: Record<'es' | 'en' | 'pt', Translations> = {
       users: 'Users',
       restaurants: 'Restaurants',
       bars: 'Bars',
+      cafes: 'Cafes',
       hotels: 'Hotels',
       gallery: 'Gallery',
       shopping: 'Shopping',
@@ -146,6 +150,7 @@ const translationsByLocale: Record<'es' | 'en' | 'pt', Translations> = {
       users: 'Usuários',
       restaurants: 'Restaurantes',
       bars: 'Bares',
+      cafes: 'Cafés',
       hotels: 'Hotéis',
       gallery: 'Galeria',
       shopping: 'Shopping',
@@ -221,6 +226,7 @@ export default function BottomNav() {
       icon: <Utensils size={16} />,
     },
     { href: '/admin-bares', label: t.admin.bars, icon: <Wine size={16} /> },
+    { href: '/admin-cafes', label: t.admin.cafes, icon: <Coffee size={16} /> },
     {
       href: '/admin-hoteles',
       label: t.admin.hotels,
