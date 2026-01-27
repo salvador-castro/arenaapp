@@ -6,8 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuthRedirect } from 'src/hooks/useAuthRedirect'
 import UserDropdown from '@/components/UserDropdown'
 
-const LOGO_URL =
-  'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/logo/logo.png'
+const LOGO_URL = 'https://cmtfqzzhfzymzwyktjhm.supabase.co/storage/v1/object/public/logo/logo.png?v=2'
 
 type TopNavProps = {
   isLoggedIn: boolean
