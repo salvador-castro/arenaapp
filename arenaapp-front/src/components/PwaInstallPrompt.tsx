@@ -77,31 +77,31 @@ export const PwaInstallPrompt = () => {
           exit={{ opacity: 0, y: 50 }}
           className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96"
         >
-          <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl shadow-2xl">
+          <div className="bg-white/95 backdrop-blur-md border border-zinc-200 p-4 rounded-xl shadow-2xl">
             <div className="flex justify-between items-start mb-2">
               <div className="flex gap-3">
                 <div className="w-12 h-12 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                   <img src="/icon-192x192.png" alt="App Icon" className="w-full h-full rounded-xl object-cover" />
+                   <img src="/icon-192x192.png?v=2" alt="App Icon" className="w-full h-full rounded-xl object-cover" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-zinc-900 dark:text-white">
+                  <h3 className="font-bold text-lg text-zinc-900">
                     Instalar App
                   </h3>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-zinc-600">
                     Accede mas rápido desde tu inicio
                   </p>
                 </div>
               </div>
               <button
                 onClick={closePrompt}
-                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                className="text-zinc-500 hover:text-zinc-700 transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
             {isIOS ? (
-              <div className="mt-3 space-y-2 text-sm text-zinc-600 dark:text-zinc-300">
+              <div className="mt-3 space-y-2 text-sm text-zinc-600">
                 <p>Para instalar en iOS:</p>
                 <div className="flex items-center gap-2">
                   1. Toca el botón <Share size={16} className="text-blue-500" /> Compartir

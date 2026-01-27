@@ -17,10 +17,8 @@ const nextConfig = {
     ],
   },
 
-  // 👇 esto es CLAVE
-  experimental: {
-    turbo: false,
-  },
+  // Add empty turbopack config to silence webpack compatibility warning
+  turbopack: {},
 }
 
 module.exports = withPWA(nextConfig)
