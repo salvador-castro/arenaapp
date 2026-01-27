@@ -4,15 +4,8 @@
 import TopNav from '@/components/TopNav'
 import HeroCarousel from 'src/components/HeroCarousel'
 import BottomNav from 'src/components/BottomNav'
-import AdBanner from 'src/components/AdBanner'
 import PromoBanner from 'src/components/PromoBanner'
-import RestaurantesDestacados from '@/components/destacados/Restaurantes'
-import BaresDestacados from '@/components/destacados/Bares'
-import EventosDestacados from '@/components/destacados/Eventos'
-import GaleriasDestacadas from '@/components/destacados/Galerias'
-import HotelesDestacados from '@/components/destacados/Hoteles'
-import ShoppingDestacados from '@/components/destacados/Shopping'
-import CafesDestacados from '@/components/destacados/Cafes'
+import CategoryCards from '@/components/CategoryCards'
 import { useAuth } from '@/context/AuthContext'
 
 export default function HomePage() {
@@ -33,36 +26,9 @@ export default function HomePage() {
           </section>
         )}
 
-        <section className="px-4 pt-6">
-          <RestaurantesDestacados isLoggedIn={isLoggedIn} />
+        <section className="px-4 pt-8 pb-6">
+          <CategoryCards />
         </section>
-
-        <section className="px-4 pt-6">
-          <CafesDestacados isLoggedIn={isLoggedIn} />
-        </section>
-        {/* 
-        <section className='px-4 pt-6'>
-          <BaresDestacados isLoggedIn={isLoggedIn} />
-        </section>
-
-        <section className='px-4 pt-6 pb-4'>
-          <EventosDestacados isLoggedIn={isLoggedIn} />
-        </section>
-
-        <section className='px-4 pt-6 pb-4'>
-          <GaleriasDestacadas isLoggedIn={isLoggedIn} />
-        </section>
-        
-        <section className='px-4 pt-6 pb-4'>
-          <HotelesDestacados isLoggedIn={isLoggedIn} />
-        </section>
-
-        <section className='px-4 pt-6 pb-4'>
-          <ShoppingDestacados isLoggedIn={isLoggedIn} />
-        </section>
-
-        <AdBanner />
-      */}
       </main>
 
       <BottomNav />

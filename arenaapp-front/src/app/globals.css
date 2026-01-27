@@ -5,5 +5,19 @@
 }
 
 body {
-  @apply bg-slate-950 text-slate-100;
+  background-color: rgb(2 6 23);
+  color: rgb(241 245 249);
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
 }
