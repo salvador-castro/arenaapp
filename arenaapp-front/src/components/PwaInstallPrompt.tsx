@@ -77,37 +77,37 @@ export const PwaInstallPrompt = () => {
           exit={{ opacity: 0, y: 50 }}
           className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96"
         >
-          <div className="bg-white/95 backdrop-blur-md border border-zinc-200 p-4 rounded-xl shadow-2xl">
+          <div className="bg-zinc-900/95 backdrop-blur-md border border-zinc-700 p-4 rounded-xl shadow-2xl">
             <div className="flex justify-between items-start mb-2">
               <div className="flex gap-3">
                 <div className="w-12 h-12 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                    <img src="/icon-192x192.png?v=2" alt="App Icon" className="w-full h-full rounded-xl object-cover" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-zinc-900">
+                  <h3 className="font-bold text-lg text-white">
                     Instalar App
                   </h3>
-                  <p className="text-sm text-zinc-600">
+                  <p className="text-sm text-zinc-300">
                     Accede mas rápido desde tu inicio
                   </p>
                 </div>
               </div>
               <button
                 onClick={closePrompt}
-                className="text-zinc-500 hover:text-zinc-700 transition-colors"
+                className="text-zinc-400 hover:text-white transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
             {isIOS ? (
-              <div className="mt-3 space-y-2 text-sm text-zinc-600">
+              <div className="mt-3 space-y-2 text-sm text-zinc-300">
                 <p>Para instalar en iOS:</p>
                 <div className="flex items-center gap-2">
-                  1. Toca el botón <Share size={16} className="text-blue-500" /> Compartir
+                  1. Toca el botón <Share size={16} className="text-blue-400" /> Compartir
                 </div>
                 <div className="flex items-center gap-2">
-                  2. Selecciona <span className="font-semibold">Agregar al inicio</span>
+                  2. Selecciona <span className="font-semibold text-white">Agregar al inicio</span>
                 </div>
               </div>
             ) : (
