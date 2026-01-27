@@ -85,7 +85,7 @@ export default function ShoppingDestacados({ isLoggedIn }: Props) {
   // 🔥 Traducciones de UI
   const t = {
     es: {
-      sectionTitle: 'Shoppings destacados',
+      sectionTitle: 'SHOPPINGS DESTACADOS',
       sectionSubtitle: 'Centros comerciales y outlets para salir de compras.',
       seeAll: 'Ver todos',
       loading: 'Cargando shoppings destacados...',
@@ -106,7 +106,7 @@ export default function ShoppingDestacados({ isLoggedIn }: Props) {
       close: 'Cerrar',
     },
     en: {
-      sectionTitle: 'Featured malls',
+      sectionTitle: 'FEATURED MALLS',
       sectionSubtitle: 'Malls and outlets for your shopping plans.',
       seeAll: 'See all',
       loading: 'Loading featured malls...',
@@ -127,7 +127,7 @@ export default function ShoppingDestacados({ isLoggedIn }: Props) {
       close: 'Close',
     },
     pt: {
-      sectionTitle: 'Shoppings em destaque',
+      sectionTitle: 'SHOPPINGS EM DESTAQUE',
       sectionSubtitle: 'Centros comerciais e outlets para sair às compras.',
       seeAll: 'Ver todos',
       loading: 'Carregando shoppings em destaque...',
@@ -460,11 +460,10 @@ export default function ShoppingDestacados({ isLoggedIn }: Props) {
                   </p>
                   <p className="text-slate-400">
                     {selectedPlace.telefono || selectedPlace.facebook
-                      ? `${selectedPlace.telefono ?? ''}${
-                          selectedPlace.telefono && selectedPlace.facebook
-                            ? ' · '
-                            : ''
-                        }${selectedPlace.facebook ?? ''}`
+                      ? `${selectedPlace.telefono ?? ''}${selectedPlace.telefono && selectedPlace.facebook
+                        ? ' · '
+                        : ''
+                      }${selectedPlace.facebook ?? ''}`
                       : '-'}
                   </p>
                 </div>

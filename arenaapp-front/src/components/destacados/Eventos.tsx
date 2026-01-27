@@ -102,7 +102,7 @@ export default function EventosDestacados({ isLoggedIn }: Props) {
   // 🔥 Diccionario de textos
   const t = {
     es: {
-      sectionTitle: 'Eventos destacados del finde',
+      sectionTitle: 'EVENTOS DESTACADOS DEL FINDE',
       sectionSubtitle: 'Recitales, fiestas y actividades para salir.',
       seeAll: 'Ver todos',
       loading: 'Cargando eventos destacados...',
@@ -122,7 +122,7 @@ export default function EventosDestacados({ isLoggedIn }: Props) {
       close: 'Cerrar',
     },
     en: {
-      sectionTitle: 'Featured events for the weekend',
+      sectionTitle: 'FEATURED EVENTS FOR THE WEEKEND',
       sectionSubtitle: 'Concerts, parties and activities to go out.',
       seeAll: 'See all',
       loading: 'Loading featured events...',
@@ -142,7 +142,7 @@ export default function EventosDestacados({ isLoggedIn }: Props) {
       close: 'Close',
     },
     pt: {
-      sectionTitle: 'Eventos em destaque no fim de semana',
+      sectionTitle: 'EVENTOS EM DESTAQUE NO FIM DE SEMANA',
       sectionSubtitle: 'Shows, festas e atividades para sair.',
       seeAll: 'Ver todos',
       loading: 'Carregando eventos em destaque...',
@@ -355,9 +355,8 @@ export default function EventosDestacados({ isLoggedIn }: Props) {
                       {selectedEvento.es_gratuito
                         ? t.freeEntry
                         : selectedEvento.precio_desde
-                          ? `${t.fromLabel} ${selectedEvento.precio_desde} ${
-                              selectedEvento.moneda || ''
-                            }`
+                          ? `${t.fromLabel} ${selectedEvento.precio_desde} ${selectedEvento.moneda || ''
+                          }`
                           : t.checkPrices}
                     </span>
                   </div>

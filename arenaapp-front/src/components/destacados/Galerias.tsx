@@ -81,7 +81,7 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
   // 🔥 Traducciones de UI
   const t = {
     es: {
-      sectionTitle: 'Galerías destacadas',
+      sectionTitle: 'GALERÍAS DESTACADAS',
       sectionSubtitle:
         'Espacios culturales para descubrir arte y exposiciones.',
       seeAll: 'Ver todas',
@@ -101,7 +101,7 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
       close: 'Cerrar',
     },
     en: {
-      sectionTitle: 'Featured galleries',
+      sectionTitle: 'FEATURED GALLERIES',
       sectionSubtitle: 'Cultural spaces to discover art and exhibitions.',
       seeAll: 'See all',
       loading: 'Loading featured galleries...',
@@ -120,7 +120,7 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
       close: 'Close',
     },
     pt: {
-      sectionTitle: 'Galerias em destaque',
+      sectionTitle: 'GALERIAS EM DESTAQUE',
       sectionSubtitle: 'Espaços culturais para descobrir arte e exposições.',
       seeAll: 'Ver todas',
       loading: 'Carregando galerias em destaque...',
@@ -408,12 +408,11 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
                   </p>
                   <p className="text-slate-400">
                     {selectedPlace.horario_desde || selectedPlace.horario_hasta
-                      ? `${selectedPlace.horario_desde ?? ''}${
-                          selectedPlace.horario_desde &&
-                          selectedPlace.horario_hasta
-                            ? ' - '
-                            : ''
-                        }${selectedPlace.horario_hasta ?? ''}`
+                      ? `${selectedPlace.horario_desde ?? ''}${selectedPlace.horario_desde &&
+                        selectedPlace.horario_hasta
+                        ? ' - '
+                        : ''
+                      }${selectedPlace.horario_hasta ?? ''}`
                       : '-'}
                   </p>
                 </div>
@@ -442,11 +441,10 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
                   </p>
                   <p className="text-slate-400">
                     {selectedPlace.telefono || selectedPlace.email_contacto
-                      ? `${selectedPlace.telefono ?? ''}${
-                          selectedPlace.telefono && selectedPlace.email_contacto
-                            ? ' · '
-                            : ''
-                        }${selectedPlace.email_contacto ?? ''}`
+                      ? `${selectedPlace.telefono ?? ''}${selectedPlace.telefono && selectedPlace.email_contacto
+                        ? ' · '
+                        : ''
+                      }${selectedPlace.email_contacto ?? ''}`
                       : '-'}
                   </p>
                 </div>

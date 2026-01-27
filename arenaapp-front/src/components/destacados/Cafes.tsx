@@ -65,35 +65,35 @@ export default function cafesDestacados({ isLoggedIn }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   // 🔥 Diccionario de traducciones de UI
-const t = {
-  es: {
-    sectionTitle: 'Cafés destacados',
-    sectionSubtitle: 'Elegidos por su ambiente, tragos y experiencia.',
-    seeAll: 'Ver todos',
-    loading: 'Cargando cafés destacados...',
-    error: 'No se pudieron cargar los cafés destacados.',
-    zoneFallback: 'Zona no especificada',
-    seeMore: 'Ver más',
-  },
-  en: {
-    sectionTitle: 'Featured cafés',
-    sectionSubtitle: 'Selected for their vibe, drinks and experience.',
-    seeAll: 'See all',
-    loading: 'Loading featured cafés...',
-    error: 'Could not load featured cafés.',
-    zoneFallback: 'Zone not specified',
-    seeMore: 'See more',
-  },
-  pt: {
-    sectionTitle: 'Cafés em destaque',
-    sectionSubtitle: 'Escolhidos pelo ambiente, bebidas e experiência.',
-    seeAll: 'Ver todos',
-    loading: 'Carregando cafés em destaque...',
-    error: 'Não foi possível carregar os cafés em destaque.',
-    zoneFallback: 'Zona não especificada',
-    seeMore: 'Ver mais',
-  },
-}[locale]
+  const t = {
+    es: {
+      sectionTitle: 'CAFÉS DESTACADOS',
+      sectionSubtitle: 'Elegidos por su ambiente, tragos y experiencia.',
+      seeAll: 'Ver todos',
+      loading: 'Cargando cafés destacados...',
+      error: 'No se pudieron cargar los cafés destacados.',
+      zoneFallback: 'Zona no especificada',
+      seeMore: 'Ver más',
+    },
+    en: {
+      sectionTitle: 'FEATURED CAFÉS',
+      sectionSubtitle: 'Selected for their vibe, drinks and experience.',
+      seeAll: 'See all',
+      loading: 'Loading featured cafés...',
+      error: 'Could not load featured cafés.',
+      zoneFallback: 'Zone not specified',
+      seeMore: 'See more',
+    },
+    pt: {
+      sectionTitle: 'CAFÉS EM DESTAQUE',
+      sectionSubtitle: 'Escolhidos pelo ambiente, bebidas e experiência.',
+      seeAll: 'Ver todos',
+      loading: 'Carregando cafés em destaque...',
+      error: 'Não foi possível carregar os cafés em destaque.',
+      zoneFallback: 'Zona não especificada',
+      seeMore: 'Ver mais',
+    },
+  }[locale]
 
 
   useEffect(() => {

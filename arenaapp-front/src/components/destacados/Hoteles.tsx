@@ -82,7 +82,7 @@ export default function HotelesDestacados({ isLoggedIn }: Props) {
   // 🔥 Traducciones de UI
   const t = {
     es: {
-      sectionTitle: 'Hoteles destacados',
+      sectionTitle: 'HOTELES DESTACADOS',
       sectionSubtitle: 'Alojamientos recomendados para tu próxima estadía.',
       seeAll: 'Ver todos',
       loading: 'Cargando hoteles destacados...',
@@ -99,7 +99,7 @@ export default function HotelesDestacados({ isLoggedIn }: Props) {
       close: 'Cerrar',
     },
     en: {
-      sectionTitle: 'Featured hotels',
+      sectionTitle: 'FEATURED HOTELS',
       sectionSubtitle: 'Recommended stays for your next trip.',
       seeAll: 'See all',
       loading: 'Loading featured hotels...',
@@ -116,7 +116,7 @@ export default function HotelesDestacados({ isLoggedIn }: Props) {
       close: 'Close',
     },
     pt: {
-      sectionTitle: 'Hotéis em destaque',
+      sectionTitle: 'HOTÉIS EM DESTAQUE',
       sectionSubtitle: 'Hospedagens recomendadas para a sua próxima estadia.',
       seeAll: 'Ver todos',
       loading: 'Carregando hotéis em destaque...',
@@ -395,12 +395,11 @@ export default function HotelesDestacados({ isLoggedIn }: Props) {
                   </p>
                   <p className="text-slate-400">
                     {selectedPlace.checkin_desde || selectedPlace.checkout_hasta
-                      ? `${selectedPlace.checkin_desde ?? ''}${
-                          selectedPlace.checkin_desde &&
-                          selectedPlace.checkout_hasta
-                            ? ' · '
-                            : ''
-                        }${selectedPlace.checkout_hasta ?? ''}`
+                      ? `${selectedPlace.checkin_desde ?? ''}${selectedPlace.checkin_desde &&
+                        selectedPlace.checkout_hasta
+                        ? ' · '
+                        : ''
+                      }${selectedPlace.checkout_hasta ?? ''}`
                       : '-'}
                   </p>
                 </div>
@@ -429,11 +428,10 @@ export default function HotelesDestacados({ isLoggedIn }: Props) {
                   </p>
                   <p className="text-slate-400">
                     {selectedPlace.telefono || selectedPlace.email_contacto
-                      ? `${selectedPlace.telefono ?? ''}${
-                          selectedPlace.telefono && selectedPlace.email_contacto
-                            ? ' · '
-                            : ''
-                        }${selectedPlace.email_contacto ?? ''}`
+                      ? `${selectedPlace.telefono ?? ''}${selectedPlace.telefono && selectedPlace.email_contacto
+                        ? ' · '
+                        : ''
+                      }${selectedPlace.email_contacto ?? ''}`
                       : '-'}
                   </p>
                 </div>

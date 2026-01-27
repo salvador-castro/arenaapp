@@ -67,7 +67,7 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
   // 🔥 Diccionario de traducciones de UI
   const t = {
     es: {
-      sectionTitle: 'Bares destacados',
+      sectionTitle: 'BARES DESTACADOS',
       sectionSubtitle: 'Elegidos por su ambiente, tragos y experiencia.',
       seeAll: 'Ver todos',
       loading: 'Cargando bares destacados...',
@@ -76,7 +76,7 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
       seeMore: 'Ver más',
     },
     en: {
-      sectionTitle: 'Featured bars',
+      sectionTitle: 'FEATURED BARS',
       sectionSubtitle: 'Selected for their vibe, drinks and experience.',
       seeAll: 'See all',
       loading: 'Loading featured bars...',
@@ -85,7 +85,7 @@ export default function BaresDestacados({ isLoggedIn }: Props) {
       seeMore: 'See more',
     },
     pt: {
-      sectionTitle: 'Bares em destaque',
+      sectionTitle: 'BARES EM DESTAQUE',
       sectionSubtitle: 'Escolhidos pelo ambiente, drinks e experiência.',
       seeAll: 'Ver todos',
       loading: 'Carregando bares em destaque...',

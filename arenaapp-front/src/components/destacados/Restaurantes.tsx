@@ -83,7 +83,7 @@ export default function RestaurantesDestacados({ isLoggedIn }: Props) {
 
   const t = {
     es: {
-      sectionTitle: 'Restaurantes destacados',
+      sectionTitle: 'RESTAURANTES DESTACADOS',
       sectionSubtitle: 'Elegidos por su propuesta gastronómica y experiencia.',
       seeAll: 'Ver todos',
       loading: 'Cargando restaurantes destacados...',
@@ -101,7 +101,7 @@ export default function RestaurantesDestacados({ isLoggedIn }: Props) {
       close: 'Cerrar',
     },
     en: {
-      sectionTitle: 'Featured restaurants',
+      sectionTitle: 'FEATURED RESTAURANTS',
       sectionSubtitle: 'Selected for their food and overall experience.',
       seeAll: 'See all',
       loading: 'Loading featured restaurants...',
@@ -119,7 +119,7 @@ export default function RestaurantesDestacados({ isLoggedIn }: Props) {
       close: 'Close',
     },
     pt: {
-      sectionTitle: 'Restaurantes em destaque',
+      sectionTitle: 'RESTAURANTES EM DESTAQUE',
       sectionSubtitle: 'Escolhidos pela proposta gastronômica e experiência.',
       seeAll: 'Ver todos',
       loading: 'Carregando restaurantes em destaque...',
