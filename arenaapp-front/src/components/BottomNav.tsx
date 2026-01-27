@@ -20,7 +20,7 @@ import {
   Languages,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useLocale } from '@/context/LocaleContext'
 
 type Item = {
@@ -172,10 +172,41 @@ export default function BottomNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false)
 
+  const menuRef = useRef<HTMLDivElement>(null)
+  const langMenuRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     setIsMenuOpen(false)
     setIsLangMenuOpen(false)
   }, [pathname])
+
+  // Detectar clicks fuera del menú para cerrarlo
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        isMenuOpen
+      ) {
+        setIsMenuOpen(false)
+      }
+      if (
+        langMenuRef.current &&
+        !langMenuRef.current.contains(event.target as Node) &&
+        isLangMenuOpen
+      ) {
+        setIsLangMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen || isLangMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen, isLangMenuOpen])
 
   const t = translationsByLocale[locale]
 
@@ -284,7 +315,7 @@ export default function BottomNav() {
   }
 
   const renderLanguageButton = () => (
-    <div className="relative flex flex-col items-center gap-0.5 text-[11px]">
+    <div ref={langMenuRef} className="relative flex flex-col items-center gap-0.5 text-[11px]">
       <button
         type="button"
         onClick={() => setIsLangMenuOpen((prev) => !prev)}
@@ -365,15 +396,10 @@ export default function BottomNav() {
 
   return (
     <>
-      {/* Overlay para cerrar cualquier menú haciendo click afuera */}
-      {(isLangMenuOpen || (isLoggedIn && isAdmin && isMenuOpen)) && (
-        <div className="fixed inset-0 z-40" onClick={closeAllMenus} />
-      )}
-
       <nav className="fixed bottom-0 inset-x-0 z-50 h-16 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md">
         {/* SUBMENÚ ADMIN */}
         {isLoggedIn && isAdmin && isMenuOpen && (
-          <div className="absolute bottom-16 inset-x-0 mb-2 z-50">
+          <div ref={menuRef} className="absolute bottom-16 inset-x-0 mb-2 z-50">
             <div className="mx-auto max-w-md rounded-2xl bg-slate-900 border border-slate-700 shadow-xl p-2 grid grid-cols-2 gap-2 text-xs">
               {adminSubItems.map((sub) => {
                 const isActive = pathname === sub.href
