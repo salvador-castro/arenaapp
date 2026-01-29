@@ -39,6 +39,10 @@ interface Galeria {
   estrellas: number | null
   es_destacado: boolean
   estado: string
+  nombre_muestra?: string | null
+  artistas?: string | null
+  fecha_inauguracion?: string | null
+  hora_inauguracion?: string | null
 }
 
 const API_BASE = (
@@ -46,6 +50,50 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const DESTACADOS_ENDPOINT = `${API_BASE}/api/admin/galerias/destacados`
+
+// 📅 Componente de badge de calendario
+function CalendarBadge({ fecha }: { fecha: string | null | undefined }) {
+  if (!fecha) return null
+
+  const date = new Date(fecha)
+  const monthNames = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+  const month = monthNames[date.getMonth()]
+  const day = date.getDate()
+
+  return (
+    <div className="absolute top-2 left-2 z-10 bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 text-center">
+        {month}
+      </div>
+      <div className="bg-white text-slate-900 text-lg font-bold px-2 py-1 text-center leading-none">
+        {day}
+      </div>
+    </div>
+  )
+}
+
+// 🏷️ Badge de estado (En Curso / Próximamente)
+function StatusBadge({ fecha }: { fecha: string | null | undefined }) {
+  if (!fecha) return null
+  
+  const status = getDateStatus(fecha)
+  
+  if (status === 'current') {
+    return (
+      <div className="absolute top-2 right-2 z-10 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
+        EN CURSO
+      </div>
+    )
+  } else if (status === 'upcoming') {
+    return (
+      <div className="absolute top-2 right-2 z-10 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
+        PRÓXIMAMENTE
+      </div>
+    )
+  }
+  
+  return null
+}
 
 function getInstagramHandle(url: string | null): string {
   if (!url) return 'Instagram'
@@ -63,6 +111,58 @@ function formatStars(estrellas: number | null): string {
   if (!estrellas || estrellas < 1) return '-'
   const value = Math.min(Math.max(estrellas, 1), 5)
   return '★'.repeat(value)
+}
+
+// 🗓️ Función para comparar fechas y ordenar
+function getDateStatus(fecha: string | null | undefined): 'current' | 'upcoming' | 'past' | 'none' {
+  if (!fecha) return 'none'
+  
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const inauguracion = new Date(fecha)
+  inauguracion.setHours(0, 0, 0, 0)
+  
+  // Considerar "current" si la inauguración fue en los últimos 60 días
+  const sixtyDaysAgo = new Date(today)
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
+  
+  if (inauguracion >= sixtyDaysAgo && inauguracion <= today) {
+    return 'current'
+  } else if (inauguracion > today) {
+    return 'upcoming'
+  } else {
+    return 'past'
+  }
+}
+
+function sortByDate(a: Galeria, b: Galeria): number {
+  const statusA = getDateStatus(a.fecha_inauguracion)
+  const statusB = getDateStatus(b.fecha_inauguracion)
+  
+  // Orden de prioridad: current > upcoming > past > none
+  const priority = { current: 0, upcoming: 1, past: 2, none: 3 }
+  
+  if (priority[statusA] !== priority[statusB]) {
+    return priority[statusA] - priority[statusB]
+  }
+  
+  // Si tienen el mismo status, ordenar por fecha
+  if (statusA !== 'none' && statusB !== 'none') {
+    const dateA = new Date(a.fecha_inauguracion!).getTime()
+    const dateB = new Date(b.fecha_inauguracion!).getTime()
+    
+    // Para current y past: más reciente primero (descendente)
+    // Para upcoming: más próximo primero (ascendente)
+    if (statusA === 'upcoming') {
+      return dateA - dateB
+    } else {
+      return dateB - dateA
+    }
+  }
+  
+  // Si no tienen fecha, ordenar por nombre
+  return a.nombre.localeCompare(b.nombre)
 }
 
 export default function GaleriasDestacadas({ isLoggedIn }: Props) {
@@ -162,6 +262,9 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
           ? data
           : (data.galerias ?? [])
         const destacados = galerias.filter((g) => g.es_destacado === true)
+        
+        // Ordenar por fecha: actuales/próximas primero
+        destacados.sort(sortByDate)
 
         setPlaces(destacados)
       } catch (e: any) {
@@ -235,6 +338,12 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
             >
               {/* Imagen arriba */}
               <div className="relative w-full h-28 sm:h-32 bg-slate-800">
+                {/* 📅 Calendar Badge */}
+                <CalendarBadge fecha={place.fecha_inauguracion} />
+                
+                {/* 🏷️ Status Badge */}
+                <StatusBadge fecha={place.fecha_inauguracion} />
+                
                 <Image
                   alt={place.nombre}
                   src={
@@ -256,9 +365,22 @@ export default function GaleriasDestacadas({ isLoggedIn }: Props) {
                     t.locationFallback}
                 </p>
 
-                <h3 className="text-sm font-semibold line-clamp-1">
-                  {place.nombre}
-                </h3>
+                {/* Nombre Muestra - PRIMERO Y MÁS GRANDE */}
+                {place.nombre_muestra ? (
+                  <>
+                    <h3 className="text-base font-bold line-clamp-2 text-slate-100">
+                      {place.nombre_muestra}
+                    </h3>
+                    {/* Nombre Galería - SEGUNDO Y MÁS PEQUEÑO */}
+                    <p className="text-[11px] font-medium uppercase text-slate-400 line-clamp-1">
+                      {place.nombre}
+                    </p>
+                  </>
+                ) : (
+                  <h3 className="text-sm font-semibold line-clamp-1">
+                    {place.nombre}
+                  </h3>
+                )}
 
                 {place.descripcion_corta && (
                   <p className="text-slate-400 line-clamp-2">

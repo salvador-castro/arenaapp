@@ -48,6 +48,60 @@ const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/galerias/public`
 const FAVORITOS_GALERIAS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
 const PAGE_SIZE = 12
 
+// 📅 Componente de badge de calendario
+function CalendarBadge({ fecha }: { fecha: string | null | undefined }) {
+  if (!fecha) return null
+
+  const date = new Date(fecha)
+  const monthNames = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+  const month = monthNames[date.getMonth()]
+  const day = date.getDate()
+
+  return (
+    <div className="absolute top-2 left-2 z-10 bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 text-center">
+        {month}
+      </div>
+      <div className="bg-white text-slate-900 text-lg font-bold px-2 py-1 text-center leading-none">
+        {day}
+      </div>
+    </div>
+  )
+}
+
+// Formatear fecha como dd/mm/yyyy
+function formatDate(fecha: string | null | undefined): string {
+  if (!fecha) return '-'
+  const date = new Date(fecha)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}/${month}/${year}`
+}
+
+// 🏷️ Badge de estado (En Curso / Próximamente)
+function StatusBadge({ fecha }: { fecha: string | null | undefined }) {
+  if (!fecha) return null
+  
+  const status = getDateStatus(fecha)
+  
+  if (status === 'current') {
+    return (
+      <div className="absolute top-2 right-2 z-10 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
+        EN CURSO
+      </div>
+    )
+  } else if (status === 'upcoming') {
+    return (
+      <div className="absolute top-2 right-2 z-10 bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
+        PRÓXIMAMENTE
+      </div>
+    )
+  }
+  
+  return null
+}
+
 function normalizeText(value: string | null | undefined): string {
   if (!value) return ''
   return value
@@ -72,6 +126,58 @@ function getInstagramHandle(url: string | null): string {
   } catch {
     return 'Instagram'
   }
+}
+
+// 🗓️ Función para comparar fechas y ordenar
+function getDateStatus(fecha: string | null | undefined): 'current' | 'upcoming' | 'past' | 'none' {
+  if (!fecha) return 'none'
+  
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const inauguracion = new Date(fecha)
+  inauguracion.setHours(0, 0, 0, 0)
+  
+  // Considerar "current" si la inauguración fue en los últimos 60 días
+  const sixtyDaysAgo = new Date(today)
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
+  
+  if (inauguracion >= sixtyDaysAgo && inauguracion <= today) {
+    return 'current'
+  } else if (inauguracion > today) {
+    return 'upcoming'
+  } else {
+    return 'past'
+  }
+}
+
+function sortByDate(a: Galeria, b: Galeria): number {
+  const statusA = getDateStatus(a.fecha_inauguracion)
+  const statusB = getDateStatus(b.fecha_inauguracion)
+  
+  // Orden de prioridad: current > upcoming > past > none
+  const priority = { current: 0, upcoming: 1, past: 2, none: 3 }
+  
+  if (priority[statusA] !== priority[statusB]) {
+    return priority[statusA] - priority[statusB]
+  }
+  
+  // Si tienen el mismo status, ordenar por fecha
+  if (statusA !== 'none' && statusB !== 'none') {
+    const dateA = new Date(a.fecha_inauguracion!).getTime()
+    const dateB = new Date(b.fecha_inauguracion!).getTime()
+    
+    // Para current y past: más reciente primero (descendente)
+    // Para upcoming: más próximo primero (ascendente)
+    if (statusA === 'upcoming') {
+      return dateA - dateB
+    } else {
+      return dateB - dateA
+    }
+  }
+  
+  // Si no tienen fecha, ordenar por nombre
+  return a.nombre.localeCompare(b.nombre)
 }
 
 /* ---------------- i18n simple (es, en, pt) ---------------- */
@@ -376,7 +482,7 @@ export default function GaleriasPage() {
     [galerias]
   )
 
-  // 6) Aplicar filtros
+  // 6) Aplicar filtros y ordenar por fecha
   const filteredGalerias = useMemo(() => {
     let result = [...galerias]
 
@@ -400,7 +506,8 @@ export default function GaleriasPage() {
       result = result.filter((g) => g.zona === zonaFilter)
     }
 
-    result.sort((a, b) => a.nombre.localeCompare(b.nombre))
+    // Ordenar por fecha: actuales/próximas primero
+    result.sort(sortByDate)
 
     return result
   }, [galerias, search, zonaFilter])
@@ -411,6 +518,27 @@ export default function GaleriasPage() {
   }, [search, zonaFilter])
 
   const totalPages = Math.max(1, Math.ceil(filteredGalerias.length / PAGE_SIZE))
+
+  // Agrupar por mes y año
+  const groupedGalerias = useMemo(() => {
+    const groups: { [key: string]: Galeria[] } = {}
+    
+    filteredGalerias.forEach((g) => {
+      if (g.fecha_inauguracion) {
+        const date = new Date(g.fecha_inauguracion)
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+        const key = `${monthNames[date.getMonth()]} ${date.getFullYear()}`
+        if (!groups[key]) groups[key] = []
+        groups[key].push(g)
+      } else {
+        const key = 'Sin fecha'
+        if (!groups[key]) groups[key] = []
+        groups[key].push(g)
+      }
+    })
+    
+    return groups
+  }, [filteredGalerias])
 
   const paginatedGalerias = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE
@@ -558,73 +686,110 @@ export default function GaleriasPage() {
 
         {!loading && !error && filteredGalerias.length > 0 && (
           <>
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {paginatedGalerias.map((g) => (
-                <div
-                  key={g.id}
-                  className="rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden"
-                >
-                  <div
-                    className="relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer"
-                    onClick={() => openModalFromCard(g)}
-                  >
-                    <Image
-                      alt={g.nombre}
-                      src={
-                        g.url_imagen ||
-                        g.imagen_principal ||
-                        '/images/placeholders/restaurante-placeholder.jpg'
-                      }
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 25vw"
-                    />
-                  </div>
-
-                  <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
-                    {/* Zona */}
-                    <p className="text-[10px] uppercase font-semibold text-emerald-400">
-                      {g.zona || t.zoneFallback}
-                    </p>
-                    
-                    {/* Nombre Galería (Uppercase) */}
-                    <h3 className="text-sm font-semibold line-clamp-1 uppercase">
-                      {g.nombre}
+            {/* Agrupado por mes y año */}
+            <section className="space-y-6">
+              {Object.entries(groupedGalerias).map(([monthYear, galerias]) => {
+                // Calcular cuántos de este grupo están en la página actual
+                const start = (currentPage - 1) * PAGE_SIZE
+                const end = start + PAGE_SIZE
+                const allGaleriasFlat = filteredGalerias
+                const groupStartIndex = allGaleriasFlat.findIndex(g => galerias.includes(g))
+                const groupEndIndex = groupStartIndex + galerias.length
+                
+                // Si este grupo no se solapa con la página actual, no mostrarlo
+                if (groupEndIndex <= start || groupStartIndex >= end) return null
+                
+                // Filtrar solo las galerías de este grupo que están en la página actual
+                const visibleGalerias = galerias.filter(g => {
+                  const idx = allGaleriasFlat.indexOf(g)
+                  return idx >= start && idx < end
+                })
+                
+                if (visibleGalerias.length === 0) return null
+                
+                return (
+                  <div key={monthYear}>
+                    {/* Header del grupo */}
+                    <h3 className="text-lg font-bold text-slate-200 mb-3 pb-2 border-b border-slate-800">
+                      {monthYear}
                     </h3>
+                    
+                    {/* Grid de galerías */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {visibleGalerias.map((g) => (
+                        <div
+                          key={g.id}
+                          className="rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/60 transition-colors flex flex-col overflow-hidden"
+                        >
+                          <div
+                            className="relative w-full h-36 sm:h-40 md:h-44 bg-slate-800 cursor-pointer"
+                            onClick={() => openModalFromCard(g)}
+                          >
+                            {/* 📅 Calendar Badge */}
+                            <CalendarBadge fecha={g.fecha_inauguracion} />
+                            
+                            {/* 🏷️ Status Badge */}
+                            <StatusBadge fecha={g.fecha_inauguracion} />
+                            
+                            <Image
+                              alt={g.nombre}
+                              src={
+                                g.url_imagen ||
+                                g.imagen_principal ||
+                                '/images/placeholders/restaurante-placeholder.jpg'
+                              }
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 768px) 100vw, 25vw"
+                            />
+                          </div>
 
-                    {/* Nombre Muestra */}
-                    {g.nombre_muestra && (
-                      <p className="text-slate-200 font-medium capitalize line-clamp-1">
-                        {g.nombre_muestra}
-                      </p>
-                    )}
+                          <div className="p-3 flex-1 flex flex-col gap-1 text-[11px]">
+                            {/* Zona */}
+                            <p className="text-[10px] uppercase font-semibold text-emerald-400">
+                              {g.zona || t.zoneFallback}
+                            </p>
+                            
+                            {/* Nombre Muestra - PRIMERO Y MÁS GRANDE */}
+                            {g.nombre_muestra ? (
+                              <>
+                                <h3 className="text-base font-bold line-clamp-2 text-slate-100">
+                                  {g.nombre_muestra}
+                                </h3>
+                                {/* Nombre Galería - SEGUNDO Y MÁS PEQUEÑO */}
+                                <p className="text-[11px] font-medium uppercase text-slate-400 line-clamp-1">
+                                  {g.nombre}
+                                </p>
+                              </>
+                            ) : (
+                              <h3 className="text-sm font-semibold line-clamp-1 uppercase">
+                                {g.nombre}
+                              </h3>
+                            )}
 
-                    {/* Artista */}
-                    {g.artistas && (
-                      <p className="text-slate-400 line-clamp-1">
-                        {g.artistas}
-                      </p>
-                    )}
+                            {/* Artista */}
+                            {g.artistas && (
+                              <p className="text-slate-400 line-clamp-1">
+                                {g.artistas}
+                              </p>
+                            )}
 
-                    {/* Fecha Inauguración */}
-                    {g.fecha_inauguracion && (
-                      <div className="mt-1 text-[10px] text-slate-500">
-                        Inauguración: {new Date(g.fecha_inauguracion).toLocaleDateString()}
-                      </div>
-                    )}
-
-                    <div className="mt-auto flex justify-end pt-2">
-                      <button
-                        type="button"
-                        onClick={() => openModalFromCard(g)}
-                        className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors"
-                      >
-                        {t.card.moreInfo}
-                      </button>
+                            <div className="mt-auto flex justify-end pt-2">
+                              <button
+                                type="button"
+                                onClick={() => openModalFromCard(g)}
+                                className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                              >
+                                {t.card.moreInfo}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </section>
 
             {/* Paginación */}
@@ -720,7 +885,7 @@ export default function GaleriasPage() {
                     {/* Fecha y Hora */}
                     {selectedGaleria.fecha_inauguracion && (
                         <p className="text-xs text-slate-500 mt-1">
-                            Inauguración: {new Date(selectedGaleria.fecha_inauguracion).toLocaleDateString()}
+                            Inauguración: {formatDate(selectedGaleria.fecha_inauguracion)}
                             {selectedGaleria.hora_inauguracion ? ` - ${selectedGaleria.hora_inauguracion.slice(0,5)}` : ''}
                         </p>
                     )}
