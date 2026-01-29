@@ -47,6 +47,7 @@ interface AdminGallery {
   lat?: number | null
   lng?: number | null
   estrellas?: number | null
+  url_maps?: string | null
 
   nombre_muestra?: string | null
   artistas?: string | null
@@ -66,6 +67,7 @@ interface FormValues {
   es_destacado: boolean
   resena: string
   url_imagen: string
+  url_maps: string
   estado: 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO'
   estrellas: number | ''
   nombre_muestra: string
@@ -102,6 +104,7 @@ export default function GaleriasPage() {
     es_destacado: false,
     resena: '',
     url_imagen: '',
+    url_maps: '',
     estado: 'PUBLICADO',
     estrellas: '',
     nombre_muestra: '',
@@ -191,6 +194,7 @@ export default function GaleriasPage() {
       es_destacado: false,
       resena: '',
       url_imagen: '',
+      url_maps: '',
       estado: 'PUBLICADO',
       estrellas: '',
       nombre_muestra: '',
@@ -243,6 +247,7 @@ export default function GaleriasPage() {
       es_destacado: !!g.es_destacado,
       resena: g.resena ?? '',
       url_imagen: g.url_imagen ?? '', // 👈 importante
+      url_maps: g.url_maps ?? '',
       estado: (g.estado as FormValues['estado']) ?? 'PUBLICADO',
       estrellas: typeof g.estrellas === 'number' ? g.estrellas : '',
       nombre_muestra: g.nombre_muestra ?? '',
@@ -603,6 +608,7 @@ export default function GaleriasPage() {
                     </label>
                     <input
                       type="text"
+                      placeholder="Dirección de la galería"
                       name="direccion"
                       value={formValues.direccion}
                       onChange={handleChange}
@@ -727,6 +733,22 @@ export default function GaleriasPage() {
                       className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
                   </div>
+                </div>
+
+                {/* Google Maps URL */}
+                <div>
+                  <label className="block text-xs mb-1 text-slate-300">
+                    Link Google Maps *
+                  </label>
+                  <input
+                    type="url"
+                    name="url_maps"
+                    value={formValues.url_maps}
+                    onChange={handleChange}
+                    required
+                    placeholder="https://maps.google.com/..."
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                  />
                 </div>
 
                 {/* Horarios + checkboxes */}

@@ -115,6 +115,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
       horario_desde,
       horario_hasta,
       url_imagen,
+      url_maps,
       meta_title,
       meta_description,
       es_destacado,
@@ -161,17 +162,18 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         horario_desde = $19,
         horario_hasta = $20,
         url_imagen = $21,
-        meta_title = $22,
-        meta_description = $23,
-        es_destacado = $24,
-        estado = $25,
-        estrellas = $26,
-        nombre_muestra = $27,
-        artistas = $28,
-        fecha_inauguracion = $29,
-        hora_inauguracion = $30,
+        url_maps = $22,
+        meta_title = $23,
+        meta_description = $24,
+        es_destacado = $25,
+        estado = $26,
+        estrellas = $27,
+        nombre_muestra = $28,
+        artistas = $29,
+        fecha_inauguracion = $30,
+        hora_inauguracion = $31,
         updated_at = now()
-      WHERE id = $31
+      WHERE id = $32
       `,
       [
         nombre, // $1
@@ -195,16 +197,17 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         horario_desde || null, // $19
         horario_hasta || null, // $20
         url_imagen, // $21
-        meta_title || null, // $22
-        meta_description || null, // $23
-        !!es_destacado, // $24
-        estado || 'PUBLICADO', // $25
-        estrellas ? Number(estrellas) : null, // $26
-        nombre_muestra || null, // $27
-        artistas || null, // $28
-        fecha_inauguracion || null, // $29
-        hora_inauguracion || null, // $30
-        id, // $31
+        url_maps || null, // $22
+        meta_title || null, // $23
+        meta_description || null, // $24
+        !!es_destacado, // $25
+        estado || 'PUBLICADO', // $26
+        estrellas ? Number(estrellas) : null, // $27
+        nombre_muestra || null, // $28
+        artistas || null, // $29
+        fecha_inauguracion || null, // $30
+        hora_inauguracion || null, // $31
+        id, // $32
       ]
     )
 
@@ -234,6 +237,7 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
         horario_desde,
         horario_hasta,
         url_imagen,
+        url_maps,
         estrellas,
         meta_title,
         meta_description,

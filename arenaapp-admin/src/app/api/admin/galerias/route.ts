@@ -166,6 +166,7 @@ export async function POST(req: NextRequest) {
       horario_desde,
       horario_hasta,
       url_imagen,
+      url_maps,
       meta_title,
       meta_description,
       es_destacado,
@@ -213,6 +214,7 @@ export async function POST(req: NextRequest) {
         horario_desde,
         horario_hasta,
         url_imagen,
+        url_maps,
         meta_title,
         meta_description,
         es_destacado,
@@ -229,7 +231,7 @@ export async function POST(req: NextRequest) {
         $11, $12, $13, $14, $15,
         $16, $17, $18, $19, $20,
         $21, $22, $23, $24, $25,
-        $26, $27, $28, $29, $30, $31
+        $26, $27, $28, $29, $30, $31, $32
       )
       RETURNING
         id,
@@ -255,6 +257,7 @@ export async function POST(req: NextRequest) {
         horario_desde,
         horario_hasta,
         url_imagen,
+        url_maps,
         estrellas,
         meta_title,
         meta_description,
@@ -290,15 +293,16 @@ export async function POST(req: NextRequest) {
         horario_desde || null, // $20
         horario_hasta || null, // $21
         url_imagen, // $22
-        meta_title || null, // $23
-        meta_description || null, // $24
-        !!es_destacado, // $25
-        estado || 'PUBLICADO', // $26
-        estrellas ? Number(estrellas) : null, // $27
-        nombre_muestra || null, // $28
-        artistas || null, // $29
-        fecha_inauguracion || null, // $30
-        hora_inauguracion || null // $31
+        url_maps || null, // $23
+        meta_title || null, // $24
+        meta_description || null, // $25
+        !!es_destacado, // $26
+        estado || 'PUBLICADO', // $27
+        estrellas ? Number(estrellas) : null, // $28
+        nombre_muestra || null, // $29
+        artistas || null, // $30
+        fecha_inauguracion || null, // $31
+        hora_inauguracion || null // $32
       ]
     )
 
