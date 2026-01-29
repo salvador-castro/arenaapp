@@ -187,7 +187,8 @@ export async function POST(req: NextRequest) {
     }
 
     const db = await getDb()
-    const slug = slugify(nombre)
+    // Usar nombre_muestra para el slug (o nombre como fallback si está vacío)
+    const slug = slugify(nombre_muestra || nombre)
 
     const insertResult = await db.query(
       `

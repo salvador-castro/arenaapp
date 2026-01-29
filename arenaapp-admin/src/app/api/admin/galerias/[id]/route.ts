@@ -136,78 +136,90 @@ export async function PUT(req: NextRequest, context: ContextWithId) {
     }
 
     const db = await getDb()
+    // Generar slug desde nombre_muestra (o nombre como fallback)
+    const slugify = (str: string): string => {
+      return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '')
+    }
+    const slug = slugify(nombre_muestra || nombre)
 
     await db.query(
       `
       UPDATE galerias
       SET
         nombre = $1,
-        descripcion_corta = $2,
-        resena = $3,
-        direccion = $4,
-        zona = $5,
-        ciudad = $6,
-        provincia = $7,
-        pais = $8,
-        lat = $9,
-        lng = $10,
-        telefono = $11,
-        email_contacto = $12,
-        sitio_web = $13,
-        instagram = $14,
-        facebook = $15,
-        anio_fundacion = $16,
-        tiene_entrada_gratuita = $17,
-        requiere_reserva = $18,
-        horario_desde = $19,
-        horario_hasta = $20,
-        url_imagen = $21,
-        url_maps = $22,
-        meta_title = $23,
-        meta_description = $24,
-        es_destacado = $25,
-        estado = $26,
-        estrellas = $27,
-        nombre_muestra = $28,
-        artistas = $29,
-        fecha_inauguracion = $30,
-        hora_inauguracion = $31,
+        slug = $2,
+        descripcion_corta = $3,
+        resena = $4,
+        direccion = $5,
+        zona = $6,
+        ciudad = $7,
+        provincia = $8,
+        pais = $9,
+        lat = $10,
+        lng = $11,
+        telefono = $12,
+        email_contacto = $13,
+        sitio_web = $14,
+        instagram = $15,
+        facebook = $16,
+        anio_fundacion = $17,
+        tiene_entrada_gratuita = $18,
+        requiere_reserva = $19,
+        horario_desde = $20,
+        horario_hasta = $21,
+        url_imagen = $22,
+        url_maps = $23,
+        meta_title = $24,
+        meta_description = $25,
+        es_destacado = $26,
+        estado = $27,
+        estrellas = $28,
+        nombre_muestra = $29,
+        artistas = $30,
+        fecha_inauguracion = $31,
+        hora_inauguracion = $32,
         updated_at = now()
-      WHERE id = $32
+      WHERE id = $33
       `,
       [
         nombre, // $1
-        resena ? String(resena).slice(0, 200) : null, // $2 -> descripcion_corta auto
-        resena || null, // $3
-        direccion, // $4
-        zona || null, // $5
-        ciudad || null, // $6
-        provincia || null, // $7
-        pais || 'Uruguay', // $8
-        lat === undefined || lat === null ? null : lat, // $9
-        lng === undefined || lng === null ? null : lng, // $10
-        telefono || null, // $11
-        email_contacto || null, // $12
-        sitio_web || null, // $13
-        instagram || null, // $14
-        facebook || null, // $15
-        anio_fundacion ?? null, // $16
-        !!tiene_entrada_gratuita, // $17
-        !!requiere_reserva, // $18
-        horario_desde || null, // $19
-        horario_hasta || null, // $20
-        url_imagen, // $21
-        url_maps || null, // $22
-        meta_title || null, // $23
-        meta_description || null, // $24
-        !!es_destacado, // $25
-        estado || 'PUBLICADO', // $26
-        estrellas ? Number(estrellas) : null, // $27
-        nombre_muestra || null, // $28
-        artistas || null, // $29
-        fecha_inauguracion || null, // $30
-        hora_inauguracion || null, // $31
-        id, // $32
+        slug, // $2
+        resena ? String(resena).slice(0, 200) : null, // $3 -> descripcion_corta auto
+        resena || null, // $4
+        direccion, // $5
+        zona || null, // $6
+        ciudad || null, // $7
+        provincia || null, // $8
+        pais || 'Uruguay', // $9
+        lat === undefined || lat === null ? null : lat, // $10
+        lng === undefined || lng === null ? null : lng, // $11
+        telefono || null, // $12
+        email_contacto || null, // $13
+        sitio_web || null, // $14
+        instagram || null, // $15
+        facebook || null, // $16
+        anio_fundacion ?? null, // $17
+        !!tiene_entrada_gratuita, // $18
+        !!requiere_reserva, // $19
+        horario_desde || null, // $20
+        horario_hasta || null, // $21
+        url_imagen, // $22
+        url_maps || null, // $23
+        meta_title || null, // $24
+        meta_description || null, // $25
+        !!es_destacado, // $26
+        estado || 'PUBLICADO', // $27
+        estrellas ? Number(estrellas) : null, // $28
+        nombre_muestra || null, // $29
+        artistas || null, // $30
+        fecha_inauguracion || null, // $31
+        hora_inauguracion || null, // $32
+        id, // $33
       ]
     )
 
