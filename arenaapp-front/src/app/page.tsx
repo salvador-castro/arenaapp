@@ -14,7 +14,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-50">
-      {/* NAV SUPERIOR */}
       <TopNav isLoggedIn={isLoggedIn} />
 
       <main className="flex-1 pb-32">

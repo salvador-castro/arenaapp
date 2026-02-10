@@ -3,13 +3,28 @@
 import { useState, useRef, useEffect } from 'react'
 
 const ZONAS = [
-  'José Ignacio',
-  'La Barra',
-  'La Juanita',
-  'Laguna Garzón',
-  'Manantiales',
-  'Peninsula',
-  'Punta Ballena',
+  "Atlántida",
+  "Cabo Polonio",
+  "Carmelo",
+  "Carrasco",
+  "Centro",
+  "Ciudad Vieja",
+  "Colonia del Sacramento",
+  "Cordón",
+  "José Ignacio",
+  "La Barra",
+  "La Paloma",
+  "La Pedrera",
+  "Manantiales",
+  "Montevideo",
+  "Península",
+  "Piriápolis",
+  "Pocitos",
+  'Pueblo Garzón',
+  "Punta Ballena",
+  "Punta Carretas",
+  "Punta del Diablo",
+  "Punta del Este"
 ]
 
 interface ZonasLugaresProps {

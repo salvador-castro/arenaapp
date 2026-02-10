@@ -13,9 +13,6 @@ export default function RegisterPage() {
   const [numero, setNumero] = useState('') // teléfono
   const [email, setEmail] = useState('')
 
-  const [tipoDocumento, setTipoDocumento] = useState('') // arranca vacío
-  const [numeroDocumento, setNumeroDocumento] = useState('')
-
   const [password, setPassword] = useState('')
   const [passwordRepetida, setPasswordRepetida] = useState('')
 
@@ -49,38 +46,6 @@ export default function RegisterPage() {
       return
     }
 
-    if (!tipoDocumento) {
-      setError('Debés seleccionar un tipo de documento.')
-      setLoading(false)
-      return
-    }
-
-    const docTrim = numeroDocumento.trim()
-    if (!docTrim) {
-      setError('Debés completar el número de documento.')
-      setLoading(false)
-      return
-    }
-
-    // Validación según tipo de documento
-    if (tipoDocumento === 'Pasaporte') {
-      const passportRegex = /^[A-Za-z0-9]+$/
-      if (!passportRegex.test(docTrim)) {
-        setError(
-          'Para pasaporte solo se permiten letras y números, sin espacios ni guiones.'
-        )
-        setLoading(false)
-        return
-      }
-    } else {
-      const numericRegex = /^[0-9]+$/
-      if (!numericRegex.test(docTrim)) {
-        setError('El número de documento debe contener solo números.')
-        setLoading(false)
-        return
-      }
-    }
-
     if (!password || !passwordRepetida) {
       setError('Debés completar ambos campos de contraseña.')
       setLoading(false)
@@ -108,8 +73,8 @@ export default function RegisterPage() {
           apellido: apellido.trim(),
           email: email.trim(),
           telefono: numero || null,
-          tipo_documento: tipoDocumento,
-          numero_documento: docTrim,
+          tipo_documento: null,
+          numero_documento: null,
           password,
         }),
       })
@@ -139,7 +104,7 @@ export default function RegisterPage() {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Nombre */}
           <div>
-            <label className="block text-sm mb-1">Nombre</label>
+            <label className="block text-sm mb-1">Nombre *</label>
             <input
               type="text"
               className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -152,7 +117,7 @@ export default function RegisterPage() {
 
           {/* Apellido */}
           <div>
-            <label className="block text-sm mb-1">Apellido</label>
+            <label className="block text-sm mb-1">Apellido *</label>
             <input
               type="text"
               className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -165,7 +130,7 @@ export default function RegisterPage() {
 
           {/* Teléfono (opcional) */}
           <div>
-            <label className="block text-sm mb-1">Número telefónico</label>
+            <label className="block text-sm mb-1">Número telefónico (opcional)</label>
             <input
               type="tel"
               className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -177,7 +142,7 @@ export default function RegisterPage() {
 
           {/* Email */}
           <div>
-            <label className="block text-sm mb-1">Email</label>
+            <label className="block text-sm mb-1">Email *</label>
             <input
               type="email"
               className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -188,41 +153,9 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Tipo de documento */}
-          <div>
-            <label className="block text-sm mb-1">Tipo de documento</label>
-            <select
-              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              value={tipoDocumento}
-              onChange={(e) => setTipoDocumento(e.target.value)}
-              required
-            >
-              <option value="">Seleccionar tipo de documento</option>
-              <option value="DNI">DNI</option>
-              <option value="RG">RG</option>
-              <option value="Cédula de Identidad">Cédula de Identidad</option>
-              <option value="Pasaporte">Pasaporte</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-
-          {/* Número de documento */}
-          <div>
-            <label className="block text-sm mb-1">Número de documento</label>
-            <input
-              type="text" // importante: text para permitir letras en pasaporte
-              inputMode={tipoDocumento === 'Pasaporte' ? 'text' : 'numeric'}
-              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              value={numeroDocumento}
-              onChange={(e) => setNumeroDocumento(e.target.value)}
-              placeholder="Tu número de documento"
-              required
-            />
-          </div>
-
           {/* CONTRASEÑA */}
           <div>
-            <label className="block text-sm mb-1">Contraseña</label>
+            <label className="block text-sm mb-1">Contraseña *</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}

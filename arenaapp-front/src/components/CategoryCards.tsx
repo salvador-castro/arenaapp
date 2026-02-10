@@ -56,7 +56,7 @@ const categories: Category[] = [
   {
     title: 'Galerías',
     icon: <ImageIcon className="w-8 h-8" />,
-    href: '/galerias',
+    href: '/galerias-museos',
     gradient: 'from-indigo-500 to-purple-600',
     description: 'Arte y cultura en tu ciudad',
     image: '/categories/gallery.png'

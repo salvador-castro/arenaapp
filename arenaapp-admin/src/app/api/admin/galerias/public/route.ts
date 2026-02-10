@@ -1,4 +1,3 @@
-///Users/salvacastro/Desktop/arenaapp/arenaapp-admin/src/app/api/admin/galerias/public/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 
@@ -17,6 +16,8 @@ export function OPTIONS(req: NextRequest) {
 }
 
 // Helper para elegir traducción según lang
+export const dynamic = 'force-dynamic'
+
 function pickTranslated(row: any, base: string, lang: 'es' | 'en' | 'pt') {
   if (lang === 'en') {
     const v = row[`${base}_en`]
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
       const like = `%${search}%`
       const result = await db.query(
         `
-        SELECT *
+        SELECT *, url_maps
         FROM galerias
         WHERE
           estado = 'PUBLICADO'
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest) {
     } else {
       const result = await db.query(
         `
-        SELECT *
+        SELECT *, url_maps
         FROM galerias
         WHERE estado = 'PUBLICADO'
         ORDER BY
@@ -115,7 +116,11 @@ export async function GET(req: NextRequest) {
       artistas: row.artistas,
       fecha_inauguracion: row.fecha_inauguracion,
       hora_inauguracion: row.hora_inauguracion,
+      url_maps: row.url_maps,
     }))
+
+    // Debug Force
+    // console.log('[DEBUG-FORCE] Total rows found:', rows.length)
 
     const origin = req.headers.get('origin')
     return new NextResponse(JSON.stringify(data), {

@@ -22,7 +22,8 @@ export function OPTIONS(req: NextRequest) {
 }
 
 // GET /api/admin/galerias/:id
-// GET /api/admin/galerias/:id
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest, context: ContextWithId) {
   try {
     const payload = await verifyAuth(req)

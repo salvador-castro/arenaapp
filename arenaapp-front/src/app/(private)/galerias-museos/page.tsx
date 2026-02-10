@@ -38,6 +38,7 @@ interface Galeria {
   artistas?: string | null
   fecha_inauguracion?: string | null
   hora_inauguracion?: string | null
+  url_maps?: string | null
 }
 
 const API_BASE = (
@@ -384,7 +385,7 @@ export default function GaleriasPage() {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(`${PUBLIC_ENDPOINT}?lang=${apiLang}`, {
+        const res = await fetch(`${PUBLIC_ENDPOINT}?lang=${apiLang}&t=${Date.now()}`, {
           method: 'GET',
         })
 
@@ -927,15 +928,19 @@ export default function GaleriasPage() {
                   </div>
                   
                   {/* Como llegar */}
-                  {selectedGaleria.direccion && (
+                  {(selectedGaleria.url_maps || selectedGaleria.direccion) && (
                     <div className="space-y-1">
                          <p className="text-xs font-semibold text-slate-300">
                             Cómo llegar
                          </p>
                          <a
-                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                             selectedGaleria.direccion + (selectedGaleria.ciudad ? `, ${selectedGaleria.ciudad}` : '')
-                           )}`}
+                           href={
+                             selectedGaleria.url_maps
+                               ? selectedGaleria.url_maps
+                               : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                   selectedGaleria.direccion + (selectedGaleria.ciudad ? `, ${selectedGaleria.ciudad}` : '')
+                                 )}`
+                           }
                            target="_blank"
                            rel="noreferrer"
                            className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
