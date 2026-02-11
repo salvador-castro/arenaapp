@@ -10,7 +10,7 @@ import { PwaInstallPrompt } from '@/components/PwaInstallPrompt'
 
 export const metadata: Metadata = {
   title: "Arena Press",
-  description: "Tu fuente de noticias confiable.",
+  description: "ALL YOU NEED TO KNOW",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
