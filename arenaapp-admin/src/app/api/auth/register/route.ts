@@ -42,9 +42,7 @@ export async function POST(req: NextRequest) {
       !nombre?.trim() ||
       !apellido?.trim() ||
       !email?.trim() ||
-      !password ||
-      !tipo_documento ||
-      !numero_documento?.trim()
+      !password
     ) {
       return NextResponse.json(
         { error: 'Faltan campos' },
@@ -55,33 +53,35 @@ export async function POST(req: NextRequest) {
     const nombreTrim = nombre.trim()
     const apellidoTrim = apellido.trim()
     const emailTrim = email.trim()
-    const docTrim = numero_documento.trim()
+    const docTrim = numero_documento?.trim() || null
 
-    // Validación servidor según tipo de documento
-    if (tipo_documento === 'Pasaporte') {
-      const passportRegex = /^[A-Za-z0-9]+$/
-      if (!passportRegex.test(docTrim)) {
-        return NextResponse.json(
-          {
-            error:
-              'Para pasaporte solo se permiten letras y números, sin espacios ni guiones.',
-          },
-          { status: 400, headers: corsHeaders() }
-        )
-      }
-    } else {
-      const numericRegex = /^[0-9]+$/
-      if (!numericRegex.test(docTrim)) {
-        return NextResponse.json(
-          { error: 'El número de documento debe contener solo números.' },
-          { status: 400, headers: corsHeaders() }
-        )
+    // Validación servidor según tipo de documento (solo si fueron provistos)
+    if (tipo_documento && docTrim) {
+      if (tipo_documento === 'Pasaporte') {
+        const passportRegex = /^[A-Za-z0-9]+$/
+        if (!passportRegex.test(docTrim)) {
+          return NextResponse.json(
+            {
+              error:
+                'Para pasaporte solo se permiten letras y números, sin espacios ni guiones.',
+            },
+            { status: 400, headers: corsHeaders() }
+          )
+        }
+      } else {
+        const numericRegex = /^[0-9]+$/
+        if (!numericRegex.test(docTrim)) {
+          return NextResponse.json(
+            { error: 'El número de documento debe contener solo números.' },
+            { status: 400, headers: corsHeaders() }
+          )
+        }
       }
     }
 
     // Normalizamos el documento antes de guardar / buscar
     const docNormalized =
-      tipo_documento === 'Pasaporte' ? docTrim.toUpperCase() : docTrim
+      (tipo_documento === 'Pasaporte' && docTrim) ? docTrim.toUpperCase() : docTrim
 
     const db = await getDb()
 
