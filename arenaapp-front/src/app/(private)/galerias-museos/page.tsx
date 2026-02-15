@@ -52,11 +52,14 @@ const PAGE_SIZE = 12
 // Helper para parsear fechas YYYY-MM-DD como local (evitando timezone UTC)
 function parseLocalDate(dateString: string): Date {
   if (!dateString) return new Date()
-  // Si coincide con formato YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    const [year, month, day] = dateString.split('-').map(Number)
+
+  // Intentar extraer YYYY-MM-DD del inicio del string
+  const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    const [_, year, month, day] = match.map(Number)
     return new Date(year, month - 1, day)
   }
+
   return new Date(dateString)
 }
 
