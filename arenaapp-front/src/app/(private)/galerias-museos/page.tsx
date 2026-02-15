@@ -49,11 +49,22 @@ const PUBLIC_ENDPOINT = `${API_BASE}/api/admin/galerias/public`
 const FAVORITOS_GALERIAS_ENDPOINT = `${API_BASE}/api/admin/favoritos/galerias`
 const PAGE_SIZE = 12
 
+// Helper para parsear fechas YYYY-MM-DD como local (evitando timezone UTC)
+function parseLocalDate(dateString: string): Date {
+  if (!dateString) return new Date()
+  // Si coincide con formato YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const [year, month, day] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+  return new Date(dateString)
+}
+
 // 📅 Componente de badge de calendario
 function CalendarBadge({ fecha }: { fecha: string | null | undefined }) {
   if (!fecha) return null
 
-  const date = new Date(fecha)
+  const date = parseLocalDate(fecha)
   const monthNames = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
   const month = monthNames[date.getMonth()]
   const day = date.getDate()
@@ -73,7 +84,7 @@ function CalendarBadge({ fecha }: { fecha: string | null | undefined }) {
 // Formatear fecha como dd/mm/yyyy
 function formatDate(fecha: string | null | undefined): string {
   if (!fecha) return '-'
-  const date = new Date(fecha)
+  const date = parseLocalDate(fecha)
   const day = String(date.getDate()).padStart(2, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const year = date.getFullYear()
@@ -83,9 +94,9 @@ function formatDate(fecha: string | null | undefined): string {
 // 🏷️ Badge de estado (En Curso / Próximamente)
 function StatusBadge({ fecha }: { fecha: string | null | undefined }) {
   if (!fecha) return null
-  
+
   const status = getDateStatus(fecha)
-  
+
   if (status === 'current') {
     return (
       <div className="absolute top-2 right-2 z-10 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
@@ -99,7 +110,7 @@ function StatusBadge({ fecha }: { fecha: string | null | undefined }) {
       </div>
     )
   }
-  
+
   return null
 }
 
@@ -132,17 +143,17 @@ function getInstagramHandle(url: string | null): string {
 // 🗓️ Función para comparar fechas y ordenar
 function getDateStatus(fecha: string | null | undefined): 'current' | 'upcoming' | 'past' | 'none' {
   if (!fecha) return 'none'
-  
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
-  const inauguracion = new Date(fecha)
+
+  const inauguracion = parseLocalDate(fecha)
   inauguracion.setHours(0, 0, 0, 0)
-  
+
   // Considerar "current" si la inauguración fue en los últimos 60 días
   const sixtyDaysAgo = new Date(today)
   sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
-  
+
   if (inauguracion >= sixtyDaysAgo && inauguracion <= today) {
     return 'current'
   } else if (inauguracion > today) {
@@ -155,19 +166,19 @@ function getDateStatus(fecha: string | null | undefined): 'current' | 'upcoming'
 function sortByDate(a: Galeria, b: Galeria): number {
   const statusA = getDateStatus(a.fecha_inauguracion)
   const statusB = getDateStatus(b.fecha_inauguracion)
-  
+
   // Orden de prioridad: current > upcoming > past > none
   const priority = { current: 0, upcoming: 1, past: 2, none: 3 }
-  
+
   if (priority[statusA] !== priority[statusB]) {
     return priority[statusA] - priority[statusB]
   }
-  
+
   // Si tienen el mismo status, ordenar por fecha
   if (statusA !== 'none' && statusB !== 'none') {
-    const dateA = new Date(a.fecha_inauguracion!).getTime()
-    const dateB = new Date(b.fecha_inauguracion!).getTime()
-    
+    const dateA = parseLocalDate(a.fecha_inauguracion!).getTime()
+    const dateB = parseLocalDate(b.fecha_inauguracion!).getTime()
+
     // Para current y past: más reciente primero (descendente)
     // Para upcoming: más próximo primero (ascendente)
     if (statusA === 'upcoming') {
@@ -176,7 +187,7 @@ function sortByDate(a: Galeria, b: Galeria): number {
       return dateB - dateA
     }
   }
-  
+
   // Si no tienen fecha, ordenar por nombre
   return a.nombre.localeCompare(b.nombre)
 }
@@ -523,10 +534,10 @@ export default function GaleriasPage() {
   // Agrupar por mes y año
   const groupedGalerias = useMemo(() => {
     const groups: { [key: string]: Galeria[] } = {}
-    
+
     filteredGalerias.forEach((g) => {
       if (g.fecha_inauguracion) {
-        const date = new Date(g.fecha_inauguracion)
+        const date = parseLocalDate(g.fecha_inauguracion)
         const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
         const key = `${monthNames[date.getMonth()]} ${date.getFullYear()}`
         if (!groups[key]) groups[key] = []
@@ -537,7 +548,7 @@ export default function GaleriasPage() {
         groups[key].push(g)
       }
     })
-    
+
     return groups
   }, [filteredGalerias])
 
@@ -630,9 +641,8 @@ export default function GaleriasPage() {
               {filtersOpen ? t.filters.hide : t.filters.show}
               <ChevronDown
                 size={14}
-                className={`transition-transform ${
-                  filtersOpen ? 'rotate-180' : ''
-                }`}
+                className={`transition-transform ${filtersOpen ? 'rotate-180' : ''
+                  }`}
               />
             </span>
           </button>
@@ -696,25 +706,25 @@ export default function GaleriasPage() {
                 const allGaleriasFlat = filteredGalerias
                 const groupStartIndex = allGaleriasFlat.findIndex(g => galerias.includes(g))
                 const groupEndIndex = groupStartIndex + galerias.length
-                
+
                 // Si este grupo no se solapa con la página actual, no mostrarlo
                 if (groupEndIndex <= start || groupStartIndex >= end) return null
-                
+
                 // Filtrar solo las galerías de este grupo que están en la página actual
                 const visibleGalerias = galerias.filter(g => {
                   const idx = allGaleriasFlat.indexOf(g)
                   return idx >= start && idx < end
                 })
-                
+
                 if (visibleGalerias.length === 0) return null
-                
+
                 return (
                   <div key={monthYear}>
                     {/* Header del grupo */}
                     <h3 className="text-lg font-bold text-slate-200 mb-3 pb-2 border-b border-slate-800">
                       {monthYear}
                     </h3>
-                    
+
                     {/* Grid de galerías */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {visibleGalerias.map((g) => (
@@ -728,10 +738,10 @@ export default function GaleriasPage() {
                           >
                             {/* 📅 Calendar Badge */}
                             <CalendarBadge fecha={g.fecha_inauguracion} />
-                            
+
                             {/* 🏷️ Status Badge */}
                             <StatusBadge fecha={g.fecha_inauguracion} />
-                            
+
                             <Image
                               alt={g.nombre}
                               src={
@@ -750,7 +760,7 @@ export default function GaleriasPage() {
                             <p className="text-[10px] uppercase font-semibold text-emerald-400">
                               {g.zona || t.zoneFallback}
                             </p>
-                            
+
                             {/* Nombre Muestra - PRIMERO Y MÁS GRANDE */}
                             {g.nombre_muestra ? (
                               <>
@@ -871,31 +881,31 @@ export default function GaleriasPage() {
 
                     {/* Muestra */}
                     {selectedGaleria.nombre_muestra && (
-                        <p className="text-base text-slate-200 font-medium capitalize">
-                            {selectedGaleria.nombre_muestra}
-                        </p>
+                      <p className="text-base text-slate-200 font-medium capitalize">
+                        {selectedGaleria.nombre_muestra}
+                      </p>
                     )}
 
                     {/* Artista */}
                     {selectedGaleria.artistas && (
-                        <p className="text-sm text-slate-400">
-                            {selectedGaleria.artistas}
-                        </p>
+                      <p className="text-sm text-slate-400">
+                        {selectedGaleria.artistas}
+                      </p>
                     )}
 
                     {/* Fecha y Hora */}
                     {selectedGaleria.fecha_inauguracion && (
-                        <p className="text-xs text-slate-500 mt-1">
-                            Inauguración: {formatDate(selectedGaleria.fecha_inauguracion)}
-                            {selectedGaleria.hora_inauguracion ? ` - ${selectedGaleria.hora_inauguracion.slice(0,5)}` : ''}
-                        </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Inauguración: {formatDate(selectedGaleria.fecha_inauguracion)}
+                        {selectedGaleria.hora_inauguracion ? ` - ${selectedGaleria.hora_inauguracion.slice(0, 5)}` : ''}
+                      </p>
                     )}
 
-     {/* Horario Galeria */}
+                    {/* Horario Galeria */}
                     {(selectedGaleria.horario_desde || selectedGaleria.horario_hasta) && (
-                        <p className="text-xs text-slate-500">
-                            Horario galeria: {selectedGaleria.horario_desde?.slice(0,5) || '?'} - {selectedGaleria.horario_hasta?.slice(0,5) || '?'}
-                        </p>
+                      <p className="text-xs text-slate-500">
+                        Horario galeria: {selectedGaleria.horario_desde?.slice(0, 5) || '?'} - {selectedGaleria.horario_hasta?.slice(0, 5) || '?'}
+                      </p>
                     )}
 
                     {selectedGaleria.instagram && (
@@ -916,7 +926,7 @@ export default function GaleriasPage() {
                 </div>
 
                 {/* Reseña oculta por pedido usuario */}
-                
+
                 <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px]">
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-slate-300">
@@ -926,27 +936,27 @@ export default function GaleriasPage() {
                       {selectedGaleria.direccion || t.modal.noData}
                     </p>
                   </div>
-                  
+
                   {/* Como llegar */}
                   {(selectedGaleria.url_maps || selectedGaleria.direccion) && (
                     <div className="space-y-1">
-                         <p className="text-xs font-semibold text-slate-300">
-                            Cómo llegar
-                         </p>
-                         <a
-                           href={
-                             selectedGaleria.url_maps
-                               ? selectedGaleria.url_maps
-                               : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                   selectedGaleria.direccion + (selectedGaleria.ciudad ? `, ${selectedGaleria.ciudad}` : '')
-                                 )}`
-                           }
-                           target="_blank"
-                           rel="noreferrer"
-                           className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
-                         >
-                            Ver en mapa
-                         </a>
+                      <p className="text-xs font-semibold text-slate-300">
+                        Cómo llegar
+                      </p>
+                      <a
+                        href={
+                          selectedGaleria.url_maps
+                            ? selectedGaleria.url_maps
+                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                              selectedGaleria.direccion + (selectedGaleria.ciudad ? `, ${selectedGaleria.ciudad}` : '')
+                            )}`
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
+                      >
+                        Ver en mapa
+                      </a>
                     </div>
                   )}
 
@@ -978,10 +988,9 @@ export default function GaleriasPage() {
                         disabled={favoriteLoading}
                         onClick={() => handleToggleFavorite(selectedGaleria)}
                         className={`rounded-full px-4 py-1.5 text-xs font-medium flex items-center gap-1 transition
-                          ${
-                            isFavorite
-                              ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
-                              : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
+                          ${isFavorite
+                            ? 'border border-emerald-400 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20'
+                            : 'border border-slate-700 text-slate-200 hover:border-emerald-400 hover:bg-slate-800'
                           }
                           ${favoriteLoading ? 'opacity-60 cursor-wait' : ''}
                         `}
